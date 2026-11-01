@@ -1,0 +1,348 @@
+"""Bobao 定制播报 — your notifications, read aloud the way you want.
+
+  bobao init                      set up: form of address, style, voice, sources
+  bobao run                       run in the foreground (the agent runs this)
+  bobao install | uninstall       start at login / stop for good
+  bobao status                    is it running, what was said lately
+
+  bobao test "<title>" [-f 金额=$19.9 ...] [--channel 群名] [--play]
+                                  what a notification would be classified and said as
+  bobao replay [--chat 群名] [--limit 30]
+                                  run a Feishu group's recent messages through the rules
+  bobao send "<title>" [-f k=v ...] [--type 收款 --platform X]
+                                  post a test notification to the local webhook
+
+  bobao packs                     list style and rule packs
+  bobao voices                    list RooYun voices (system and your own)
+  bobao rooyun login              connect your RooYun account
+  bobao voice plan                every sentence your setup can say, and what is unrecorded
+  bobao voice quote               price of recording what is missing
+  bobao voice record [--yes]      record it (asks first, shows the price)
+  bobao review                    listen to everything, mark pieces to re-record
+  bobao sounds                    (re)make the sound effects
+"""
+
+import argparse
+import json
+import os
+import random
+import shutil
+import subprocess
+import sys
+import urllib.request
+
+from . import clips, compose, config, daemon, paths, sounds
+from .events import Event
+
+
+def fields_arg(pairs):
+    out = {}
+    for p in pairs or []:
+        k, _, v = p.partition("=")
+        out[k] = v
+    return out
+
+
+def cmd_test(a):
+    cfg = config.load()
+    ev = Event(a.source, a.channel or "", a.title, a.text or "", fields_arg(a.field), bot=True,
+               type=a.type, platform=a.platform)
+    utt, why = daemon.decide(ev, cfg, dry=True)
+    if not utt:
+        print(f"不播：{why}")
+        return
+    m = utt["match"]
+    print(f"类型：{m.type}  平台：{m.platform or '—'}  规则：{'#' + str(m.index + 1) if m.index >= 0 else ('兜底' if m.index == -2 else '来源指定')}")
+    print(f"音效：{utt['sound'] or '—'}")
+    for v, t in utt["segments"]:
+        print(f"播报（{config.voice_key(v)}）：{t}")
+    if cfg["engine"] == "rooyun":
+        print("录音：" + ("齐全" if clips.for_segments(utt["segments"], clips.load()) else "缺（运行 bobao voice record）"))
+    if a.play:
+        from .speaker import play
+        play(utt, cfg)
+
+
+def cmd_replay(a):
+    from .sources.feishu import Feishu
+    cfg = config.load()
+    chats = [a.chat] if a.chat else cfg["sources"]["feishu"].get("chats", [])
+    index, rnd = clips.load(), random.Random(1)
+    fs = Feishu()
+    for chat in chats:
+        print(f"== {chat}")
+        for m, ev in fs.recent(cfg, chat, a.limit):
+            if cfg["sources"]["feishu"].get("botsOnly", True) and ev.bot is False:
+                said = "（不播：有人打字）"
+            else:
+                utt, why = daemon.decide(ev, cfg, dry=True, rnd=rnd)
+                if utt:
+                    ok = cfg["engine"] != "rooyun" or clips.for_segments(utt["segments"], index)
+                    said = utt["text"] + ("" if ok else "  ← 缺录音")
+                else:
+                    said = f"（不播：{why}）"
+            print(f"{m.get('create_time', '')}  {ev.title[:40]}  →  {said}")
+
+
+def cmd_send(a):
+    cfg = config.load()
+    port = cfg["sources"]["webhook"].get("port", 8766)
+    body = {"title": a.title, "fields": fields_arg(a.field), "dry": a.dry}
+    for k in ("type", "platform", "channel"):
+        if getattr(a, k):
+            body[k] = getattr(a, k)
+    req = urllib.request.Request(f"http://127.0.0.1:{port}/notify", json.dumps(body).encode(),
+                                 {"content-type": "application/json"})
+    if cfg["sources"]["webhook"].get("secret"):
+        req.add_header("x-bobao-secret", cfg["sources"]["webhook"]["secret"])
+    try:
+        print(urllib.request.urlopen(req, timeout=10).read().decode())
+    except OSError as e:
+        sys.exit(f"连不上本机 Webhook（Bobao 在运行吗？bobao status）：{e}")
+
+
+def cmd_packs(a):
+    for kind, label in (("styles", "风格包"), ("rules", "规则包")):
+        print(label)
+        for name, p in config.list_packs(kind).items():
+            print(f"  {name:10} {p.get('name', '')}：{p.get('description', '')}")
+
+
+def cmd_voices(a):
+    from .rooyun import Client
+    cfg = config.load()
+    for v in Client(cfg["rooyun"]["base"]).voices():
+        print(f"{v['voiceId']:32} {v['name']}  {'（你的音色）' if v.get('kind') == 'user' else ''}")
+
+
+def cmd_rooyun(a):
+    from . import rooyun
+    cfg = config.load()
+    if a.action == "login":
+        rooyun.login(cfg["rooyun"]["base"])
+    else:
+        me = rooyun.Client(cfg["rooyun"]["base"]).me()
+        print(json.dumps({k: me.get(k) for k in ("userId", "scopes", "expiresAt")}, ensure_ascii=False))
+
+
+def cmd_voice(a):
+    cfg = config.load()
+    p = compose.plan(cfg)
+    todo = clips.missing(p, clips.load())
+    total = sum(len(e["phrases"]) for e in p.values())
+    if a.action == "plan":
+        for vkey, e in p.items():
+            print(f"== {vkey}（{len(e['phrases'])} 句{' + 数字' if e['numbers'] else ''}）")
+            for t in e["phrases"]:
+                print(("  ✓ " if t not in todo.get(vkey, []) else "  · ") + t)
+        numbers = sum(1 for e in p.values() if e["numbers"])
+        print(f"\n共 {total} 句" + (f"，外加 {numbers} 个音色各一套数字" if numbers else "") + f"；还没录 {sum(len(v) for v in todo.values())} 段")
+        return
+    if not todo:
+        print("全部都录好了")
+        return
+    from . import rooyun
+    client = rooyun.Client(cfg["rooyun"]["base"])
+    meta = {v["voiceId"]: v for v in client.voices()}
+    jobs = rooyun.jobs_for(todo, client, cfg, meta)
+    price, available = rooyun.quote(client, jobs)
+    minutes = round(len(jobs) * rooyun.SUBMIT_GAP / 60)
+    print(f"要录 {len(jobs)} 句，约 {price} 积分，你的可用积分 {round(available, 2)}（如云每分钟最多提交 10 句，约 {minutes} 分钟）")
+    if a.action == "quote":
+        return
+    if price > available:
+        sys.exit("积分不够，请先到如云充值")
+    if not a.yes and input("开始录吗？[y/N] ").strip().lower() not in ("y", "yes", "是"):
+        print("没有录")
+        return
+    done, failed = rooyun.record(client, jobs)
+    print(f"录好 {done} 句" + (f"，{failed} 句没录成（重跑同一条命令补录）" if failed else ""))
+
+
+def cmd_sounds(a):
+    print("已生成音效：" + "、".join(sounds.make_all()) + f"（在 {paths.SOUNDS}）")
+
+
+def cmd_status(a):
+    r = subprocess.run(["launchctl", "print", f"gui/{os.getuid()}/{AGENT}"], capture_output=True, text=True)
+    print("后台：" + ("运行中" if "state = running" in r.stdout else "没有运行（bobao install 安装）"))
+    try:
+        with open(paths.LOG, encoding="utf-8") as f:
+            print("".join(f.readlines()[-15:]))
+    except FileNotFoundError:
+        pass
+
+
+# ---- setup ------------------------------------------------------------------
+
+AGENT, HELPER = "io.bobao.agent", "io.bobao.notify"
+APPS = [("微信", "com.tencent.xinWeChat"), ("企业微信", "com.tencent.WeWorkMac"), ("钉钉", "com.alibaba.DingTalkMac"),
+        ("邮件", "com.apple.mail"), ("Slack", "com.tinyspeck.slackmacgap")]
+
+
+def ask(q, default=""):
+    v = input(f"{q}" + (f" [{default}]" if default else "") + "：").strip()
+    return v or default
+
+
+def choose(q, options, default=1):
+    for i, (label, _) in enumerate(options, 1):
+        print(f"  {i}. {label}")
+    v = ask(q, str(default))
+    picks = [int(x) for x in v.replace("，", ",").replace(" ", ",").split(",") if x.strip().isdigit()]
+    return [options[i - 1][1] for i in picks if 0 < i <= len(options)]
+
+
+def cmd_init(a):
+    user = config.read_json(paths.CONFIG, {}) or {}
+    print("Bobao 定制播报 · 设置（直接回车用括号里的默认值）\n")
+    styles = config.list_packs("styles")
+    print("1) 播报风格")
+    style = choose("选一个", [(f"{p.get('name')}：{p.get('description')}", k) for k, p in styles.items()])
+    user["style"] = (style or ["formal"])[0]
+    user["称呼"] = ask("2) 怎么称呼你（老板、哥哥、名字…）", user.get("称呼") or styles[user["style"]].get("称呼", "老板"))
+    print("3) 声音")
+    user["engine"] = (choose("选一个", [("Mac 自带声音（免费，马上能用）", "mac"),
+                                        ("如云配音（好听、可选音色或用你自己的声音，一整套只要几个积分，录一次永久免费播放）", "rooyun")]) or ["mac"])[0]
+    src = user.setdefault("sources", {})
+    print("4) 从哪里收通知（可多选，用逗号隔开）")
+    picked = choose("选择", [("飞书群（需要 lark-cli）", "feishu"), ("Webhook：你的系统直接推过来", "webhook"),
+                             ("系统通知：微信、钉钉、邮件等的弹窗", "notifications")], "2")
+    src["webhook"] = dict(src.get("webhook", {}), enabled="webhook" in picked)
+    if "feishu" in picked:
+        from .sources.feishu import Feishu, lark
+        try:
+            chats = [c["name"] for c in (lark({}, "im", "+chat-list", "--page-all").get("chats") or [])]
+        except Exception as e:
+            chats = []
+            print(f"  读不到飞书群（{e}）。先安装并登录 lark-cli，再重新运行 bobao init")
+        if chats:
+            names = choose("  要播哪几个群（逗号隔开）", [(c, c) for c in chats[:40]], "")
+            src["feishu"] = dict(src.get("feishu", {}), enabled=bool(names), chats=names)
+    if "notifications" in picked:
+        apps = choose("  哪些 App 的通知（逗号隔开）", APPS, "1")
+        src["notifications"] = dict(src.get("notifications", {}), enabled=True, apps=apps)
+    packs = config.list_packs("rules")
+    print("5) 通知规则包（可多选，按顺序生效）")
+    user["rulePacks"] = choose("选择", [(f"{p.get('name')}：{p.get('description')}", k) for k, p in packs.items()],
+                               ",".join(str(i) for i, k in enumerate(packs, 1) if k == "generic") or "1")
+    config.save_user(user)
+    sounds.make_all()
+    print(f"\n已保存到 {paths.CONFIG}，可以直接改这个文件来定制每一类的说法、音色、音效和夜间时段。")
+    if user["engine"] == "rooyun":
+        print("下一步：bobao rooyun login → bobao voice record → bobao review → bobao install")
+    else:
+        print("下一步：bobao test \"充值到账\" -f 金额=\\$19.9 --play  试听，满意后 bobao install")
+
+
+def plist(label, args, log):
+    items = "".join(f"<string>{x}</string>" for x in args)
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>{label}</string>
+  <key>ProgramArguments</key><array>{items}</array>
+  <key>WorkingDirectory</key><string>{paths.APP}</string>
+  <key>EnvironmentVariables</key><dict><key>BOBAO_HOME</key><string>{paths.HOME}</string></dict>
+  <key>RunAtLoad</key><true/><key>KeepAlive</key><true/><key>ThrottleInterval</key><integer>30</integer>
+  <key>StandardErrorPath</key><string>{log}</string><key>StandardOutPath</key><string>{log}</string>
+</dict></plist>
+"""
+
+
+def load_agent(label, text):
+    path = os.path.expanduser(f"~/Library/LaunchAgents/{label}.plist")
+    with open(path, "w") as f:
+        f.write(text)
+    uid = os.getuid()
+    subprocess.run(["launchctl", "bootout", f"gui/{uid}/{label}"], capture_output=True)
+    subprocess.run(["launchctl", "bootstrap", f"gui/{uid}", path], check=True)
+
+
+def cmd_install(a):
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    paths.ensure()
+    # Background agents may not read ~/Documents, so the agent runs from a copy.
+    for d in ("bobao", "packs", "bin"):
+        shutil.rmtree(os.path.join(paths.APP, d), ignore_errors=True)
+        shutil.copytree(os.path.join(here, d), os.path.join(paths.APP, d), ignore=shutil.ignore_patterns("__pycache__"))
+    if not os.listdir(paths.SOUNDS):
+        sounds.make_all()
+    load_agent(AGENT, plist(AGENT, ["/usr/bin/python3", "-m", "bobao", "run"], paths.LOG))
+    print("后台已启动，开机自动运行。日志：" + paths.LOG)
+    cfg = config.load()
+    if cfg["sources"]["notifications"].get("enabled") or cfg["sources"]["feishu"].get("enabled"):
+        app = os.path.join(paths.APP, "Bobao 通知.app")
+        exe = os.path.join(app, "Contents", "MacOS", "bobao-notify")
+        os.makedirs(os.path.dirname(exe), exist_ok=True)
+        with open(os.path.join(app, "Contents", "Info.plist"), "w") as f:
+            f.write('<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>CFBundleIdentifier</key>'
+                    '<string>io.bobao.notify</string><key>CFBundleName</key><string>Bobao 通知</string>'
+                    '<key>CFBundleExecutable</key><string>bobao-notify</string><key>LSUIElement</key><true/></dict></plist>')
+        subprocess.run(["swiftc", "-O", "-o", exe, os.path.join(here, "helper", "bobao-notify.swift")], check=True)
+        # A fixed designated requirement keeps the Full Disk Access grant across rebuilds.
+        subprocess.run(["codesign", "-f", "-s", "-", "--identifier", "io.bobao.notify",
+                        "-r=designated => identifier \"io.bobao.notify\"", app], check=True, capture_output=True)
+        load_agent(HELPER, plist(HELPER, [exe], os.path.join(paths.HOME, "notify.log")))
+        print(f"系统通知助手已启动。请在 系统设置 → 隐私与安全性 → 完全磁盘访问权限 里添加并打开：\n  {app}")
+
+
+def cmd_uninstall(a):
+    for label in (AGENT, HELPER):
+        subprocess.run(["launchctl", "bootout", f"gui/{os.getuid()}/{label}"], capture_output=True)
+        try:
+            os.remove(os.path.expanduser(f"~/Library/LaunchAgents/{label}.plist"))
+        except FileNotFoundError:
+            pass
+    print(f"已停止并移除开机启动。设置和录音还在 {paths.HOME}，不要了可以整个删掉。")
+
+
+def main(argv=None):
+    p = argparse.ArgumentParser(prog="bobao", description="Bobao 定制播报", formatter_class=argparse.RawDescriptionHelpFormatter,
+                                epilog=__doc__)
+    sub = p.add_subparsers(dest="cmd")
+    for name in ("init", "run", "install", "uninstall", "status", "packs", "voices", "sounds"):
+        sub.add_parser(name)
+    rv = sub.add_parser("review")
+    rv.add_argument("--port", type=int, default=8767)
+    rv.add_argument("--no-open", action="store_true")
+    t = sub.add_parser("test")
+    t.add_argument("title")
+    t.add_argument("--text")
+    t.add_argument("-f", "--field", action="append")
+    t.add_argument("--channel")
+    t.add_argument("--source", default="feishu")
+    t.add_argument("--type")
+    t.add_argument("--platform")
+    t.add_argument("--play", action="store_true")
+    r = sub.add_parser("replay")
+    r.add_argument("--chat")
+    r.add_argument("--limit", type=int, default=30)
+    s = sub.add_parser("send")
+    s.add_argument("title")
+    s.add_argument("-f", "--field", action="append")
+    s.add_argument("--type")
+    s.add_argument("--platform")
+    s.add_argument("--channel")
+    s.add_argument("--dry", action="store_true")
+    ry = sub.add_parser("rooyun")
+    ry.add_argument("action", choices=["login", "me"])
+    v = sub.add_parser("voice")
+    v.add_argument("action", choices=["plan", "quote", "record"])
+    v.add_argument("--yes", action="store_true")
+    a = p.parse_args(argv)
+    if not a.cmd:
+        p.print_help()
+        return
+    if a.cmd == "run":
+        return daemon.run()
+    if a.cmd == "review":
+        from . import review
+        return review.serve(a.port, not a.no_open)
+    {"init": cmd_init, "install": cmd_install, "uninstall": cmd_uninstall, "status": cmd_status, "packs": cmd_packs,
+     "voices": cmd_voices, "sounds": cmd_sounds, "test": cmd_test, "replay": cmd_replay, "send": cmd_send,
+     "rooyun": cmd_rooyun, "voice": cmd_voice}[a.cmd](a)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Runs Bobao from wherever this checkout is.
+here="$(cd "$(dirname "$0")/.." && pwd)"
+PYTHONPATH="$here${PYTHONPATH:+:$PYTHONPATH}" exec /usr/bin/python3 -m bobao "$@"
