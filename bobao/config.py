@@ -31,6 +31,7 @@ DEFAULTS = {
     "tease": {},
     "bigOrder": {},             # {"BigModel": 100, "*": 1000}: amounts that get the 大单 line
     "maxAgeMinutes": 30,
+    "schedule": {},             # {"days": [1-7], "hours": "09:00-18:00", "quietHours": "23:00-08:00"} for all types
     "sources": {
         "feishu": {"enabled": False, "chats": [], "botsOnly": True, "pollSeconds": 60},
         "webhook": {"enabled": True, "port": 8766, "secret": ""},
@@ -68,7 +69,7 @@ def list_packs(kind):
             for f in sorted(os.listdir(base)):
                 if f.endswith(".json"):
                     out[f[:-5]] = read_json(os.path.join(base, f), {})
-    return out
+    return dict(sorted(out.items(), key=lambda kv: (kv[1].get("order", 99), kv[0])))
 
 
 def _merge_values(into, more):
@@ -76,8 +77,30 @@ def _merge_values(into, more):
         into[k] = list(dict.fromkeys(into.get(k, []) + list(v)))
 
 
+def with_scene(user):
+    """A scene (packs/scenes/*.json) is a ready-made setup for a kind of work: style,
+    rules, voices, schedule and which types to play. The user's own keys win; types
+    and voices are merged per entry."""
+    if not user.get("scene"):
+        return user
+    scene = read_json(pack_path("scenes", user["scene"]), {})
+    out = {k: v for k, v in scene.items() if k not in ("name", "who", "description", "suggestSources", "order", "demo")}
+    for k, v in user.items():
+        if k in ("types", "voices") and isinstance(v, dict):
+            merged = {t: dict(x) for t, x in out.get(k, {}).items()}
+            for t, x in v.items():
+                merged[t] = dict(merged.get(t, {}), **x) if k == "types" else x
+            out[k] = merged
+        elif k == "tease" and isinstance(v, dict):
+            out[k] = dict(out.get(k, {}), **v)
+        else:
+            out[k] = v
+    return out
+
+
 def load(user=None):
     user = read_json(paths.CONFIG, {}) if user is None else user
+    user = with_scene(user)
     cfg = json.loads(json.dumps(DEFAULTS))
     for k, v in user.items():
         if k == "sources":

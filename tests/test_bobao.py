@@ -116,5 +116,38 @@ class Coverage(unittest.TestCase):
                     self.assertIsNotNone(found, (style, utt["text"]))
 
 
+class Scenes(unittest.TestCase):
+    def test_every_scene_loads_and_speaks(self):
+        for name in config.list_packs("scenes"):
+            cfg = config.load({"scene": name, "engine": "rooyun"})
+            self.assertTrue(cfg["types"], name)
+            plan = compose.plan(cfg)
+            lib = {vk: {clips.key(t): "x" for t in e["phrases"] + (vocabulary() if e["numbers"] else [])} for vk, e in plan.items()}
+            for title, f in (("充值到账", {"金额": "$19.9", "方式": "支付宝"}), ("新用户注册", {}), ("服务器宕机", {}), ("已恢复", {})):
+                utt, why = daemon.decide(Event("webhook", "", title, fields=f), cfg, dry=True, rnd=random.Random(1))
+                if utt:
+                    self.assertIsNotNone(clips.for_segments(utt["segments"], lib), (name, utt["text"]))
+
+    def test_user_overrides_scene(self):
+        cfg = config.load({"scene": "oncall", "types": {"收款": {"enabled": True}}, "称呼": "小王"})
+        self.assertIsNot(cfg["types"]["收款"].get("enabled"), False)
+        self.assertEqual(cfg["称呼"], "小王")
+        self.assertEqual(config.voice_for(cfg, "告警")["voice"], "Robot_Armor")
+
+
+class Schedule(unittest.TestCase):
+    def test_days_hours_always(self):
+        now = time.strftime("%H:%M")
+        today = time.localtime().tm_wday + 1
+        other = [d for d in range(1, 8) if d != today]
+        cfg = cfg_for("formal", schedule={"days": other})
+        self.assertIn("播报日", daemon.decide(ev("[Alpha] 新用户注册"), cfg)[1])
+        cfg = cfg_for("formal", schedule={"days": other}, types={"注册": {"always": True}})
+        daemon.last_spoken.clear()
+        self.assertIsNotNone(daemon.decide(ev("[Alpha] 新用户注册"), cfg)[0])
+        cfg = cfg_for("formal", types={"注册": {"hours": "00:00-00:00" if now != "00:00" else "01:00-01:01"}})
+        self.assertIn("时段", daemon.decide(ev("[Alpha] 新用户注册"), cfg)[1])
+
+
 if __name__ == "__main__":
     unittest.main()

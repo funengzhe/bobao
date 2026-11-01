@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bobao 试听</title>
+<style>
+:root{--bg:#f7f7f5;--fg:#1b1b1b;--mute:#6f6f6f;--card:#fff;--line:#e3e3e0;--acc:#1f6feb;--tag:#f0f0ec;--ok:#1a7f37}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--fg:#ececec;--mute:#9a9a9a;--card:#1c1c1c;--line:#2e2e2e;--acc:#6ea8ff;--tag:#262626;--ok:#56d364}}
+:root[data-theme="dark"]{--bg:#121212;--fg:#ececec;--mute:#9a9a9a;--card:#1c1c1c;--line:#2e2e2e;--acc:#6ea8ff;--tag:#262626;--ok:#56d364}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+main{max-width:980px;margin:auto;padding:24px 16px 64px}
+h1{font-size:26px;margin:0 0 4px}.lead{color:var(--mute);margin:0 0 20px}
+nav{display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:2;border-bottom:1px solid var(--line)}
+nav button,.chip{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:4px 14px;cursor:pointer}
+nav button.on,.chip.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}.chip{font-size:13px;padding:2px 10px}
+.intro{color:var(--mute);margin:14px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.t{font-weight:600;display:flex;gap:8px;align-items:center}.rec{font-size:11px;color:var(--ok);border:1px solid var(--ok);border-radius:4px;padding:0 4px}
+.sub{color:var(--mute);font-size:13px}.say{font-size:14px}.meta{font-size:12px;color:var(--mute)}
+.tags{display:flex;flex-wrap:wrap;gap:4px}.tag{background:var(--tag);border-radius:4px;padding:0 6px;font-size:12px}
+.play{margin-top:auto;font:inherit;border:0;border-radius:8px;background:var(--acc);color:#fff;padding:6px 12px;cursor:pointer;align-self:flex-start}
+.play[disabled]{background:var(--tag);color:var(--mute);cursor:default}
+code{background:var(--tag);padding:1px 6px;border-radius:4px;font-size:12px;word-break:break-all}
+</style>
+<main>
+<h1>Bobao 定制播报 · 试听</h1>
+<p class="lead">每个场景、风格、音色都可以先听一下再决定。如云音色录一整套只要两三个积分，录好后永久免费播放；不接如云，也可以直接用 Mac 自带的声音。</p>
+<nav id="tabs"></nav>
+<p class="intro" id="intro"></p>
+<div class="filters" id="filters"></div>
+<div class="grid" id="grid"></div>
+</main>
+<script>
+const INTRO = {
+  "场景": "按你的工作选一个场景：播哪些类型的通知、什么时段播、用什么风格和音色，都已经配好。在配置里写上 \"scene\" 就能直接用，也可以在此基础上改。",
+  "风格": "风格决定每类通知怎么说。下面每种风格各放三句：收款、注册、告警。",
+  "音色": "所有音色念的都是同一段话，方便对比。打勾的是推荐音色。英文音色念的是英文示例。",
+  "情绪": "同一句话，换不同的情绪。可以给每类通知分别设定情绪，比如收款开心、告警害怕。",
+  "Mac 免费声音": "不接如云时，用 macOS 自带的声音，不花钱。效果比如云配音生硬一些。"
+};
+let items = [], tab = "场景", filter = {};
+const $ = s => document.getElementById(s);
+let current = null;
+function play(btn, src){
+  if (current) { current.pause(); }
+  const a = new Audio(src); current = a; btn.textContent = "播放中…";
+  a.onended = a.onpause = () => btn.textContent = "▶ 试听"; a.play();
+}
+function card(e){
+  const c = document.createElement("div"); c.className = "card";
+  const t = document.createElement("div"); t.className = "t"; t.textContent = e.title;
+  if (e.recommended) { const r = document.createElement("span"); r.className = "rec"; r.textContent = "推荐"; t.append(r); }
+  c.append(t);
+  const s = document.createElement("div"); s.className = "sub"; s.textContent = e.sub || ""; c.append(s);
+  if (e.description && tab !== "风格") { const d = document.createElement("div"); d.className = "meta"; d.textContent = e.description; c.append(d); }
+  const say = document.createElement("div"); say.className = "say"; say.textContent = "「" + e.text + "」"; c.append(say);
+  if (e.plays) { const m = document.createElement("div"); m.className = "meta"; m.textContent = "播：" + e.plays.join("、") + "　时段：" + e.schedule; c.append(m); }
+  if (e.goodFor) { const g = document.createElement("div"); g.className = "tags"; e.goodFor.forEach(x => { const s = document.createElement("span"); s.className = "tag"; s.textContent = x; g.append(s); }); c.append(g); }
+  const cfg = tab === "场景" ? `"scene": "${e.group}"` : tab === "风格" ? `"style": "${e.group}"` : tab === "Mac 免费声音" ? `"engine": "mac", "macVoice": "${e.voiceId}"` : `{"voice": "${e.voiceId}"${e.emotion ? `, "emotion": "${e.emotion}"` : ""}}`;
+  const code = document.createElement("code"); code.textContent = cfg; c.append(code);
+  const b = document.createElement("button"); b.className = "play";
+  if (e.ready) { b.textContent = "▶ 试听"; b.onclick = () => play(b, e.file); } else { b.textContent = "试听音频生成中"; b.disabled = true; }
+  c.append(b);
+  return c;
+}
+function render(){
+  $("intro").textContent = INTRO[tab] || "";
+  [...$("tabs").children].forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  const list = items.filter(e => e.section === tab);
+  const f = $("filters"); f.innerHTML = "";
+  if (tab === "音色") {
+    const opts = {"全部": () => true, "推荐": e => e.recommended, "女声": e => e.sub.startsWith("女"), "男声": e => e.sub.startsWith("男"), "童声 / 卡通": e => /童|卡通|机器人/.test(e.sub), "英文": e => e.lang === "en"};
+    Object.keys(opts).forEach(k => { const b = document.createElement("button"); b.className = "chip" + ((filter[tab] || "全部") === k ? " on" : ""); b.textContent = k; b.onclick = () => { filter[tab] = k; render(); }; f.append(b); });
+    const fn = opts[filter[tab] || "全部"];
+    show(list.filter(fn));
+  } else show(list);
+}
+function show(list){
+  const g = $("grid"); g.innerHTML = "";
+  if (tab === "风格") {
+    const seen = {};
+    list.forEach(e => { (seen[e.group] = seen[e.group] || []).push(e); });
+    Object.values(seen).forEach(group => group.forEach(e => g.append(card(e))));
+  } else list.forEach(e => g.append(card(e)));
+}
+fetch("gallery.json").then(r => r.json()).then(d => {
+  items = d;
+  ["场景", "风格", "音色", "情绪", "Mac 免费声音"].forEach(k => {
+    const b = document.createElement("button"); b.textContent = k; b.dataset.tab = k; b.onclick = () => { tab = k; render(); }; $("tabs").append(b);
+  });
+  render();
+});
+</script>

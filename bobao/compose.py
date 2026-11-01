@@ -43,6 +43,14 @@ def card_values(ev, rule, cfg):
     return out
 
 
+def known(cfg, slot, value):
+    """With recorded voices, a payment method or plan nobody recorded is left out rather
+    than read by a different voice; list it in "values" to have it recorded and read."""
+    if cfg["engine"] != "rooyun" or value in cfg["values"].get(slot, []):
+        return value
+    return ""
+
+
 def fill(template, values):
     for _ in range(3):   # pick values may hold slots themselves ({开头} -> "{称呼}")
         template = SLOT.sub(lambda m: str(values.get(m.group(1), "")), template)
@@ -77,7 +85,9 @@ def render(match, ev, cfg, rnd=random):
     big = match.type in ("收款", "套餐") and limit is not None and amount is not None and amount >= limit
     values = {
         "称呼": cfg["称呼"], "平台": spoken_platform(cfg, match.platform), "名称": match.name or "",
-        "金额": money(card.get("金额", "")), "方式": card.get("方式", ""), "套餐": card.get("套餐", ""),
+        "平台的": spoken_platform(cfg, match.platform) + "的" if match.platform else "",
+        "金额": money(card.get("金额", "")), "方式": known(cfg, "方式", card.get("方式", "")),
+        "套餐": known(cfg, "套餐", card.get("套餐", "")),
         "首单": cfg["firstOrder"] if card["首单"] else "", "大单": cfg["bigOrderSay"] if big else "",
     }
     values.update({k: rnd.choice(v) for k, v in cfg["pick"].items() if v})
@@ -102,7 +112,7 @@ def expand(text, domains):
     if not m:
         return [text]
     out = []
-    for v in domains.get(m.group(1), [""]):
+    for v in domains.get(m.group(1)) or [""]:
         out += expand(text[:m.start()] + v + text[m.end():], domains)
     return out
 
@@ -143,6 +153,7 @@ def plan(cfg):
         money_kind = kind in ("收款", "套餐")
         for platforms, name, own in contexts(cfg, kind):
             domains = dict(picks, 称呼=[cfg["称呼"]], 平台=[spoken_platform(cfg, p) for p in platforms], 名称=[name],
+                           平台的=[spoken_platform(cfg, p) + "的" if p else "" for p in platforms],
                            金额=[AMOUNT], 方式=cfg["values"].get("方式", []) + [""], 套餐=cfg["values"].get("套餐", []) + [""],
                            首单=[cfg["firstOrder"], ""] if money_kind else [""], 大单=[cfg["bigOrderSay"], ""] if money_kind else [""])
             for template in own or templates:
@@ -166,7 +177,7 @@ def plan(cfg):
             pools = [k for k in lines if k == kind or k.startswith(kind + "·") or (money_kind and k.startswith("大单"))]
             for k in pools:
                 for line in lines[k]:
-                    for text in expand(line, {"称呼": [cfg["称呼"]], "平台": [spoken_platform(cfg, p) for p in cfg["platforms"]]}):
+                    for text in expand(line, {"称呼": [cfg["称呼"]], "平台": [spoken_platform(cfg, p) for p in cfg["platforms"]] + [""]}):
                         want(voice_for(cfg, "接话"), text)
     for key, kind in (("say", "告警"), ("back", "恢复")):
         for line in cfg["health"].get(key, []):

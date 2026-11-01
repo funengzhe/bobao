@@ -155,5 +155,24 @@
       "余额"
     ],
     "cooldownMinutes": 10
+  },
+  "values": {
+    "方式": [
+      "支付宝",
+      "微信",
+      "银行卡",
+      "Stripe",
+      "PayPal",
+      "USDT",
+      "现金"
+    ]
+  },
+  "aliases": {
+    "微信支付": "微信",
+    "支付宝支付": "支付宝",
+    "Stripe 银行卡": "Stripe",
+    "USDT · TRC20": "USDT",
+    "USDT · ERC20": "USDT",
+    "USDT · BEP20": "USDT"
   }
 }

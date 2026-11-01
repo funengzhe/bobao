@@ -1,0 +1,745 @@
+{
+  "description": "如云系统音色目录（可在 bobao voices 看到你自己克隆/设计的音色）。emotions 只对系统音色有效。",
+  "emotions": {
+    "happy": "开心",
+    "sad": "难过",
+    "fearful": "害怕",
+    "surprised": "惊讶",
+    "angry": "生气",
+    "calm": "平静"
+  },
+  "mac": [
+    "Tingting",
+    "Lilian",
+    "Meijia",
+    "Sinji",
+    "Eddy",
+    "Flo",
+    "Reed",
+    "Sandy",
+    "Shelley",
+    "Grandma",
+    "Grandpa",
+    "Rocko"
+  ],
+  "voices": [
+    {
+      "id": "female-shaonv-jingpin",
+      "name": "少女",
+      "gender": "女",
+      "age": "青年",
+      "tags": [
+        "清亮",
+        "活泼"
+      ],
+      "goodFor": [
+        "到账",
+        "注册",
+        "俏皮"
+      ],
+      "lang": "zh",
+      "recommended": true
+    },
+    {
+      "id": "female-tianmei-jingpin",
+      "name": "甜美女声",
+      "gender": "女",
+      "age": "青年",
+      "tags": [
+        "甜",
+        "温柔"
+      ],
+      "goodFor": [
+        "接话",
+        "提醒",
+        "客服"
+      ],
+      "lang": "zh",
+      "recommended": true
+    },
+    {
+      "id": "female-tianmei",
+      "name": "甜美女声（经典）",
+      "gender": "女",
+      "age": "青年",
+      "tags": [
+        "甜",
+        "情绪丰富"
+      ],
+      "goodFor": [
+        "告警（害怕）",
+        "撒娇"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "female-yujie-jingpin",
+      "name": "御姐",
+      "gender": "女",
+      "age": "成熟",
+      "tags": [
+        "干练",
+        "有气场"
+      ],
+      "goodFor": [
+        "日报",
+        "告警"
+      ],
+      "lang": "zh",
+      "recommended": true
+    },
+    {
+      "id": "female-chengshu-jingpin",
+      "name": "成熟女声",
+      "gender": "女",
+      "age": "成熟",
+      "tags": [
+        "稳重",
+        "清楚"
+      ],
+      "goodFor": [
+        "正经播报",
+        "门店收款"
+      ],
+      "lang": "zh",
+      "recommended": true
+    },
+    {
+      "id": "female-shaonv",
+      "name": "少女（经典）",
+      "gender": "女",
+      "age": "青年",
+      "tags": [
+        "清亮"
+      ],
+      "goodFor": [
+        "到账"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "female-yujie",
+      "name": "御姐（经典）",
+      "gender": "女",
+      "age": "成熟",
+      "tags": [
+        "干练"
+      ],
+      "goodFor": [
+        "告警"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "female-chengshu",
+      "name": "成熟女声（经典）",
+      "gender": "女",
+      "age": "成熟",
+      "tags": [
+        "稳重"
+      ],
+      "goodFor": [
+        "正经播报"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "Chinese (Mandarin)_News_Anchor",
+      "name": "新闻女声",
+      "gender": "女",
+      "age": "成熟",
+      "tags": [
+        "播音腔",
+        "标准"
+      ],
+      "goodFor": [
+        "新闻播报风格",
+        "日报"
+      ],
+      "lang": "zh",
+      "recommended": true
+    },
+    {
+      "id": "Chinese (Mandarin)_HK_Flight_Attendant",
+      "name": "港普空姐",
+      "gender": "女",
+      "age": "青年",
+      "tags": [
+        "礼貌",
+        "港味"
+      ],
+      "goodFor": [
+        "客服",
+        "提醒"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "Chinese (Mandarin)_Mature_Woman",
+      "name": "傲娇御姐",
+      "gender": "女",
+      "age": "成熟",
+      "tags": [
+        "傲娇"
+      ],
+      "goodFor": [
+        "霸总风格",
+        "趣味"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "Chinese (Mandarin)_Kind-hearted_Antie",
+      "name": "热心大婶",
+      "gender": "女",
+      "age": "中年",
+      "tags": [
+        "接地气",
+        "热情"
+      ],
+      "goodFor": [
+        "门店",
+        "搞笑"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "tianxin_xiaoling",
+      "name": "甜心小玲",
+      "gender": "女",
+      "age": "青年",
+      "tags": [
+        "甜",
+        "嗲"
+      ],
+      "goodFor": [
+        "主播",
+        "撒娇"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "qiaopi_mengmei",
+      "name": "俏皮萌妹",
+      "gender": "女",
+      "age": "青年",
+      "tags": [
+        "俏皮",
+        "可爱"
+      ],
+      "goodFor": [
+        "主播",
+        "俏皮"
+      ],
+      "lang": "zh",
+      "recommended": true
+    },
+    {
+      "id": "wumei_yujie",
+      "name": "妩媚御姐",
+      "gender": "女",
+      "age": "成熟",
+      "tags": [
+        "妩媚"
+      ],
+      "goodFor": [
+        "撩人"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "diadia_xuemei",
+      "name": "嗲嗲学妹",
+      "gender": "女",
+      "age": "青年",
+      "tags": [
+        "嗲"
+      ],
+      "goodFor": [
+        "撩人",
+        "撒娇"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "danya_xuejie",
+      "name": "淡雅学姐",
+      "gender": "女",
+      "age": "青年",
+      "tags": [
+        "温和",
+        "安静"
+      ],
+      "goodFor": [
+        "夜间",
+        "提醒"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "Arrogant_Miss",
+      "name": "嚣张小姐",
+      "gender": "女",
+      "age": "青年",
+      "tags": [
+        "嚣张",
+        "有个性"
+      ],
+      "goodFor": [
+        "趣味"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "male-qn-jingying-jingpin",
+      "name": "精英青年",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "专业",
+        "干净"
+      ],
+      "goodFor": [
+        "运维告警",
+        "正经播报"
+      ],
+      "lang": "zh",
+      "recommended": true
+    },
+    {
+      "id": "male-qn-badao-jingpin",
+      "name": "霸道青年",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "低沉",
+        "有力"
+      ],
+      "goodFor": [
+        "销售喊麦",
+        "霸总"
+      ],
+      "lang": "zh",
+      "recommended": true
+    },
+    {
+      "id": "male-qn-qingse-jingpin",
+      "name": "青涩青年",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "清爽"
+      ],
+      "goodFor": [
+        "到账",
+        "注册"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "male-qn-daxuesheng-jingpin",
+      "name": "大学生",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "阳光",
+        "朝气"
+      ],
+      "goodFor": [
+        "独立开发",
+        "俏皮"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "male-qn-jingying",
+      "name": "精英青年（经典）",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "专业"
+      ],
+      "goodFor": [
+        "运维告警"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "male-qn-badao",
+      "name": "霸道青年（经典）",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "低沉"
+      ],
+      "goodFor": [
+        "霸总"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "male-qn-qingse",
+      "name": "青涩青年（经典）",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "清爽"
+      ],
+      "goodFor": [
+        "到账"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "male-qn-daxuesheng",
+      "name": "大学生（经典）",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "阳光"
+      ],
+      "goodFor": [
+        "俏皮"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "Chinese (Mandarin)_Reliable_Executive",
+      "name": "沉稳高管",
+      "gender": "男",
+      "age": "成熟",
+      "tags": [
+        "沉稳",
+        "可信"
+      ],
+      "goodFor": [
+        "日报",
+        "财务",
+        "正经播报"
+      ],
+      "lang": "zh",
+      "recommended": true
+    },
+    {
+      "id": "Chinese (Mandarin)_Unrestrained_Young_Man",
+      "name": "不羁青年",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "随性",
+        "酷"
+      ],
+      "goodFor": [
+        "趣味",
+        "创作者"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "badao_shaoye",
+      "name": "霸道少爷",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "霸道"
+      ],
+      "goodFor": [
+        "霸总"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "junlang_nanyou",
+      "name": "俊朗男友",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "温柔",
+        "宠溺"
+      ],
+      "goodFor": [
+        "撩人（女性用户）"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "lengdan_xiongzhang",
+      "name": "冷淡学长",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "冷淡",
+        "高冷"
+      ],
+      "goodFor": [
+        "霸总",
+        "趣味"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "chunzhen_xuedi",
+      "name": "纯真学弟",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "奶",
+        "纯真"
+      ],
+      "goodFor": [
+        "撒娇"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "bingjiao_didi",
+      "name": "病娇弟弟",
+      "gender": "男",
+      "age": "青年",
+      "tags": [
+        "病娇"
+      ],
+      "goodFor": [
+        "趣味"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "clever_boy",
+      "name": "聪明男童",
+      "gender": "童",
+      "age": "儿童",
+      "tags": [
+        "聪明"
+      ],
+      "goodFor": [
+        "萌娃"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "cute_boy",
+      "name": "可爱男童",
+      "gender": "童",
+      "age": "儿童",
+      "tags": [
+        "可爱"
+      ],
+      "goodFor": [
+        "萌娃"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "lovely_girl",
+      "name": "萌萌女童",
+      "gender": "童",
+      "age": "儿童",
+      "tags": [
+        "萌"
+      ],
+      "goodFor": [
+        "萌娃"
+      ],
+      "lang": "zh",
+      "recommended": true
+    },
+    {
+      "id": "cartoon_pig",
+      "name": "卡通猪小琪",
+      "gender": "童",
+      "age": "卡通",
+      "tags": [
+        "卡通"
+      ],
+      "goodFor": [
+        "萌娃",
+        "搞笑"
+      ],
+      "lang": "zh",
+      "recommended": false
+    },
+    {
+      "id": "Robot_Armor",
+      "name": "机械战甲",
+      "gender": "其他",
+      "age": "机器人",
+      "tags": [
+        "机械",
+        "科幻"
+      ],
+      "goodFor": [
+        "运维告警",
+        "极客"
+      ],
+      "lang": "zh",
+      "recommended": true
+    },
+    {
+      "id": "Serene_Woman",
+      "name": "Serene Woman",
+      "gender": "女",
+      "age": "成熟",
+      "tags": [
+        "calm"
+      ],
+      "goodFor": [
+        "English formal"
+      ],
+      "lang": "en",
+      "recommended": true
+    },
+    {
+      "id": "Charming_Lady",
+      "name": "Charming Lady",
+      "gender": "女",
+      "age": "成熟",
+      "tags": [
+        "warm"
+      ],
+      "goodFor": [
+        "English"
+      ],
+      "lang": "en",
+      "recommended": false
+    },
+    {
+      "id": "Sweet_Girl",
+      "name": "Sweet Girl",
+      "gender": "女",
+      "age": "青年",
+      "tags": [
+        "sweet"
+      ],
+      "goodFor": [
+        "English playful"
+      ],
+      "lang": "en",
+      "recommended": false
+    },
+    {
+      "id": "Attractive_Girl",
+      "name": "Attractive Girl",
+      "gender": "女",
+      "age": "青年",
+      "tags": [
+        "flirty"
+      ],
+      "goodFor": [
+        "English flirty"
+      ],
+      "lang": "en",
+      "recommended": false
+    },
+    {
+      "id": "Arnold",
+      "name": "Arnold",
+      "gender": "男",
+      "age": "成熟",
+      "tags": [
+        "action hero"
+      ],
+      "goodFor": [
+        "English hype"
+      ],
+      "lang": "en",
+      "recommended": true
+    },
+    {
+      "id": "Santa_Claus ",
+      "name": "Santa Claus",
+      "gender": "男",
+      "age": "老年",
+      "tags": [
+        "jolly"
+      ],
+      "goodFor": [
+        "English holiday"
+      ],
+      "lang": "en",
+      "recommended": false
+    },
+    {
+      "id": "Charming_Santa",
+      "name": "Charming Santa",
+      "gender": "男",
+      "age": "老年",
+      "tags": [
+        "jolly"
+      ],
+      "goodFor": [
+        "English holiday"
+      ],
+      "lang": "en",
+      "recommended": false
+    },
+    {
+      "id": "Grinch",
+      "name": "Grinch",
+      "gender": "其他",
+      "age": "卡通",
+      "tags": [
+        "grumpy"
+      ],
+      "goodFor": [
+        "English fun"
+      ],
+      "lang": "en",
+      "recommended": false
+    },
+    {
+      "id": "Rudolph",
+      "name": "Rudolph",
+      "gender": "其他",
+      "age": "卡通",
+      "tags": [
+        "cute"
+      ],
+      "goodFor": [
+        "English fun"
+      ],
+      "lang": "en",
+      "recommended": false
+    },
+    {
+      "id": "Cute_Elf",
+      "name": "Cute Elf",
+      "gender": "童",
+      "age": "卡通",
+      "tags": [
+        "cute"
+      ],
+      "goodFor": [
+        "English fun"
+      ],
+      "lang": "en",
+      "recommended": false
+    }
+  ]
+}

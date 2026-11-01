@@ -1,0 +1,1539 @@
+[
+ {
+  "section": "音色",
+  "title": "少女",
+  "sub": "女 · 青年 · 清亮、活泼",
+  "goodFor": [
+   "到账",
+   "注册",
+   "俏皮"
+  ],
+  "recommended": true,
+  "lang": "zh",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "41d83083c199",
+  "file": "audio/41d83083c199.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "甜美女声",
+  "sub": "女 · 青年 · 甜、温柔",
+  "goodFor": [
+   "接话",
+   "提醒",
+   "客服"
+  ],
+  "recommended": true,
+  "lang": "zh",
+  "voiceId": "female-tianmei-jingpin",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "b4110eb7118f",
+  "file": "audio/b4110eb7118f.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "甜美女声（经典）",
+  "sub": "女 · 青年 · 甜、情绪丰富",
+  "goodFor": [
+   "告警（害怕）",
+   "撒娇"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "female-tianmei",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "3aad9ac1ecc2",
+  "file": "audio/3aad9ac1ecc2.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "御姐",
+  "sub": "女 · 成熟 · 干练、有气场",
+  "goodFor": [
+   "日报",
+   "告警"
+  ],
+  "recommended": true,
+  "lang": "zh",
+  "voiceId": "female-yujie-jingpin",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "78c90ce2a2a7",
+  "file": "audio/78c90ce2a2a7.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "成熟女声",
+  "sub": "女 · 成熟 · 稳重、清楚",
+  "goodFor": [
+   "正经播报",
+   "门店收款"
+  ],
+  "recommended": true,
+  "lang": "zh",
+  "voiceId": "female-chengshu-jingpin",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "275432b75ae9",
+  "file": "audio/275432b75ae9.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "少女（经典）",
+  "sub": "女 · 青年 · 清亮",
+  "goodFor": [
+   "到账"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "female-shaonv",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "a8fd06494b39",
+  "file": "audio/a8fd06494b39.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "御姐（经典）",
+  "sub": "女 · 成熟 · 干练",
+  "goodFor": [
+   "告警"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "female-yujie",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "e6dfa8a519df",
+  "file": "audio/e6dfa8a519df.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "成熟女声（经典）",
+  "sub": "女 · 成熟 · 稳重",
+  "goodFor": [
+   "正经播报"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "female-chengshu",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "85051dad4024",
+  "file": "audio/85051dad4024.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "新闻女声",
+  "sub": "女 · 成熟 · 播音腔、标准",
+  "goodFor": [
+   "新闻播报风格",
+   "日报"
+  ],
+  "recommended": true,
+  "lang": "zh",
+  "voiceId": "Chinese (Mandarin)_News_Anchor",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "e3a5d2f74fda",
+  "file": "audio/e3a5d2f74fda.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "港普空姐",
+  "sub": "女 · 青年 · 礼貌、港味",
+  "goodFor": [
+   "客服",
+   "提醒"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "Chinese (Mandarin)_HK_Flight_Attendant",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "4dcfd9186216",
+  "file": "audio/4dcfd9186216.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "傲娇御姐",
+  "sub": "女 · 成熟 · 傲娇",
+  "goodFor": [
+   "霸总风格",
+   "趣味"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "Chinese (Mandarin)_Mature_Woman",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "4d7def156b36",
+  "file": "audio/4d7def156b36.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "热心大婶",
+  "sub": "女 · 中年 · 接地气、热情",
+  "goodFor": [
+   "门店",
+   "搞笑"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "Chinese (Mandarin)_Kind-hearted_Antie",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "2a58691353c0",
+  "file": "audio/2a58691353c0.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "甜心小玲",
+  "sub": "女 · 青年 · 甜、嗲",
+  "goodFor": [
+   "主播",
+   "撒娇"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "tianxin_xiaoling",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "8a46fd7328d5",
+  "file": "audio/8a46fd7328d5.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "俏皮萌妹",
+  "sub": "女 · 青年 · 俏皮、可爱",
+  "goodFor": [
+   "主播",
+   "俏皮"
+  ],
+  "recommended": true,
+  "lang": "zh",
+  "voiceId": "qiaopi_mengmei",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "ba3782ea6f82",
+  "file": "audio/ba3782ea6f82.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "妩媚御姐",
+  "sub": "女 · 成熟 · 妩媚",
+  "goodFor": [
+   "撩人"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "wumei_yujie",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "eee5b878dabd",
+  "file": "audio/eee5b878dabd.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "嗲嗲学妹",
+  "sub": "女 · 青年 · 嗲",
+  "goodFor": [
+   "撩人",
+   "撒娇"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "diadia_xuemei",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "128c1e3aac98",
+  "file": "audio/128c1e3aac98.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "淡雅学姐",
+  "sub": "女 · 青年 · 温和、安静",
+  "goodFor": [
+   "夜间",
+   "提醒"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "danya_xuejie",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "e23974df5eda",
+  "file": "audio/e23974df5eda.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "嚣张小姐",
+  "sub": "女 · 青年 · 嚣张、有个性",
+  "goodFor": [
+   "趣味"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "Arrogant_Miss",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "cf4555be0d10",
+  "file": "audio/cf4555be0d10.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "精英青年",
+  "sub": "男 · 青年 · 专业、干净",
+  "goodFor": [
+   "运维告警",
+   "正经播报"
+  ],
+  "recommended": true,
+  "lang": "zh",
+  "voiceId": "male-qn-jingying-jingpin",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "234c9ee4b5f1",
+  "file": "audio/234c9ee4b5f1.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "霸道青年",
+  "sub": "男 · 青年 · 低沉、有力",
+  "goodFor": [
+   "销售喊麦",
+   "霸总"
+  ],
+  "recommended": true,
+  "lang": "zh",
+  "voiceId": "male-qn-badao-jingpin",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "290c6bc8a7e5",
+  "file": "audio/290c6bc8a7e5.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "青涩青年",
+  "sub": "男 · 青年 · 清爽",
+  "goodFor": [
+   "到账",
+   "注册"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "male-qn-qingse-jingpin",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "fcd73fddfc1d",
+  "file": "audio/fcd73fddfc1d.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "大学生",
+  "sub": "男 · 青年 · 阳光、朝气",
+  "goodFor": [
+   "独立开发",
+   "俏皮"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "male-qn-daxuesheng-jingpin",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "34c6348182a8",
+  "file": "audio/34c6348182a8.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "精英青年（经典）",
+  "sub": "男 · 青年 · 专业",
+  "goodFor": [
+   "运维告警"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "male-qn-jingying",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "36076482d1a5",
+  "file": "audio/36076482d1a5.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "霸道青年（经典）",
+  "sub": "男 · 青年 · 低沉",
+  "goodFor": [
+   "霸总"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "male-qn-badao",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "e20b5a6c1a1b",
+  "file": "audio/e20b5a6c1a1b.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "青涩青年（经典）",
+  "sub": "男 · 青年 · 清爽",
+  "goodFor": [
+   "到账"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "male-qn-qingse",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "0c85a3ac360c",
+  "file": "audio/0c85a3ac360c.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "大学生（经典）",
+  "sub": "男 · 青年 · 阳光",
+  "goodFor": [
+   "俏皮"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "male-qn-daxuesheng",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "c811d0741390",
+  "file": "audio/c811d0741390.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "沉稳高管",
+  "sub": "男 · 成熟 · 沉稳、可信",
+  "goodFor": [
+   "日报",
+   "财务",
+   "正经播报"
+  ],
+  "recommended": true,
+  "lang": "zh",
+  "voiceId": "Chinese (Mandarin)_Reliable_Executive",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "cc2dec466656",
+  "file": "audio/cc2dec466656.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "不羁青年",
+  "sub": "男 · 青年 · 随性、酷",
+  "goodFor": [
+   "趣味",
+   "创作者"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "Chinese (Mandarin)_Unrestrained_Young_Man",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "7f4834a09390",
+  "file": "audio/7f4834a09390.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "霸道少爷",
+  "sub": "男 · 青年 · 霸道",
+  "goodFor": [
+   "霸总"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "badao_shaoye",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "03e4cd3e871c",
+  "file": "audio/03e4cd3e871c.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "俊朗男友",
+  "sub": "男 · 青年 · 温柔、宠溺",
+  "goodFor": [
+   "撩人（女性用户）"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "junlang_nanyou",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "218f99aef3de",
+  "file": "audio/218f99aef3de.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "冷淡学长",
+  "sub": "男 · 青年 · 冷淡、高冷",
+  "goodFor": [
+   "霸总",
+   "趣味"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "lengdan_xiongzhang",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "2b240f4d1082",
+  "file": "audio/2b240f4d1082.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "纯真学弟",
+  "sub": "男 · 青年 · 奶、纯真",
+  "goodFor": [
+   "撒娇"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "chunzhen_xuedi",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "d0dbcf191cf8",
+  "file": "audio/d0dbcf191cf8.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "病娇弟弟",
+  "sub": "男 · 青年 · 病娇",
+  "goodFor": [
+   "趣味"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "bingjiao_didi",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "999a0458253e",
+  "file": "audio/999a0458253e.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "聪明男童",
+  "sub": "童 · 儿童 · 聪明",
+  "goodFor": [
+   "萌娃"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "clever_boy",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "ef7d6966a9f2",
+  "file": "audio/ef7d6966a9f2.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "可爱男童",
+  "sub": "童 · 儿童 · 可爱",
+  "goodFor": [
+   "萌娃"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "cute_boy",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "6bf28058f0c6",
+  "file": "audio/6bf28058f0c6.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "萌萌女童",
+  "sub": "童 · 儿童 · 萌",
+  "goodFor": [
+   "萌娃"
+  ],
+  "recommended": true,
+  "lang": "zh",
+  "voiceId": "lovely_girl",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "a67e5aee03a2",
+  "file": "audio/a67e5aee03a2.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "卡通猪小琪",
+  "sub": "童 · 卡通 · 卡通",
+  "goodFor": [
+   "萌娃",
+   "搞笑"
+  ],
+  "recommended": false,
+  "lang": "zh",
+  "voiceId": "cartoon_pig",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "01dd0e1dc2be",
+  "file": "audio/01dd0e1dc2be.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "机械战甲",
+  "sub": "其他 · 机器人 · 机械、科幻",
+  "goodFor": [
+   "运维告警",
+   "极客"
+  ],
+  "recommended": true,
+  "lang": "zh",
+  "voiceId": "Robot_Armor",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "id": "176ebfb9b56e",
+  "file": "audio/176ebfb9b56e.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "Serene Woman",
+  "sub": "女 · 成熟 · calm",
+  "goodFor": [
+   "English formal"
+  ],
+  "recommended": true,
+  "lang": "en",
+  "voiceId": "Serene_Woman",
+  "text": "Cha-ching! You just received 299 dollars from a new customer. Heads up, the server is down, please take a look.",
+  "id": "7be2c4b8899f",
+  "file": "audio/7be2c4b8899f.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "Charming Lady",
+  "sub": "女 · 成熟 · warm",
+  "goodFor": [
+   "English"
+  ],
+  "recommended": false,
+  "lang": "en",
+  "voiceId": "Charming_Lady",
+  "text": "Cha-ching! You just received 299 dollars from a new customer. Heads up, the server is down, please take a look.",
+  "id": "d0943585939a",
+  "file": "audio/d0943585939a.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "Sweet Girl",
+  "sub": "女 · 青年 · sweet",
+  "goodFor": [
+   "English playful"
+  ],
+  "recommended": false,
+  "lang": "en",
+  "voiceId": "Sweet_Girl",
+  "text": "Cha-ching! You just received 299 dollars from a new customer. Heads up, the server is down, please take a look.",
+  "id": "b899aa4a3045",
+  "file": "audio/b899aa4a3045.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "Attractive Girl",
+  "sub": "女 · 青年 · flirty",
+  "goodFor": [
+   "English flirty"
+  ],
+  "recommended": false,
+  "lang": "en",
+  "voiceId": "Attractive_Girl",
+  "text": "Cha-ching! You just received 299 dollars from a new customer. Heads up, the server is down, please take a look.",
+  "id": "3ffa49a5fa71",
+  "file": "audio/3ffa49a5fa71.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "Arnold",
+  "sub": "男 · 成熟 · action hero",
+  "goodFor": [
+   "English hype"
+  ],
+  "recommended": true,
+  "lang": "en",
+  "voiceId": "Arnold",
+  "text": "Cha-ching! You just received 299 dollars from a new customer. Heads up, the server is down, please take a look.",
+  "id": "f90f5aa4c6b9",
+  "file": "audio/f90f5aa4c6b9.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "Santa Claus",
+  "sub": "男 · 老年 · jolly",
+  "goodFor": [
+   "English holiday"
+  ],
+  "recommended": false,
+  "lang": "en",
+  "voiceId": "Santa_Claus",
+  "text": "Cha-ching! You just received 299 dollars from a new customer. Heads up, the server is down, please take a look.",
+  "id": "63a3114013d8",
+  "file": "audio/63a3114013d8.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "Charming Santa",
+  "sub": "男 · 老年 · jolly",
+  "goodFor": [
+   "English holiday"
+  ],
+  "recommended": false,
+  "lang": "en",
+  "voiceId": "Charming_Santa",
+  "text": "Cha-ching! You just received 299 dollars from a new customer. Heads up, the server is down, please take a look.",
+  "id": "ea2869263b40",
+  "file": "audio/ea2869263b40.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "Grinch",
+  "sub": "其他 · 卡通 · grumpy",
+  "goodFor": [
+   "English fun"
+  ],
+  "recommended": false,
+  "lang": "en",
+  "voiceId": "Grinch",
+  "text": "Cha-ching! You just received 299 dollars from a new customer. Heads up, the server is down, please take a look.",
+  "id": "a419ec807ff1",
+  "file": "audio/a419ec807ff1.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "Rudolph",
+  "sub": "其他 · 卡通 · cute",
+  "goodFor": [
+   "English fun"
+  ],
+  "recommended": false,
+  "lang": "en",
+  "voiceId": "Rudolph",
+  "text": "Cha-ching! You just received 299 dollars from a new customer. Heads up, the server is down, please take a look.",
+  "id": "b0a5644edef6",
+  "file": "audio/b0a5644edef6.mp3",
+  "ready": false
+ },
+ {
+  "section": "音色",
+  "title": "Cute Elf",
+  "sub": "童 · 卡通 · cute",
+  "goodFor": [
+   "English fun"
+  ],
+  "recommended": false,
+  "lang": "en",
+  "voiceId": "Cute_Elf",
+  "text": "Cha-ching! You just received 299 dollars from a new customer. Heads up, the server is down, please take a look.",
+  "id": "f0cb9adca485",
+  "file": "audio/f0cb9adca485.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "少女 · 开心",
+  "sub": "female-shaonv-jingpin",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "happy",
+  "id": "ccd7f5cf3503",
+  "file": "audio/ccd7f5cf3503.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "少女 · 难过",
+  "sub": "female-shaonv-jingpin",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "sad",
+  "id": "0280fd800029",
+  "file": "audio/0280fd800029.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "少女 · 生气",
+  "sub": "female-shaonv-jingpin",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "angry",
+  "id": "141656a3a35b",
+  "file": "audio/141656a3a35b.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "少女 · 害怕",
+  "sub": "female-shaonv-jingpin",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "fearful",
+  "id": "e72bdc18c7ac",
+  "file": "audio/e72bdc18c7ac.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "少女 · 惊讶",
+  "sub": "female-shaonv-jingpin",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "surprised",
+  "id": "5a8520ac6b77",
+  "file": "audio/5a8520ac6b77.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "甜美女声（经典） · 开心",
+  "sub": "female-tianmei",
+  "voiceId": "female-tianmei",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "happy",
+  "id": "2d0c90193acd",
+  "file": "audio/2d0c90193acd.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "甜美女声（经典） · 难过",
+  "sub": "female-tianmei",
+  "voiceId": "female-tianmei",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "sad",
+  "id": "94d1f2836d92",
+  "file": "audio/94d1f2836d92.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "甜美女声（经典） · 生气",
+  "sub": "female-tianmei",
+  "voiceId": "female-tianmei",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "angry",
+  "id": "a7af951ff88c",
+  "file": "audio/a7af951ff88c.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "甜美女声（经典） · 害怕",
+  "sub": "female-tianmei",
+  "voiceId": "female-tianmei",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "fearful",
+  "id": "f12e04934d03",
+  "file": "audio/f12e04934d03.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "甜美女声（经典） · 惊讶",
+  "sub": "female-tianmei",
+  "voiceId": "female-tianmei",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "surprised",
+  "id": "90182cb9df25",
+  "file": "audio/90182cb9df25.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "精英青年 · 开心",
+  "sub": "male-qn-jingying-jingpin",
+  "voiceId": "male-qn-jingying-jingpin",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "happy",
+  "id": "267c38352275",
+  "file": "audio/267c38352275.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "精英青年 · 难过",
+  "sub": "male-qn-jingying-jingpin",
+  "voiceId": "male-qn-jingying-jingpin",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "sad",
+  "id": "10dd8dca4332",
+  "file": "audio/10dd8dca4332.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "精英青年 · 生气",
+  "sub": "male-qn-jingying-jingpin",
+  "voiceId": "male-qn-jingying-jingpin",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "angry",
+  "id": "5f08e30bbc21",
+  "file": "audio/5f08e30bbc21.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "精英青年 · 害怕",
+  "sub": "male-qn-jingying-jingpin",
+  "voiceId": "male-qn-jingying-jingpin",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "fearful",
+  "id": "500257021fcb",
+  "file": "audio/500257021fcb.mp3",
+  "ready": false
+ },
+ {
+  "section": "情绪",
+  "title": "精英青年 · 惊讶",
+  "sub": "male-qn-jingying-jingpin",
+  "voiceId": "male-qn-jingying-jingpin",
+  "text": "老板，服务器出故障了，快去看看。",
+  "emotion": "surprised",
+  "id": "e6b710c0d8c0",
+  "file": "audio/e6b710c0d8c0.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "新闻播报",
+  "sub": "收款 · 新闻女声",
+  "group": "anchor",
+  "description": "播音腔，字正腔圆，像电台整点新闻。适合办公室公放、日报。",
+  "voiceId": "Chinese (Mandarin)_News_Anchor",
+  "text": "现在播报一条好消息，大额订单，我的店收款 1299 元，微信，新客首单",
+  "emotion": null,
+  "sound": "coin",
+  "id": "61df28eecb5e",
+  "file": "audio/61df28eecb5e.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "新闻播报",
+  "sub": "注册 · 新闻女声",
+  "group": "anchor",
+  "description": "播音腔，字正腔圆，像电台整点新闻。适合办公室公放、日报。",
+  "voiceId": "Chinese (Mandarin)_News_Anchor",
+  "text": "我的店迎来一位新用户",
+  "emotion": null,
+  "sound": "doorbell",
+  "id": "2078c8b35586",
+  "file": "audio/2078c8b35586.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "新闻播报",
+  "sub": "告警 · 新闻女声",
+  "group": "anchor",
+  "description": "播音腔，字正腔圆，像电台整点新闻。适合办公室公放、日报。",
+  "voiceId": "Chinese (Mandarin)_News_Anchor",
+  "text": "紧急插播，我的店出严重故障了，请相关同事立即处理",
+  "emotion": null,
+  "sound": "beeps",
+  "id": "3aefd10a37a3",
+  "file": "audio/3aefd10a37a3.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "霸总",
+  "sub": "收款 · 霸道少爷",
+  "group": "boss",
+  "description": "低沉、简短、有点傲，像霸道总裁给你汇报。",
+  "voiceId": "badao_shaoye",
+  "text": "我的店进账 1299 元，微信，是新客，这单不小，不错",
+  "emotion": null,
+  "sound": "coin",
+  "id": "80909cf85520",
+  "file": "audio/80909cf85520.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "霸总",
+  "sub": "注册 · 霸道少爷",
+  "group": "boss",
+  "description": "低沉、简短、有点傲，像霸道总裁给你汇报。",
+  "voiceId": "badao_shaoye",
+  "text": "我的店又有人来了",
+  "emotion": null,
+  "sound": "doorbell",
+  "id": "f947d38672ca",
+  "file": "audio/f947d38672ca.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "霸总",
+  "sub": "告警 · 霸道少爷",
+  "group": "boss",
+  "description": "低沉、简短、有点傲，像霸道总裁给你汇报。",
+  "voiceId": "badao_shaoye",
+  "text": "我的店出严重故障了，马上处理",
+  "emotion": null,
+  "sound": "beeps",
+  "id": "f777608b4ec9",
+  "file": "audio/f777608b4ec9.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "萌娃",
+  "sub": "收款 · 萌萌女童",
+  "group": "cute",
+  "description": "奶声奶气的小朋友，适合家庭、宠物店、母婴、轻松的团队。",
+  "voiceId": "lovely_girl",
+  "text": "老板老板，我的店来钱钱啦，1299 元，是新客人哦",
+  "emotion": null,
+  "sound": "coin",
+  "id": "939f810dba0a",
+  "file": "audio/939f810dba0a.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "萌娃",
+  "sub": "注册 · 萌萌女童",
+  "group": "cute",
+  "description": "奶声奶气的小朋友，适合家庭、宠物店、母婴、轻松的团队。",
+  "voiceId": "lovely_girl",
+  "text": "我的店来新朋友啦，好开心",
+  "emotion": null,
+  "sound": "doorbell",
+  "id": "202f99e713f9",
+  "file": "audio/202f99e713f9.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "萌娃",
+  "sub": "告警 · 萌萌女童",
+  "group": "cute",
+  "description": "奶声奶气的小朋友，适合家庭、宠物店、母婴、轻松的团队。",
+  "voiceId": "lovely_girl",
+  "text": "老板快来，我的店出严重故障了，我好怕怕",
+  "emotion": "fearful",
+  "sound": "beeps",
+  "id": "a9836dfbf709",
+  "file": "audio/a9836dfbf709.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "撩人",
+  "sub": "收款 · 少女",
+  "group": "flirty",
+  "description": "叫哥哥、会撒娇，到账开心、告警害怕，约六成播报后接一句撩人的话。仅限私人使用。",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "哥哥，大单来啦，我的店到账 1299 元啦，微信，新客首单哦，今天也是好日子",
+  "emotion": null,
+  "sound": "coin",
+  "id": "5bc882ba78ed",
+  "file": "audio/5bc882ba78ed.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "撩人",
+  "sub": "注册 · 少女",
+  "group": "flirty",
+  "description": "叫哥哥、会撒娇，到账开心、告警害怕，约六成播报后接一句撩人的话。仅限私人使用。",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "哥哥，我的店来新用户啦",
+  "emotion": null,
+  "sound": "doorbell",
+  "id": "4905e9619078",
+  "file": "audio/4905e9619078.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "撩人",
+  "sub": "告警 · 甜美女声（经典）",
+  "group": "flirty",
+  "description": "叫哥哥、会撒娇，到账开心、告警害怕，约六成播报后接一句撩人的话。仅限私人使用。",
+  "voiceId": "female-tianmei",
+  "text": "哥哥，我的店出严重故障了，快去看看嘛",
+  "emotion": "fearful",
+  "sound": "beeps",
+  "id": "e2010bc3e54e",
+  "file": "audio/e2010bc3e54e.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "正经播报",
+  "sub": "收款 · 成熟女声",
+  "group": "formal",
+  "description": "简洁、中性，像银行和收款音箱。默认风格。",
+  "voiceId": "female-chengshu-jingpin",
+  "text": "大额订单，我的店收款 1299 元，微信，新客首单",
+  "emotion": null,
+  "sound": "coin",
+  "id": "0baad36c0e81",
+  "file": "audio/0baad36c0e81.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "正经播报",
+  "sub": "注册 · 成熟女声",
+  "group": "formal",
+  "description": "简洁、中性，像银行和收款音箱。默认风格。",
+  "voiceId": "female-chengshu-jingpin",
+  "text": "我的店有新用户注册",
+  "emotion": null,
+  "sound": "doorbell",
+  "id": "f7d219368c65",
+  "file": "audio/f7d219368c65.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "正经播报",
+  "sub": "告警 · 成熟女声",
+  "group": "formal",
+  "description": "简洁、中性，像银行和收款音箱。默认风格。",
+  "voiceId": "female-chengshu-jingpin",
+  "text": "注意，我的店出严重故障了，请尽快处理",
+  "emotion": null,
+  "sound": "beeps",
+  "id": "add91092d8ca",
+  "file": "audio/add91092d8ca.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "销售喊麦",
+  "sub": "收款 · 霸道青年",
+  "group": "hype",
+  "description": "热血、带节奏，适合销售团队和直播间：每一单都要喊出来。",
+  "voiceId": "male-qn-badao-jingpin",
+  "text": "恭喜恭喜，大单炸裂，我的店又成交一单，1299 元，还是新客户，继续冲",
+  "emotion": null,
+  "sound": "coin",
+  "id": "11547eb2aa3a",
+  "file": "audio/11547eb2aa3a.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "销售喊麦",
+  "sub": "注册 · 霸道青年",
+  "group": "hype",
+  "description": "热血、带节奏，适合销售团队和直播间：每一单都要喊出来。",
+  "voiceId": "male-qn-badao-jingpin",
+  "text": "我的店又来一位新朋友，欢迎欢迎",
+  "emotion": null,
+  "sound": "doorbell",
+  "id": "3a158c8a7481",
+  "file": "audio/3a158c8a7481.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "销售喊麦",
+  "sub": "告警 · 霸道青年",
+  "group": "hype",
+  "description": "热血、带节奏，适合销售团队和直播间：每一单都要喊出来。",
+  "voiceId": "male-qn-badao-jingpin",
+  "text": "兄弟们，我的店出严重故障了，赶紧上",
+  "emotion": "surprised",
+  "sound": "beeps",
+  "id": "c2a246bd4dc4",
+  "file": "audio/c2a246bd4dc4.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "俏皮",
+  "sub": "收款 · 少女",
+  "group": "playful",
+  "description": "活泼可爱，随机开头和结尾，偶尔接一句鼓励。",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "老板，大单来啦，我的店到账 1299 元啦，微信，新客首单哦，今天也是好日子",
+  "emotion": null,
+  "sound": "coin",
+  "id": "334d1b27e213",
+  "file": "audio/334d1b27e213.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "俏皮",
+  "sub": "注册 · 少女",
+  "group": "playful",
+  "description": "活泼可爱，随机开头和结尾，偶尔接一句鼓励。",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "老板，我的店来新用户啦",
+  "emotion": null,
+  "sound": "doorbell",
+  "id": "0653fe240b7f",
+  "file": "audio/0653fe240b7f.mp3",
+  "ready": false
+ },
+ {
+  "section": "风格",
+  "title": "俏皮",
+  "sub": "告警 · 甜美女声（经典）",
+  "group": "playful",
+  "description": "活泼可爱，随机开头和结尾，偶尔接一句鼓励。",
+  "voiceId": "female-tianmei",
+  "text": "老板，我的店出严重故障了，快去看看嘛",
+  "emotion": "fearful",
+  "sound": "beeps",
+  "id": "2ac36d83dcf2",
+  "file": "audio/2ac36d83dcf2.mp3",
+  "ready": false
+ },
+ {
+  "section": "场景",
+  "title": "电商店主",
+  "sub": "淘宝/抖店/Shopify/独立站卖家",
+  "group": "shop",
+  "description": "每一笔订单都听得到，大单加一句；夜里只报大事。",
+  "plays": [
+   "收款",
+   "套餐",
+   "注册",
+   "日报",
+   "告警",
+   "恢复",
+   "提醒"
+  ],
+  "schedule": "23:00-08:00 静音（告警全天）",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "老板，大单来啦，我的店到账 1299 元啦，微信，新客首单哦，今天也是好日子",
+  "emotion": null,
+  "sound": "coin",
+  "id": "334d1b27e213",
+  "file": "audio/334d1b27e213.mp3",
+  "ready": false
+ },
+ {
+  "section": "场景",
+  "title": "独立开发者 / SaaS",
+  "sub": "做订阅产品、API、小程序的个人或小团队",
+  "group": "saas",
+  "description": "收款、注册、告警、日报全都要；告警全天，其他夜里静音。",
+  "plays": [
+   "收款",
+   "套餐",
+   "注册",
+   "日报",
+   "告警",
+   "恢复",
+   "提醒"
+  ],
+  "schedule": "00:00-08:00 静音（告警、恢复全天）",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "老板，大单来啦，我的店到账 1299 元啦，微信，新客首单哦，今天也是好日子",
+  "emotion": null,
+  "sound": "coin",
+  "id": "334d1b27e213",
+  "file": "audio/334d1b27e213.mp3",
+  "ready": false
+ },
+ {
+  "section": "场景",
+  "title": "门店 / 餐饮",
+  "sub": "实体店、餐厅、奶茶店、美业",
+  "group": "store",
+  "description": "像收款音箱一样清楚地报每一笔钱，营业时间内播。",
+  "plays": [
+   "收款",
+   "套餐",
+   "告警",
+   "恢复",
+   "提醒"
+  ],
+  "schedule": "09:00-23:00（告警全天）",
+  "voiceId": "female-chengshu-jingpin",
+  "text": "我的店收款 1299 元，微信，新客首单",
+  "emotion": null,
+  "sound": "coin",
+  "id": "ddea8b9371a7",
+  "file": "audio/ddea8b9371a7.mp3",
+  "ready": false
+ },
+ {
+  "section": "场景",
+  "title": "销售团队",
+  "sub": "电销、地推、直播间、渠道销售",
+  "group": "sales",
+  "description": "成交就喊出来，大单加倍庆祝；工作日白天播，给团队打气。",
+  "plays": [
+   "收款",
+   "套餐",
+   "注册",
+   "日报",
+   "恢复"
+  ],
+  "schedule": "周一二三四五六，09:00-21:00",
+  "voiceId": "male-qn-badao-jingpin",
+  "text": "恭喜恭喜，我的店又成交一单，1299 元，还是新客户，继续冲",
+  "emotion": null,
+  "sound": "coin",
+  "id": "34f1031f64c7",
+  "file": "audio/34f1031f64c7.mp3",
+  "ready": false
+ },
+ {
+  "section": "场景",
+  "title": "客服团队",
+  "sub": "客服、售后、社群运营",
+  "group": "support",
+  "description": "新工单、新反馈、待审批温柔提醒；只在工作日上班时间播。",
+  "plays": [
+   "注册",
+   "告警",
+   "恢复",
+   "提醒"
+  ],
+  "schedule": "周一二三四五，09:00-18:00（告警全天）",
+  "voiceId": "female-tianmei-jingpin",
+  "text": "亲，我的店收到用户反馈，有空去看看哦",
+  "emotion": null,
+  "sound": "doorbell",
+  "id": "5edc1bb6d2cd",
+  "file": "audio/5edc1bb6d2cd.mp3",
+  "ready": false
+ },
+ {
+  "section": "场景",
+  "title": "运维值班",
+  "sub": "SRE、运维、后端值班同学",
+  "group": "oncall",
+  "description": "只播告警和恢复，全天候；收款注册一律不吵你。机械战甲音色，一听就知道出事了。",
+  "plays": [
+   "告警",
+   "恢复"
+  ],
+  "schedule": "全天",
+  "voiceId": "Robot_Armor",
+  "text": "注意，我的店出严重故障了，请尽快处理",
+  "emotion": null,
+  "sound": "beeps",
+  "id": "86691f5ed49a",
+  "file": "audio/86691f5ed49a.mp3",
+  "ready": false
+ },
+ {
+  "section": "场景",
+  "title": "主播 / 内容创作者",
+  "sub": "直播、知识付费、社群主理人",
+  "group": "creator",
+  "description": "打赏、订阅、新粉丝用俏皮萌妹念出来，适合直播时公放。",
+  "plays": [
+   "收款",
+   "套餐",
+   "注册",
+   "日报",
+   "恢复",
+   "提醒"
+  ],
+  "schedule": "全天",
+  "voiceId": "qiaopi_mengmei",
+  "text": "主播，我的店到账 1299 元啦，微信，新客首单哦，今天也是好日子",
+  "emotion": null,
+  "sound": "coin",
+  "id": "7a1270f889d4",
+  "file": "audio/7a1270f889d4.mp3",
+  "ready": false
+ },
+ {
+  "section": "场景",
+  "title": "财务 / 管理层",
+  "sub": "老板、财务、管理者",
+  "group": "finance",
+  "description": "只关心钱和日报：沉稳高管音色，工作时间播，不播注册。",
+  "plays": [
+   "收款",
+   "套餐",
+   "日报",
+   "告警",
+   "恢复"
+  ],
+  "schedule": "周一二三四五，08:30-19:00（告警全天）",
+  "voiceId": "Chinese (Mandarin)_Reliable_Executive",
+  "text": "我的店今日日报已经发布，请查收",
+  "emotion": null,
+  "sound": "doorbell",
+  "id": "821cd7b42edd",
+  "file": "audio/821cd7b42edd.mp3",
+  "ready": false
+ },
+ {
+  "section": "场景",
+  "title": "私人专属",
+  "sub": "一个人用、只想自己听",
+  "group": "private",
+  "description": "叫哥哥、会撒娇，到账开心、告警害怕，约六成播报后接一句撩人的话。",
+  "plays": [
+   "收款",
+   "套餐",
+   "注册",
+   "日报",
+   "告警",
+   "恢复",
+   "提醒"
+  ],
+  "schedule": "00:00-08:00 静音（告警全天）",
+  "voiceId": "female-shaonv-jingpin",
+  "text": "哥哥，我的店到账 1299 元啦，微信，新客首单哦，今天也是好日子",
+  "emotion": null,
+  "sound": "coin",
+  "id": "929eb1e78af4",
+  "file": "audio/929eb1e78af4.mp3",
+  "ready": false
+ },
+ {
+  "section": "Mac 免费声音",
+  "title": "Tingting",
+  "sub": "macOS 自带，不花钱",
+  "voiceId": "Tingting",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "engine": "mac",
+  "id": "f5c3b7b5fc08",
+  "file": "audio/mac/f5c3b7b5fc08.m4a",
+  "ready": true
+ },
+ {
+  "section": "Mac 免费声音",
+  "title": "Lilian",
+  "sub": "macOS 自带，不花钱",
+  "voiceId": "Lilian",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "engine": "mac",
+  "id": "d59e4c4975ad",
+  "file": "audio/mac/d59e4c4975ad.m4a",
+  "ready": true
+ },
+ {
+  "section": "Mac 免费声音",
+  "title": "Meijia",
+  "sub": "macOS 自带，不花钱",
+  "voiceId": "Meijia",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "engine": "mac",
+  "id": "f4a275ef3e57",
+  "file": "audio/mac/f4a275ef3e57.m4a",
+  "ready": true
+ },
+ {
+  "section": "Mac 免费声音",
+  "title": "Sinji",
+  "sub": "macOS 自带，不花钱",
+  "voiceId": "Sinji",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "engine": "mac",
+  "id": "15ed88839ba3",
+  "file": "audio/mac/15ed88839ba3.m4a",
+  "ready": true
+ },
+ {
+  "section": "Mac 免费声音",
+  "title": "Eddy",
+  "sub": "macOS 自带，不花钱",
+  "voiceId": "Eddy",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "engine": "mac",
+  "id": "fa13ec6fa2b5",
+  "file": "audio/mac/fa13ec6fa2b5.m4a",
+  "ready": true
+ },
+ {
+  "section": "Mac 免费声音",
+  "title": "Flo",
+  "sub": "macOS 自带，不花钱",
+  "voiceId": "Flo",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "engine": "mac",
+  "id": "5b5e55bcb8e9",
+  "file": "audio/mac/5b5e55bcb8e9.m4a",
+  "ready": true
+ },
+ {
+  "section": "Mac 免费声音",
+  "title": "Reed",
+  "sub": "macOS 自带，不花钱",
+  "voiceId": "Reed",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "engine": "mac",
+  "id": "eb543bef7775",
+  "file": "audio/mac/eb543bef7775.m4a",
+  "ready": true
+ },
+ {
+  "section": "Mac 免费声音",
+  "title": "Sandy",
+  "sub": "macOS 自带，不花钱",
+  "voiceId": "Sandy",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "engine": "mac",
+  "id": "0fbac9b22047",
+  "file": "audio/mac/0fbac9b22047.m4a",
+  "ready": true
+ },
+ {
+  "section": "Mac 免费声音",
+  "title": "Shelley",
+  "sub": "macOS 自带，不花钱",
+  "voiceId": "Shelley",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "engine": "mac",
+  "id": "442f31639618",
+  "file": "audio/mac/442f31639618.m4a",
+  "ready": true
+ },
+ {
+  "section": "Mac 免费声音",
+  "title": "Grandma",
+  "sub": "macOS 自带，不花钱",
+  "voiceId": "Grandma",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "engine": "mac",
+  "id": "d344af05e114",
+  "file": "audio/mac/d344af05e114.m4a",
+  "ready": true
+ },
+ {
+  "section": "Mac 免费声音",
+  "title": "Grandpa",
+  "sub": "macOS 自带，不花钱",
+  "voiceId": "Grandpa",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "engine": "mac",
+  "id": "6188ed47b416",
+  "file": "audio/mac/6188ed47b416.m4a",
+  "ready": true
+ },
+ {
+  "section": "Mac 免费声音",
+  "title": "Rocko",
+  "sub": "macOS 自带，不花钱",
+  "voiceId": "Rocko",
+  "text": "叮咚，到账 299 元，新客首单。注意，服务器出故障了，请尽快处理。",
+  "engine": "mac",
+  "id": "bc40ba757ad8",
+  "file": "audio/mac/bc40ba757ad8.m4a",
+  "ready": true
+ }
+]

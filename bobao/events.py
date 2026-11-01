@@ -106,7 +106,7 @@ def classify(ev, cfg):
             continue
         if rule.get("skip"):
             return None, f"规则 #{i + 1} 跳过"
-        platform = rule.get("platform") or detect_platform(ev, cfg["platforms"])
+        platform = rule.get("platform") or ev.platform or detect_platform(ev, cfg["platforms"])
         return Match(rule["type"], platform, rule.get("name"), rule, i), ""
     catch = cfg.get("catchAll") or {}
     if catch.get("keywords") and _any(catch["keywords"], ev.haystack()) and ev.source in catch.get("sources", [ev.source]):

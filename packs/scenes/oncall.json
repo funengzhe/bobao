@@ -1,0 +1,48 @@
+{
+  "order": 6,
+  "name": "运维值班",
+  "who": "SRE、运维、后端值班同学",
+  "description": "只播告警和恢复，全天候；收款注册一律不吵你。机械战甲音色，一听就知道出事了。",
+  "style": "formal",
+  "称呼": "值班同学",
+  "rulePacks": [
+    "generic"
+  ],
+  "voices": {
+    "default": {
+      "voice": "Robot_Armor"
+    },
+    "告警": {
+      "voice": "Robot_Armor"
+    }
+  },
+  "types": {
+    "收款": {
+      "enabled": false
+    },
+    "套餐": {
+      "enabled": false
+    },
+    "注册": {
+      "enabled": false
+    },
+    "日报": {
+      "enabled": false
+    },
+    "提醒": {
+      "enabled": false
+    },
+    "告警": {
+      "always": true,
+      "cooldownMinutes": 5
+    },
+    "恢复": {
+      "always": true
+    }
+  },
+  "suggestSources": [
+    "feishu",
+    "webhook"
+  ],
+  "demo": "告警"
+}

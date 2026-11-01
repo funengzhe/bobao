@@ -94,10 +94,10 @@ class Client:
         return self.call("GET", "/models?capability=t2a")["data"]["models"]
 
     def model_for(self, voice, cfg):
-        """The t2a model for a voice: system voices use cfg rooyun.model (MiniMax),
-        your own cloned or designed voices use RooYun's self-hosted model."""
+        """The t2a model for a voice: RooYun's system voices use cfg rooyun.model, your own
+        cloned or designed voices (kind "user") use RooYun's self-hosted model."""
         models = self.models()
-        own = not voice["voice"].startswith(tuple(SYSTEM_PREFIXES)) and voice.get("provider") != "minimax"
+        own = voice.get("kind") == "user"
         want = (cfg["rooyun"].get("ownVoiceModel") or "IndexTTS") if own else cfg["rooyun"].get("model", "speech-2.8-hd")
         for m in models:
             if want in m["name"]:
@@ -130,12 +130,6 @@ class Client:
             raise ApiError(status, "download", "下载失败")
         with open(dest, "wb") as f:
             f.write(raw)
-
-
-# Voice ids of RooYun's system (MiniMax) voices start with these.
-SYSTEM_PREFIXES = ("male-", "female-", "clever_", "cute_", "lovely_", "cartoon_", "bingjiao_", "junlang_",
-                   "chunzhen_", "lengdan_", "badao_", "tianxin_", "qiaopi_", "wumei_", "diadia_", "danya_",
-                   "Santa", "Grinch", "Rudolph", "Arnold", "Charming", "Sweet", "Cute", "Attractive", "Serene")
 
 
 def login(base, out=print):
@@ -182,7 +176,7 @@ def jobs_for(todo, client, cfg, voices_meta):
     voices = {k: e["voice"] for k, e in plan(cfg).items()}
     out = []
     for vkey, texts in todo.items():
-        v = dict(voices[vkey], provider=voices_meta.get(voices[vkey]["voice"], {}).get("provider"))
+        v = dict(voices[vkey], kind=voices_meta.get(voices[vkey]["voice"], {}).get("kind"))
         model, own = client.model_for(v, cfg)
         for text in texts:
             params = {"text": text, "voiceId": v["voice"]}

@@ -1,0 +1,23 @@
+{
+  "order": 9,
+  "name": "私人专属",
+  "who": "一个人用、只想自己听",
+  "description": "叫哥哥、会撒娇，到账开心、告警害怕，约六成播报后接一句撩人的话。",
+  "style": "flirty",
+  "称呼": "哥哥",
+  "rulePacks": [
+    "generic"
+  ],
+  "schedule": {
+    "quietHours": "00:00-08:00"
+  },
+  "types": {
+    "告警": {
+      "always": true
+    }
+  },
+  "suggestSources": [
+    "feishu",
+    "webhook"
+  ]
+}

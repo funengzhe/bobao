@@ -18,6 +18,7 @@
   bobao voice plan                every sentence your setup can say, and what is unrecorded
   bobao voice quote               price of recording what is missing
   bobao voice record [--yes]      record it (asks first, shows the price)
+  bobao gallery                   listen to every scene, style, voice and emotion before choosing
   bobao review                    listen to everything, mark pieces to re-record
   bobao sounds                    (re)make the sound effects
 """
@@ -102,7 +103,7 @@ def cmd_send(a):
 
 
 def cmd_packs(a):
-    for kind, label in (("styles", "风格包"), ("rules", "规则包")):
+    for kind, label in (("scenes", "场景"), ("styles", "风格包"), ("rules", "规则包")):
         print(label)
         for name, p in config.list_packs(kind).items():
             print(f"  {name:10} {p.get('name', '')}：{p.get('description', '')}")
@@ -196,18 +197,28 @@ def choose(q, options, default=1):
 def cmd_init(a):
     user = config.read_json(paths.CONFIG, {}) or {}
     print("Bobao 定制播报 · 设置（直接回车用括号里的默认值）\n")
+    scenes = config.list_packs("scenes")
+    print("0) 你是哪类用户？选一个场景，播哪些类型、什么时段播、默认风格和音色都会配好")
+    picked_scene = choose("选一个", [(f"{p['name']}（{p['who']}）：{p['description']}", k) for k, p in scenes.items()]
+                          + [("自己从头配", "")], "1")
+    scene = scenes.get(picked_scene[0], {}) if picked_scene else {}
+    user["scene"] = picked_scene[0] if picked_scene else ""
     styles = config.list_packs("styles")
-    print("1) 播报风格")
-    style = choose("选一个", [(f"{p.get('name')}：{p.get('description')}", k) for k, p in styles.items()])
+    names = list(styles)
+    print("1) 播报风格（试听：bobao gallery）")
+    default = names.index(scene["style"]) + 1 if scene.get("style") in names else names.index("formal") + 1
+    style = choose("选一个", [(f"{p.get('name')}：{p.get('description')}", k) for k, p in styles.items()], default)
     user["style"] = (style or ["formal"])[0]
-    user["称呼"] = ask("2) 怎么称呼你（老板、哥哥、名字…）", user.get("称呼") or styles[user["style"]].get("称呼", "老板"))
+    user["称呼"] = ask("2) 怎么称呼你（老板、哥哥、名字…）", user.get("称呼") or scene.get("称呼") or styles[user["style"]].get("称呼", "老板"))
     print("3) 声音")
     user["engine"] = (choose("选一个", [("Mac 自带声音（免费，马上能用）", "mac"),
                                         ("如云配音（好听、可选音色或用你自己的声音，一整套只要几个积分，录一次永久免费播放）", "rooyun")]) or ["mac"])[0]
     src = user.setdefault("sources", {})
     print("4) 从哪里收通知（可多选，用逗号隔开）")
     picked = choose("选择", [("飞书群（需要 lark-cli）", "feishu"), ("Webhook：你的系统直接推过来", "webhook"),
-                             ("系统通知：微信、钉钉、邮件等的弹窗", "notifications")], "2")
+                             ("系统通知：微信、钉钉、邮件等的弹窗", "notifications")],
+                    ",".join(str(i) for i, s in enumerate(("feishu", "webhook", "notifications"), 1)
+                             if s in scene.get("suggestSources", ["webhook"])))
     src["webhook"] = dict(src.get("webhook", {}), enabled="webhook" in picked)
     if "feishu" in picked:
         from .sources.feishu import Feishu, lark
@@ -303,6 +314,9 @@ def main(argv=None):
     sub = p.add_subparsers(dest="cmd")
     for name in ("init", "run", "install", "uninstall", "status", "packs", "voices", "sounds"):
         sub.add_parser(name)
+    g = sub.add_parser("gallery")
+    g.add_argument("--port", type=int, default=8768)
+    g.add_argument("--no-open", action="store_true")
     rv = sub.add_parser("review")
     rv.add_argument("--port", type=int, default=8767)
     rv.add_argument("--no-open", action="store_true")
@@ -336,6 +350,15 @@ def main(argv=None):
         return
     if a.cmd == "run":
         return daemon.run()
+    if a.cmd == "gallery":   # the listening page in docs/, served locally
+        import functools
+        from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+        docs = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs")
+        server = ThreadingHTTPServer(("127.0.0.1", a.port), functools.partial(SimpleHTTPRequestHandler, directory=docs))
+        print(f"试听页面：http://127.0.0.1:{a.port}")
+        if not a.no_open:
+            subprocess.run(["/usr/bin/open", f"http://127.0.0.1:{a.port}"])
+        return server.serve_forever()
     if a.cmd == "review":
         from . import review
         return review.serve(a.port, not a.no_open)

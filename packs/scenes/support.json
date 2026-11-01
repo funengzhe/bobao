@@ -1,0 +1,45 @@
+{
+  "order": 5,
+  "name": "客服团队",
+  "who": "客服、售后、社群运营",
+  "description": "新工单、新反馈、待审批温柔提醒；只在工作日上班时间播。",
+  "style": "playful",
+  "称呼": "亲",
+  "rulePacks": [
+    "generic"
+  ],
+  "voices": {
+    "default": {
+      "voice": "female-tianmei-jingpin"
+    }
+  },
+  "schedule": {
+    "days": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "hours": "09:00-18:00"
+  },
+  "types": {
+    "收款": {
+      "enabled": false
+    },
+    "套餐": {
+      "enabled": false
+    },
+    "日报": {
+      "enabled": false
+    },
+    "告警": {
+      "always": true
+    }
+  },
+  "suggestSources": [
+    "feishu",
+    "notifications"
+  ],
+  "demo": "提醒"
+}

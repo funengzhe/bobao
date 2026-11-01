@@ -26,6 +26,23 @@ def in_hours(span):
     return start <= now < end if start <= end else (now >= start or now < end)
 
 
+def off_schedule(cfg, t, rule):
+    """Why now is outside the schedule for this type, or "" if it may play.
+    The global schedule applies unless the type says "always": true; a type's own
+    days / hours / quietHours, and a rule's quietHours, apply on top."""
+    s = {} if t.get("always") else dict(cfg.get("schedule") or {})
+    s.update({k: t[k] for k in ("days", "hours", "quietHours") if t.get(k)})
+    if rule.get("quietHours"):
+        s["quietHours"] = rule["quietHours"]
+    if s.get("days") and time.localtime().tm_wday + 1 not in s["days"]:
+        return "今天不在播报日"
+    if s.get("hours") and not in_hours(s["hours"]):
+        return f"不在播报时段（{s['hours']}）"
+    if in_hours(s.get("quietHours")):
+        return f"夜间不播（{s['quietHours']}）"
+    return ""
+
+
 def decide(ev, cfg, dry=False, rnd=random):
     """Returns (utterance or None, reason). dry: work out the text only, leaving
     cooldowns and the log alone (for previews, replays and stale messages)."""
@@ -35,9 +52,9 @@ def decide(ev, cfg, dry=False, rnd=random):
     t = compose.type_settings(cfg, match.type)
     if t.get("enabled") is False:
         return None, f"{match.type}已关闭"
-    quiet = match.rule.get("quietHours") or t.get("quietHours")
-    if not dry and in_hours(quiet):
-        return None, f"夜间不播（{quiet}）"
+    why = off_schedule(cfg, t, match.rule)
+    if not dry and why:
+        return None, why
     stale = cfg.get("maxAgeMinutes")
     if not dry and ev.time and stale and time.time() - ev.time > stale * 60:
         utt = compose.render(match, ev, cfg, rnd)

@@ -1,0 +1,37 @@
+{
+  "order": 4,
+  "name": "销售团队",
+  "who": "电销、地推、直播间、渠道销售",
+  "description": "成交就喊出来，大单加倍庆祝；工作日白天播，给团队打气。",
+  "style": "hype",
+  "称呼": "兄弟们",
+  "rulePacks": [
+    "generic"
+  ],
+  "schedule": {
+    "days": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "hours": "09:00-21:00"
+  },
+  "types": {
+    "告警": {
+      "enabled": false
+    },
+    "提醒": {
+      "enabled": false
+    }
+  },
+  "bigOrder": {
+    "*": 10000
+  },
+  "suggestSources": [
+    "feishu",
+    "webhook"
+  ]
+}

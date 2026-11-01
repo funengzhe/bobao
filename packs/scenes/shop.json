@@ -1,0 +1,29 @@
+{
+  "order": 1,
+  "name": "电商店主",
+  "who": "淘宝/抖店/Shopify/独立站卖家",
+  "description": "每一笔订单都听得到，大单加一句；夜里只报大事。",
+  "style": "playful",
+  "称呼": "老板",
+  "rulePacks": [
+    "generic"
+  ],
+  "schedule": {
+    "quietHours": "23:00-08:00"
+  },
+  "types": {
+    "告警": {
+      "always": true
+    },
+    "日报": {
+      "hours": "08:00-22:00"
+    }
+  },
+  "bigOrder": {
+    "*": 500
+  },
+  "suggestSources": [
+    "webhook",
+    "notifications"
+  ]
+}
