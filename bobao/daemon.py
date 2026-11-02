@@ -68,7 +68,7 @@ def decide(ev, cfg, dry=False, rnd=random):
         return None, f"{match.type}没有说法"
     if not dry:
         last_spoken[key] = time.time()
-        if match.index == -2:
+        if match.index == -2 or match.rule.get("catchAll"):   # a rule can be a catch-all too
             log(f"未知通知类型（建议加一条规则）[{ev.source}:{ev.channel}] {ev.title}")
     utt["match"] = match
     return utt, ""
