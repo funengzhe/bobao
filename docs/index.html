@@ -168,6 +168,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
 .toast.on{opacity:1;transform:translateX(-50%)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<script data-goatcounter="https://yichuanworks.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </head>
 <body>
 <nav id="nav"><div class="wrap">
@@ -237,7 +238,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
 <section id="faq" class="alt"><div class="wrap faq">
   <h2>常见问题</h2>
   <details><summary>要花钱吗？</summary><p>Bobao 免费。用电脑自带的声音完全不花钱。想用这里的好听声音，要用你自己的 RooYun（如云）账号生成一次你的全部说法，一般一两个积分；生成前智能体会先告诉你价格，你同意才生成。生成好存在你的电脑上，以后每次播报都不再花钱，断网也能念。</p></details>
-  <details><summary>我的消息会被上传吗？</summary><p>不会。消息只在你自己的电脑上处理。只有生成声音的那一次，要念的句子（不是你的消息）会发给 RooYun（如云）。</p></details>
+  <details><summary>我的消息会被上传吗？</summary><p>不会。消息只在你自己的电脑上处理。只有生成声音的那一次，要念的句子（不是你的消息）会发给 RooYun（如云）。这个试听页用 GoatCounter 统计访问量，不用 cookie，也不记录你是谁。</p></details>
   <details><summary>能读哪些消息？</summary><p>电脑上任何 App 弹出的通知：飞书、企业微信、钉钉、微信、日历、邮件……；飞书群里机器人发的卡片；你自己系统发来的 Webhook；还有你设定的定时提醒。</p></details>
   <details><summary>公司电脑、公司的飞书也能用吗？</summary><p>能。读电脑弹窗不需要公司开任何权限，也不碰你的账号。个人微信、钉钉也只读弹窗，不做任何接口或外挂，没有封号风险。</p></details>
   <details><summary>还要另外装 RooYun（如云）吗？</summary><p>不用。Bobao 自己会连 RooYun，换声音时浏览器里登录 RooYun、点一下「授权」就行。</p></details>
@@ -288,6 +289,9 @@ async function copy(text, msg) {
   }
   toast(msg);
 }
+// Counts a click on GoatCounter (no cookies, nothing personal).
+function track(name) { try { window.goatcounter.count({path: name, event: true}); } catch (e) {} }
+document.addEventListener("click", e => { if (e.target.closest('a[href*="rooyun.com"]')) track("去RooYun"); });
 
 addEventListener("scroll", () => $("nav").classList.toggle("scrolled", scrollY > 8), {passive: true});
 
@@ -366,8 +370,9 @@ fetch("samples.json").then(r => r.json()).then(S => {
       <div><div class="n">${esc(v.name)}<span class="l">${esc(v.label)}</span></div></div></div>
       <div class="d">${esc(v.desc)}</div>
       <div class="row"><button class="pbtn">${PLAY}试听</button><button class="pick">就要 TA</button></div>`;
-    el.querySelector(".pbtn").onclick = () => play(el, v.intro);
+    el.querySelector(".pbtn").onclick = () => { play(el, v.intro); track("试听-" + v.name); };
     el.querySelector(".pick").onclick = ev => {
+      track("就要-" + v.name);
       copy(`帮我把 Bobao 的声音换成${v.name}`, `已复制「帮我把 Bobao 的声音换成${v.name}」，发给你的智能体就行`);
       ev.target.classList.add("ok"); ev.target.textContent = "已复制";
       setTimeout(() => { ev.target.classList.remove("ok"); ev.target.textContent = "就要 TA"; }, 2400);
@@ -386,7 +391,7 @@ fetch("samples.json").then(r => r.json()).then(S => {
   $("first").innerHTML = `<button class="pbtn" aria-label="播放">${PLAY}</button><div class="text"><div class="k">装好时你会听到</div>${esc(S.welcome.text)}</div>`;
   $("first").querySelector(".pbtn").onclick = () => play($("first"), S.welcome.chime, () => play($("first"), S.welcome.file));
 });
-$("copyPrompt").onclick = () => copy($("promptText").textContent, "已复制，发给你的智能体就行");
+$("copyPrompt").onclick = () => track("复制安装") || copy($("promptText").textContent, "已复制，发给你的智能体就行");
 </script>
 </body>
 </html>
