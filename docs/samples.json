@@ -30,47 +30,47 @@
    "file": "audio/scene04.mp3"
   },
   {
-   "group": "赚钱",
+   "group": "生意",
    "text": "叮咚，到账 299 元，新客户第一次下单，今天也太棒了吧。",
    "file": "audio/scene05.mp3"
   },
   {
-   "group": "赚钱",
+   "group": "生意",
    "text": "大单来啦，刚刚到账 5000 元，老板威武，今晚加个鸡腿。",
    "file": "audio/scene06.mp3"
   },
   {
-   "group": "赚钱",
+   "group": "生意",
    "text": "又有新客户下单了，这已经是今天第十单，生意越来越好啦。",
    "file": "audio/scene07.mp3"
   },
   {
-   "group": "开发和运维",
+   "group": "开发",
    "text": "上线成功，所有检查都通过了，可以安心去喝杯咖啡了。",
    "file": "audio/scene08.mp3"
   },
   {
-   "group": "开发和运维",
+   "group": "开发",
    "text": "构建失败了，好像是测试没过，快去看看是哪里出错了。",
    "file": "audio/scene09.mp3"
   },
   {
-   "group": "开发和运维",
+   "group": "开发",
    "text": "警报警报，服务器出故障了，用户已经访问不了，请尽快处理。",
    "file": "audio/scene10.mp3"
   },
   {
-   "group": "开发和运维",
+   "group": "开发",
    "text": "虚惊一场，服务已经恢复正常啦，大家可以松一口气了。",
    "file": "audio/scene11.mp3"
   },
   {
-   "group": "主播和创作者",
+   "group": "直播",
    "text": "感谢大哥送的火箭，直播间一下子沸腾啦，快跟大哥说声谢谢。",
    "file": "audio/scene12.mp3"
   },
   {
-   "group": "主播和创作者",
+   "group": "直播",
    "text": "恭喜，今天又涨了一百个粉丝，大家都很喜欢你，继续加油。",
    "file": "audio/scene13.mp3"
   },
