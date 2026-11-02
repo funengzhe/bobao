@@ -16,6 +16,8 @@
 
 每一步都有检查方法。检查不通过就停下来，告诉用户哪一步、什么原因，不要跳过。
 
+**用户是 Windows 电脑的话**，先看下面的「Windows」一节，再按这里的步骤做（命令里的 `~/bobao/bin/bobao` 换成 `%USERPROFILE%\bobao\bin\bobao.cmd`）。
+
 ### 1. 检查环境
 
 ```bash
@@ -95,6 +97,18 @@ git -C ~/bobao fetch origin && git -C ~/bobao reset --hard origin/main
 ```
 
 成功后会播一声门铃，然后小柚说一句安装提示（这一句是预先录好的，所以即使用电脑自带的声音也是小柚）。问用户听到没有。没听到就检查音量和输出设备。
+
+### Windows
+
+Windows 版是测试版。能用的：飞书机器人、Webhook、定时提醒、智能体播报、GitHub、喊话页、分享句子、RooYun（如云）的声音。**还读不了其他 App 的弹窗**，第 3 步「消息从哪来」不要选 `notifications`，跟用户说明，建议用飞书机器人或定时提醒。
+
+1. **Python**：`py -3 --version` 或 `python --version`（3.9 以上）。没有的话 `winget install Python.Python.3.12`，或请用户到 python.org 下载安装（勾选 Add to PATH）。装完重新打开终端。注意 Windows 自带的 `python` 可能只是打开应用商店的快捷方式，以 `py -3 --version` 能运行为准。
+2. **Git**：`git --version`，没有的话 `winget install Git.Git`。
+3. 下载：`git clone https://github.com/funengzhe/bobao "%USERPROFILE%\bobao"`，之后的命令都用 `"%USERPROFILE%\bobao\bin\bobao.cmd"`（PowerShell 里写 `& "$env:USERPROFILE\bobao\bin\bobao.cmd"`）。
+4. **中文语音**：`bobao install` 会检查电脑自带的声音里有没有中文。没有的话请用户打开 设置 → 时间和语言 → 语音 → 添加语音，选「中文（简体，中国）」。
+5. **要用 RooYun 的好听声音**，还需要 ffmpeg：`winget install Gyan.FFmpeg`，装完重新打开终端。
+6. `bobao install` 会在「启动」文件夹放一个 Bobao 快捷方式，登录 Windows 时自动在后台运行（没有窗口）。`bobao status` 看是否在运行，`bobao uninstall` 停止并移除。
+7. 喊话页：Windows 第一次会弹出防火墙提示，请用户勾选「专用网络」并点允许。
 
 ### 5. 按来源补设置
 

@@ -4,7 +4,7 @@
 
 ## 自己装
 
-需要 macOS 自带的 `python3`（没有的话运行 `xcode-select --install`）。
+需要 macOS 自带的 `python3`（没有的话运行 `xcode-select --install`）。Windows（测试版）的准备步骤见 [AGENTS.md 的「Windows」一节](AGENTS.md#windows)。
 
 ```bash
 git clone https://github.com/funengzhe/bobao ~/bobao

@@ -738,6 +738,9 @@ def install_windows(a, here):
     print(f"后台已启动，登录 Windows 时自动运行（{lnk}）。日志：{paths.LOG}")
     if config.load()["sources"]["notifications"].get("enabled"):
         print("提示：Windows 上暂时还读不了其他 App 的弹窗，请用飞书机器人、Webhook 或定时提醒")
+    if not any(lang.lower().startswith("zh") for _, lang in system.voices()):
+        print("这台电脑自带的声音里没有中文，念出来会不对。请打开 设置 → 时间和语言 → 语音 → 添加语音，"
+              "选「中文（简体，中国）」，装好后不用重装 Bobao")
     if not a.quiet:
         play_files(os.path.join(paths.SOUNDS, "doorbell.wav"), os.path.join(here, "assets", "welcome.mp3"))
 
