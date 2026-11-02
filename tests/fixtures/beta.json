@@ -1,0 +1,213 @@
+{
+  "name": "贝塔",
+  "description": "Beta通知群的机器人卡片（测试用的虚构平台）。",
+  "platforms": {
+    "Beta": {
+      "say": "贝塔"
+    }
+  },
+  "aliases": {
+    "会员·基础": "基础包",
+    "会员·标准": "标准包",
+    "会员·专业": "专业包",
+    "会员·创作者": "创作者包"
+  },
+  "values": {
+    "套餐": [
+      "基础包",
+      "标准包",
+      "专业包",
+      "创作者包"
+    ]
+  },
+  "rules": [
+    {
+      "when": {
+        "title": [
+          "[Beta] 已恢复",
+          "Beta 已恢复"
+        ]
+      },
+      "type": "恢复",
+      "platform": "Beta"
+    },
+    {
+      "when": {
+        "title": [
+          "全部来自测试账号",
+          "【提示】"
+        ]
+      },
+      "type": "通知",
+      "platform": "Beta",
+      "skip": true
+    },
+    {
+      "when": {
+        "title": [
+          "[Beta] 套餐购买到账"
+        ]
+      },
+      "type": "套餐",
+      "platform": "Beta"
+    },
+    {
+      "when": {
+        "title": [
+          "[Beta] 充值到账"
+        ]
+      },
+      "type": "收款",
+      "platform": "Beta"
+    },
+    {
+      "when": {
+        "title": [
+          "[Beta] 新用户注册"
+        ]
+      },
+      "type": "注册",
+      "platform": "Beta"
+    },
+    {
+      "when": {
+        "title": [
+          "[Beta] 经营日报"
+        ]
+      },
+      "type": "日报",
+      "platform": "Beta"
+    },
+    {
+      "when": {
+        "title": [
+          "Beta 线上不可用"
+        ]
+      },
+      "type": "告警",
+      "name": "线上挂掉了",
+      "platform": "Beta",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "【严重】"
+        ]
+      },
+      "type": "告警",
+      "name": "出严重告警了",
+      "platform": "Beta",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "通道熔断"
+        ]
+      },
+      "type": "告警",
+      "name": "有通道熔断了",
+      "platform": "Beta",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "通道余额不足"
+        ]
+      },
+      "type": "告警",
+      "name": "通道余额不够了",
+      "platform": "Beta",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "磁盘空间不足"
+        ]
+      },
+      "type": "告警",
+      "name": "磁盘快满了",
+      "platform": "Beta",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "失败率突增"
+        ]
+      },
+      "type": "告警",
+      "name": "失败变多了",
+      "platform": "Beta",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "任务队列停摆",
+          "任务进程掉线"
+        ]
+      },
+      "type": "告警",
+      "name": "任务停了",
+      "platform": "Beta",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "生产服务器告警"
+        ]
+      },
+      "type": "告警",
+      "name": "服务器告警了",
+      "platform": "Beta",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "【警告】已切到备用服务"
+        ]
+      },
+      "type": "提醒",
+      "name": "换成备用服务了",
+      "platform": "Beta",
+      "cooldownMinutes": 30
+    },
+    {
+      "when": {
+        "title": [
+          "[Beta] 新反馈"
+        ]
+      },
+      "type": "提醒",
+      "name": "收到用户反馈",
+      "platform": "Beta"
+    },
+    {
+      "when": {
+        "title": [
+          "待审批：退款"
+        ]
+      },
+      "type": "提醒",
+      "name": "有一笔退款等你审批",
+      "platform": "Beta"
+    },
+    {
+      "when": {
+        "title": [
+          "待审批：上架"
+        ]
+      },
+      "type": "提醒",
+      "name": "有新商品等你审批",
+      "platform": "Beta",
+      "cooldownMinutes": 30
+    }
+  ]
+}

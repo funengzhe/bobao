@@ -13,8 +13,9 @@ from bobao.events import Event, classify  # noqa: E402
 from bobao.numbers import cn_number, money, vocabulary  # noqa: E402
 from bobao.sources import feishu  # noqa: E402
 
-USER = {"rulePacks": ["bigmodel", "rooyun", "generic"],
-        "platforms": {"Alpha": {"say": "Alpha", "channels": ["bm"]}, "Beta": {"say": "贝塔", "channels": ["ry"]}},
+FIXTURES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures")
+USER = {"rulePacks": [os.path.join(FIXTURES, "alpha.json"), os.path.join(FIXTURES, "beta.json"), "generic"],
+        "platforms": {"Alpha": {"say": "Alpha", "channels": ["a"]}, "Beta": {"say": "贝塔", "channels": ["b"]}},
         "bigOrder": {"Alpha": 100, "Beta": 500}}
 
 
@@ -22,7 +23,7 @@ def cfg_for(style, **extra):
     return config.load(dict(USER, style=style, **extra))
 
 
-def ev(title, channel="bm", **fields):
+def ev(title, channel="a", **fields):
     return Event("feishu", channel, title, fields=fields, bot=True)
 
 
@@ -49,26 +50,26 @@ class Rules(unittest.TestCase):
 
     def test_platform_cards(self):
         self.assertEqual(self.kind(ev("[Alpha] 充值到账")), ("收款", "Alpha"))
-        self.assertEqual(self.kind(ev("[Beta] 套餐购买到账", "ry")), ("套餐", "Beta"))
-        self.assertEqual(self.kind(ev("[Beta] 已恢复：接口", "ry")), ("恢复", "Beta"))
+        self.assertEqual(self.kind(ev("[Beta] 套餐购买到账", "b")), ("套餐", "Beta"))
+        self.assertEqual(self.kind(ev("[Beta] 已恢复：接口", "b")), ("恢复", "Beta"))
 
     def test_rules_stay_in_their_group(self):
         # 通道熔断 is a Beta alert; in the Alpha group only the generic net may catch it
-        self.assertEqual(self.kind(ev("【警告】通道熔断", "ry")), ("告警", "Beta"))
-        m, _ = classify(ev("【警告】通道熔断", "bm"), self.cfg)
+        self.assertEqual(self.kind(ev("【警告】通道熔断", "b")), ("告警", "Beta"))
+        m, _ = classify(ev("【警告】通道熔断", "a"), self.cfg)
         self.assertNotEqual(m.platform, "Beta")
 
     def test_skips(self):
         self.assertIsNone(self.kind(ev("【模拟】Alpha 充值到账 9.9 USD")))
-        self.assertIsNone(self.kind(ev("[Beta] 本周注册全部来自测试账号", "ry")))
+        self.assertIsNone(self.kind(ev("[Beta] 本周注册全部来自测试账号", "b")))
         self.assertIsNone(self.kind(ev("今天天气不错")))
 
     def test_people_are_not_read(self):
         m = {"content": "测试到账1元", "sender": {"sender_type": "user"}, "create_time": "2026-11-02 10:00"}
-        self.assertIs(feishu.to_event("bm", m).bot, False)
+        self.assertIs(feishu.to_event("a", m).bot, False)
 
     def test_amountless_payment_is_not_misread(self):
-        utt, _ = daemon.decide(ev("[Beta] 充值到账", "ry"), self.cfg, dry=True)
+        utt, _ = daemon.decide(ev("[Beta] 充值到账", "b"), self.cfg, dry=True)
         self.assertNotIn("到账", utt["text"])   # says only that a notification came in
 
     def test_catch_all(self):
@@ -86,7 +87,7 @@ class Gates(unittest.TestCase):
         a = ev("支付通道熔断")
         self.assertIsNotNone(daemon.decide(a, cfg)[0])
         self.assertIn("冷却", daemon.decide(a, cfg)[1])
-        old = ev("[Beta] 经营日报", "ry")
+        old = ev("[Beta] 经营日报", "b")
         old.time = time.time() - 3600
         self.assertIn("过期", daemon.decide(old, cfg)[1])
         self.assertNotIn((-1, ""), daemon.last_spoken)
@@ -104,9 +105,9 @@ class Coverage(unittest.TestCase):
                    for vk, e in plan.items()}
             cards = [ev("[Alpha] 充值到账", 支付金额=f"${a}", 支付方式=m, 备注=n)
                      for a in ("0.5", "2", "19.90", "120", "1234.56", "20000") for m in ("微信支付", "Stripe 银行卡", "USDT · TRC20", "") for n in ("首次充值", "")]
-            cards += [ev("[Beta] 套餐购买到账", "ry", 金额=f"¥{a}", 套餐=p) for a in ("39", "999") for p in ("会员·基础", "会员·创作者")]
+            cards += [ev("[Beta] 套餐购买到账", "b", 金额=f"¥{a}", 套餐=p) for a in ("39", "999") for p in ("会员·基础", "会员·创作者")]
             cards += [ev(t) for t in ("[Alpha] 新用户注册", "[Alpha] 经营日报", "支付通道熔断", "商品没有定价", "订单已取消", "[Alpha] 已恢复")]
-            cards += [ev(t, "ry") for t in ("[Beta] 新用户注册", "通道熔断", "待审批：退款", "[Beta] 充值到账", "任务进程掉线")]
+            cards += [ev(t, "b") for t in ("[Beta] 新用户注册", "通道熔断", "待审批：退款", "[Beta] 充值到账", "任务进程掉线")]
             cards += [ev("莫名其妙的故障")]
             for card in cards:
                 for seed in range(25):

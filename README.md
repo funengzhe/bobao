@@ -106,7 +106,7 @@ bobao voice use 安然
 bobao voice record
 ```
 
-`login` 打开如云的授权页，你点「授权」就行。`voice use` 报出用这个声音要生成多少句、多少积分（不想换了：`bobao voice use --cancel`）。`record` 生成，全部生成完才换成新声音，并念一句自我介绍。中途断了，重跑同一条命令就行，已经提交的句子不会重复扣费。以后改了说法、加了提醒，再运行一次 `bobao voice record`，只生成新增的句子。
+不需要另外安装如云的工具。`login` 打开如云的授权页，登录（没有账号就注册）后点「授权」就行。`voice use` 报出用这个声音要生成多少句、多少积分（不想换了：`bobao voice use --cancel`）。`record` 生成，全部生成完才换成新声音，并念一句自我介绍。中途断了，重跑同一条命令就行，已经提交的句子不会重复扣费。以后改了说法、加了提醒，再运行一次 `bobao voice record`，只生成新增的句子。
 
 ```bash
 bobao voices

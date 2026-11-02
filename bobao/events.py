@@ -77,7 +77,7 @@ def _list(v):
 
 
 def detect_platform(ev, platforms):
-    """'[BigModel] 充值到账' -> 'BigModel', or the first known platform named in the title."""
+    """'[我的店] 充值到账' -> '我的店', or the first known platform named in the title."""
     m = re.match(r"\s*[\[【]([^\]】]+)[\]】]", ev.title)
     if m and m.group(1) in platforms:
         return m.group(1)

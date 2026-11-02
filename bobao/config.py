@@ -29,7 +29,7 @@ DEFAULTS = {
     "types": {},
     "voices": {},
     "tease": {},
-    "bigOrder": {},             # {"BigModel": 100, "*": 1000}: amounts that get the 大单 line
+    "bigOrder": {},             # {"我的店": 100, "*": 1000}: amounts that get the 大单 line
     "maxAgeMinutes": 30,
     "schedule": {},             # {"days": [1-7], "hours": "09:00-18:00", "quietHours": "23:00-08:00"} for all types
     "reminders": [],            # [{"at": "18:00", "days": [1-5], "say": "..."}]: spoken at that time

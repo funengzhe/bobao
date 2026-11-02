@@ -1,0 +1,168 @@
+{
+  "name": "Alpha",
+  "description": "Alpha 通知群的机器人卡片（测试用的虚构平台）。",
+  "platforms": {
+    "Alpha": {
+      "say": "Alpha"
+    }
+  },
+  "aliases": {
+    "USDT · BEP20": "USDT",
+    "USDT · TRC20": "USDT",
+    "USDT · ERC20": "USDT",
+    "Stripe 银行卡": "Stripe",
+    "微信支付": "微信"
+  },
+  "values": {
+    "方式": [
+      "支付宝",
+      "微信",
+      "Stripe",
+      "USDT"
+    ]
+  },
+  "rules": [
+    {
+      "when": {
+        "title": [
+          "[Alpha] 已恢复",
+          "Alpha 已恢复"
+        ]
+      },
+      "type": "恢复",
+      "platform": "Alpha"
+    },
+    {
+      "when": {
+        "title": [
+          "[Alpha] 充值到账"
+        ]
+      },
+      "type": "收款",
+      "platform": "Alpha",
+      "fields": {
+        "金额": "支付金额",
+        "方式": "支付方式"
+      }
+    },
+    {
+      "when": {
+        "title": [
+          "[Alpha] 新用户注册",
+          "Alpha · 新账户已创建"
+        ]
+      },
+      "type": "注册",
+      "platform": "Alpha"
+    },
+    {
+      "when": {
+        "title": [
+          "[Alpha] 经营日报"
+        ]
+      },
+      "type": "日报",
+      "platform": "Alpha"
+    },
+    {
+      "when": {
+        "title": [
+          "支付通道熔断"
+        ]
+      },
+      "type": "告警",
+      "name": "有支付通道熔断了",
+      "platform": "Alpha",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "接口错误激增"
+        ]
+      },
+      "type": "告警",
+      "name": "报错突然变多了",
+      "platform": "Alpha",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "短信额度告急"
+        ]
+      },
+      "type": "告警",
+      "name": "短信额度快用完了",
+      "platform": "Alpha",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "短信额度用尽"
+        ]
+      },
+      "type": "告警",
+      "name": "短信额度用光了",
+      "platform": "Alpha",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "账户余额不足"
+        ]
+      },
+      "type": "告警",
+      "name": "账户余额不足了",
+      "platform": "Alpha",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "下单失败激增"
+        ]
+      },
+      "type": "告警",
+      "name": "好多订单失败了",
+      "platform": "Alpha",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "商品没有定价"
+        ]
+      },
+      "type": "告警",
+      "name": "有商品还没定价",
+      "platform": "Alpha",
+      "cooldownMinutes": 10
+    },
+    {
+      "when": {
+        "title": [
+          "订单已取消",
+          "订单已过期未支付"
+        ]
+      },
+      "type": "提醒",
+      "name": "有一单没付成",
+      "platform": "Alpha",
+      "sound": "wahwah"
+    },
+    {
+      "when": {
+        "title": [
+          "[Alpha] 收到新反馈",
+          "Alpha · 收到新反馈"
+        ]
+      },
+      "type": "提醒",
+      "name": "收到用户反馈",
+      "platform": "Alpha"
+    }
+  ]
+}

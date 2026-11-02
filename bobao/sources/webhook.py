@@ -1,7 +1,7 @@
 """A local HTTP endpoint any system can post to, no chat app in between.
 
     curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \\
-         -d '{"title": "充值到账", "platform": "BigModel", "fields": {"金额": "$19.9", "方式": "支付宝"}}'
+         -d '{"title": "充值到账", "platform": "我的店", "fields": {"金额": "$19.9", "方式": "支付宝"}}'
 
 Body: title (required), text, fields, channel, and optionally type / platform / name to
 skip the rules. Add "dry": true to get back what would be said without playing it.
