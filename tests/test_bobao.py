@@ -303,6 +303,22 @@ class Agents(unittest.TestCase):
             utt, why = daemon.decide(Event("webhook", "Claude Code", title, bot=True), on, dry=True)
             self.assertTrue(utt and "Claude" in utt["text"] or "额度" in utt["text"], (title, why))
 
+    def test_done_waits_and_a_new_turn_anywhere_drops_it(self):
+        import time as t
+        from bobao import agents
+        from bobao.sources.webhook import Held
+        cfg = config.load({})
+        agents.claude("prompt", {"session_id": "s3"}, cfg, now=1000)
+        body = agents.claude("stop", {"session_id": "s3"}, cfg, now=1200)
+        self.assertEqual(body["hold"], agents.HOLD)
+        self.assertEqual(agents.claude("prompt", {"session_id": "other"}, cfg, now=1201), {"busy": True})
+        said, held = [], Held()
+        held.add(0.2, Event("webhook", "Claude Code", "智能体完成"), lambda: said.append(1))
+        self.assertEqual(held.busy(), 1)   # a child's report started the parent again
+        held.add(0.1, Event("webhook", "Claude Code", "智能体完成"), lambda: said.append(2))
+        t.sleep(0.3)
+        self.assertEqual(said, [2])
+
     def test_only_agents_in_use_are_recorded(self):
         said = lambda cfg: [t for e in compose.plan(cfg).values() for t in e["phrases"]]
         mine = said(config.load({"agents": {"enabled": True, "used": ["Claude Code"]}}))

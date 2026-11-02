@@ -56,6 +56,7 @@ def event(agent, title, cwd):
     return {"channel": agent, "title": title, "fields": {"项目": project(cwd)}}
 
 
+HOLD = 20   # seconds a "done" waits: another session (or the app) often picks up right away
 LONG, VERY_LONG = 10 * 60, 30 * 60   # a turn this long gets "忙了好一阵" / "熬了好久"
 NEEDS_YOU = ("elicitation_dialog", "elicitation_url_dialog", "agent_needs_input")
 QUOTA = ("rate_limit", "billing_error", "account_on_hold")
@@ -76,13 +77,13 @@ def claude(kind, data, cfg, now=None):
     turns = config.read_json(TURNS, {}) or {}
     sid = data.get("session_id") or ""
     cwd = data.get("cwd")
-    if kind == "prompt":
+    if kind == "prompt":   # also turns the app starts itself, e.g. a child session's report
         turns[sid] = now
         paths.ensure()
         turns = {k: v for k, v in turns.items() if now - v < 86400}
         with open(TURNS, "w") as f:
             json.dump(turns, f)
-        return None
+        return {"busy": True}   # drops a "done" still waiting: someone is already at it
     started = turns.get(sid)
     took = None if started is None else now - started
     long_enough = took is not None and took >= cfg["agents"].get("minSeconds", 60)
@@ -90,9 +91,9 @@ def claude(kind, data, cfg, now=None):
         if not long_enough or data.get("background_tasks"):   # paused for background work, not done
             return None
         if asks(data.get("last_assistant_message")):
-            return event("Claude Code", "智能体提问", cwd)
+            return dict(event("Claude Code", "智能体提问", cwd), hold=HOLD)
         title = "智能体完成·很久" if took >= VERY_LONG else "智能体完成·久" if took >= LONG else "智能体完成"
-        return event("Claude Code", title, cwd)
+        return dict(event("Claude Code", title, cwd), hold=HOLD)
     if kind == "ask":
         return event("Claude Code", "智能体提问", cwd) if long_enough else None
     if kind == "failure":
