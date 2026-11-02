@@ -342,3 +342,11 @@ class WindowsFeishu(unittest.TestCase):
         cfg = config.load({"scenes": ["work"], "schedule": {}})
         utt, why = daemon.decide(Event("feishu", "产品群", "@你 帮我看下这个", bot=False), cfg, dry=True)
         self.assertTrue(utt and "点你名" in utt["text"], why)
+
+    def test_api_mentions_read_like_popups(self):
+        from bobao.sources.feishu import readable
+        self.assertEqual(readable("@_all 开会"), "@所有人 开会")
+        self.assertIn("@你", readable('<at user_id="ou_1">小王</at> 看下', me="小王"))
+        cfg = config.load({"scenes": ["work"], "schedule": {}})
+        utt, why = daemon.decide(Event("feishu", "产品群", readable("@_all 下午开会"), bot=False), cfg, dry=True)
+        self.assertTrue(utt and "所有人" in utt["text"], why)

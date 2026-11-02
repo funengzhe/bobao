@@ -18,6 +18,7 @@ is read twice and nothing new is skipped, however many arrive at once.
 import json
 import os
 import queue
+import re
 import shutil
 import subprocess
 import threading
@@ -26,6 +27,7 @@ import time
 from .. import paths
 from ..config import read_json
 from ..events import Event, parse_card
+from ..system import NO_WINDOW
 from ..log import log
 
 HOME = os.path.expanduser("~")
@@ -52,8 +54,8 @@ def poll_seconds(src):
 
 def lark(src, *args, stdin=None):
     flags, who = identity(src)
-    out = subprocess.run([lark_cli(src), *flags, *args, "--as", who], input=stdin,
-                         capture_output=True, text=True, env=env(), timeout=60)
+    out = subprocess.run([lark_cli(src), *flags, *args, "--as", who], input=stdin, capture_output=True, text=True,
+                         encoding="utf-8", errors="replace", env=env(), timeout=60, creationflags=NO_WINDOW)
     try:
         data = json.loads(out.stdout)
     except ValueError:
@@ -63,8 +65,18 @@ def lark(src, *args, stdin=None):
     return data["data"]
 
 
-def to_event(chat, m):
-    title, fields, plain = parse_card(str(m.get("content") or ""))
+def readable(content, me=""):
+    """Mentions as people write them: @_all -> @所有人, <at ...>名字</at> -> @名字, and a
+    mention of you also as "@你", so the rules for being mentioned fire."""
+    content = content.replace("@_all", "@所有人")
+    content = re.sub(r"<at[^>]*>([^<]*)</at>", r"@\1", content)
+    if me and f"@{me}" in content:
+        content = content.replace(f"@{me}", f"@{me}（@你）")
+    return content
+
+
+def to_event(chat, m, me=""):
+    title, fields, plain = parse_card(readable(str(m.get("content") or ""), me))
     sender = (m.get("sender") or {}).get("sender_type")
     try:
         sent = time.mktime(time.strptime(m.get("create_time", ""), "%Y-%m-%d %H:%M"))
@@ -94,7 +106,8 @@ class Push:
         while src["profile"] == self.profile:
             proc = subprocess.Popen([lark_cli(src), *flags, "event", "consume", "im.message.receive_v1", "--as", "bot"],
                                     stdin=subprocess.PIPE,   # it stops at stdin EOF, and launchd gives /dev/null
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env())
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8",
+                                    errors="replace", env=env(), creationflags=NO_WINDOW)
             threading.Thread(target=self.watch, args=(proc,), daemon=True).start()
             for line in proc.stdout:
                 try:
@@ -127,6 +140,19 @@ class Feishu:
         self.state = read_json(paths.STATE, {}) or {}
         self.ids, self.ids_at = {}, 0
         self.push = Push()
+        self.me = None   # your Feishu name, when reading as yourself
+
+    def my_name(self, src):
+        if self.me is None:
+            self.me = ""
+            if not src.get("profile"):
+                try:
+                    out = subprocess.run([lark_cli(src), "auth", "status"], capture_output=True, text=True,
+                                         encoding="utf-8", env=env(), timeout=30, creationflags=NO_WINDOW)
+                    self.me = json.loads(out.stdout)["identities"]["user"].get("userName") or ""
+                except Exception:
+                    pass
+        return self.me
 
     def groups(self, cfg):
         """The groups to read: those listed in sources.feishu.chats, or with a bot and no
@@ -190,7 +216,7 @@ class Feishu:
             for m in sorted((m for m in msgs if int(m["message_position"]) > last), key=lambda m: int(m["message_position"])):
                 if m.get("msg_type") == "system":   # "X joined the group" and the like
                     continue
-                ev = to_event(name, m)
+                ev = to_event(name, m, self.my_name(src))
                 if src.get("botsOnly", True) and ev.bot is False:   # people chatting, not notifications
                     continue
                 handle(ev)
