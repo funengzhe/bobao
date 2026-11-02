@@ -1398,7 +1398,7 @@
   "engine": "mac",
   "id": "f5c3b7b5fc08",
   "file": "audio/mac/f5c3b7b5fc08.m4a",
-  "ready": true
+  "ready": false
  },
  {
   "section": "Mac 免费声音",
@@ -1409,7 +1409,7 @@
   "engine": "mac",
   "id": "d59e4c4975ad",
   "file": "audio/mac/d59e4c4975ad.m4a",
-  "ready": true
+  "ready": false
  },
  {
   "section": "Mac 免费声音",
@@ -1420,7 +1420,7 @@
   "engine": "mac",
   "id": "f4a275ef3e57",
   "file": "audio/mac/f4a275ef3e57.m4a",
-  "ready": true
+  "ready": false
  },
  {
   "section": "Mac 免费声音",
@@ -1431,7 +1431,7 @@
   "engine": "mac",
   "id": "15ed88839ba3",
   "file": "audio/mac/15ed88839ba3.m4a",
-  "ready": true
+  "ready": false
  },
  {
   "section": "Mac 免费声音",
@@ -1442,7 +1442,7 @@
   "engine": "mac",
   "id": "fa13ec6fa2b5",
   "file": "audio/mac/fa13ec6fa2b5.m4a",
-  "ready": true
+  "ready": false
  },
  {
   "section": "Mac 免费声音",
@@ -1453,7 +1453,7 @@
   "engine": "mac",
   "id": "5b5e55bcb8e9",
   "file": "audio/mac/5b5e55bcb8e9.m4a",
-  "ready": true
+  "ready": false
  },
  {
   "section": "Mac 免费声音",
@@ -1464,7 +1464,7 @@
   "engine": "mac",
   "id": "eb543bef7775",
   "file": "audio/mac/eb543bef7775.m4a",
-  "ready": true
+  "ready": false
  },
  {
   "section": "Mac 免费声音",
@@ -1475,7 +1475,7 @@
   "engine": "mac",
   "id": "0fbac9b22047",
   "file": "audio/mac/0fbac9b22047.m4a",
-  "ready": true
+  "ready": false
  },
  {
   "section": "Mac 免费声音",
@@ -1486,7 +1486,7 @@
   "engine": "mac",
   "id": "442f31639618",
   "file": "audio/mac/442f31639618.m4a",
-  "ready": true
+  "ready": false
  },
  {
   "section": "Mac 免费声音",
@@ -1497,7 +1497,7 @@
   "engine": "mac",
   "id": "d344af05e114",
   "file": "audio/mac/d344af05e114.m4a",
-  "ready": true
+  "ready": false
  },
  {
   "section": "Mac 免费声音",
@@ -1508,7 +1508,7 @@
   "engine": "mac",
   "id": "6188ed47b416",
   "file": "audio/mac/6188ed47b416.m4a",
-  "ready": true
+  "ready": false
  },
  {
   "section": "Mac 免费声音",
@@ -1519,6 +1519,6 @@
   "engine": "mac",
   "id": "bc40ba757ad8",
   "file": "audio/mac/bc40ba757ad8.m4a",
-  "ready": true
+  "ready": false
  }
 ]

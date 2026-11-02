@@ -353,7 +353,10 @@ def main(argv=None):
     if a.cmd == "gallery":   # the listening page in docs/, served locally
         import functools
         from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-        docs = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs")
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        docs = os.path.join(root, "docs")
+        print("正在用这台 Mac 的声音生成试听…")
+        subprocess.run(["/usr/bin/python3", os.path.join(root, "tools", "make_gallery.py"), "--mac"], capture_output=True)
         server = ThreadingHTTPServer(("127.0.0.1", a.port), functools.partial(SimpleHTTPRequestHandler, directory=docs))
         print(f"试听页面：http://127.0.0.1:{a.port}")
         if not a.no_open:

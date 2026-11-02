@@ -5,7 +5,7 @@ docs/ is a static page (GitHub Pages or bobao gallery), audio included.
 
     python3 tools/make_gallery.py              quote what is not recorded yet (free)
     python3 tools/make_gallery.py --record     record it with RooYun (asks first)
-    python3 tools/make_gallery.py --mac        Mac voice samples (free, local)
+    python3 tools/make_gallery.py --mac        Mac voice samples (free, local, never committed)
     python3 tools/make_gallery.py --page       rebuild docs/gallery.json only
 
 Recording is idempotent: requestIds live in docs/.gallery-tasks.json (not committed).
@@ -190,7 +190,10 @@ def mac(items):
 
 
 def page(items):
-    present = [dict({k: v for k, v in e.items() if k not in ("voice",)}, ready=os.path.exists(os.path.join(DOCS, e["file"])))
+    # Mac samples are Apple's voices, so they are never committed: `bobao gallery` makes them
+    # on the listener's own Mac, and the page checks for them when it loads.
+    present = [dict({k: v for k, v in e.items() if k not in ("voice",)},
+                    ready=e.get("engine") != "mac" and os.path.exists(os.path.join(DOCS, e["file"])))
                for e in items]
     with open(MANIFEST, "w", encoding="utf-8") as f:
         json.dump(present, f, ensure_ascii=False, indent=1)

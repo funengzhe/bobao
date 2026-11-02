@@ -154,7 +154,7 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 
 **模板里可以用的空位**：`{称呼}` `{平台}` `{平台的}`（有平台名时念"我的店的"，没有就省掉）`{金额}` `{方式}` `{套餐}` `{名称}`（取自规则的 `name`）`{首单}` `{大单}` `{开头}` `{结尾}`（取自风格包的 `pick`，每次随机选一个）。空位没有值时，它所在的那一小句会自动省掉。
 
-**写自己的风格包或规则包**：复制 `packs/styles/playful.json` 或 `packs/rules/generic.json`，放到 `~/.bobao/packs/styles/` 或 `~/.bobao/packs/rules/`，再在配置里用文件名引用它。欢迎提 PR 分享你的包。
+**写自己的风格包或规则包**：复制 `packs/styles/playful.json` 或 `packs/rules/generic.json`，放到 `~/.bobao/packs/styles/` 或 `~/.bobao/packs/rules/`，再在配置里用文件名引用它。欢迎提 PR 分享你的包（见 [CONTRIBUTING.md](CONTRIBUTING.md)）。
 
 **音效**：可以用 `coin` `register` `levelup` `gift` `bubble` `doorbell` `siren` `wahwah` `beeps` `oops` `redalert`（都在本机合成，免费），也可以用 macOS 系统音效名（`Glass`、`Ping`…），或者你自己的音频文件路径。
 
@@ -187,4 +187,13 @@ python3 -m unittest discover tests
 
 ## 许可
 
-代码采用 MIT 许可。用如云录的声音归录制者所有，使用条款以[如云](https://www.rooyun.com)为准。
+源码公开，免费使用，但**不能拿去卖**。许可证是 [MIT + Commons Clause](LICENSE)：
+
+- **可以**：个人或公司免费使用，包括在自己的业务里播报自己的通知；可以修改、克隆、转发，也可以提交改进。
+- **必须**：克隆和转发时保留 [LICENSE](LICENSE) 和里面的版权声明，包括本仓库地址 `https://github.com/funengzhe/bobao`。
+- **不可以**：把本软件或基于它改出来的东西，作为收费的产品或服务提供给别人，包括直接出售、收费托管或部署、收费技术支持。需要商用授权，请提 Issue 联系。
+- **试听音频**（`docs/audio/`）只用于试听，不得提取、再分发或商用，详见 [docs/audio/LICENSE.md](docs/audio/LICENSE.md)。
+- **你自己用如云录的声音**归你所有，按[如云](https://www.rooyun.com)的用户协议使用。
+- 提交改进之前，请先看 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+> 因为有"不能拿去卖"这条限制，本项目不属于 OSI 定义的"开源软件"，准确的说法是"源码公开"。2026-11-02 之前的提交使用 MIT 许可证。

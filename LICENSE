@@ -1,6 +1,29 @@
+"Commons Clause" License Condition v1.0
+
+The Software is provided to you by the Licensor under the License, as defined
+below, subject to the following condition.
+
+Without limiting other conditions in the License, the grant of rights under the
+License will not include, and the License does not grant to you, the right to
+Sell the Software.
+
+For purposes of the foregoing, "Sell" means practicing any or all of the rights
+granted to you under the License to provide to third parties, for a fee or other
+consideration (including without limitation fees for hosting or consulting/
+support services related to the Software), a product or service whose value
+derives, entirely or substantially, from the functionality of the Software. Any
+license notice or attribution required by the License must also include this
+Commons Clause License Condition notice.
+
+Software: Bobao 定制播报
+License: MIT
+Licensor: funengzhe (https://github.com/funengzhe/bobao)
+
+-------------------------------------------------------------------------------
+
 MIT License
 
-Copyright (c) 2026 Bobao contributors
+Copyright (c) 2026 funengzhe — https://github.com/funengzhe/bobao
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -9,8 +32,9 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The above copyright notice, including the link to the original repository, and
+this permission notice shall be included in all copies or substantial portions
+of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -19,3 +43,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+-------------------------------------------------------------------------------
+
+中文说明（以上英文条款为准）
+
+可以：个人或公司免费使用（包括在自己的业务里用来播报自己的通知）、修改、
+克隆、转发、提交改进。克隆和转发时必须保留本许可证和上面的版权声明，
+其中包括本仓库地址 https://github.com/funengzhe/bobao 。
+
+不可以：把本软件或基于它改出来的东西，作为收费的产品或服务提供给别人。
+包括直接出售、收费托管、收费部署或支持服务，以及主要价值来自本软件的
+付费产品。需要商用授权，请在本仓库提 Issue 联系。
+
+本仓库 docs/audio/ 里的试听音频另有条款，见 docs/audio/LICENSE.md。

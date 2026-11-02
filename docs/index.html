@@ -26,7 +26,7 @@ code{background:var(--tag);padding:1px 6px;border-radius:4px;font-size:12px;word
 </style>
 <main>
 <h1>Bobao 定制播报 · 试听</h1>
-<p class="lead">每个场景、风格、音色都可以先听一下再决定。如云音色录一整套只要两三个积分，录好后永久免费播放；不接如云，也可以直接用 Mac 自带的声音。</p>
+<p class="lead">每个场景、风格、音色都可以先听一下再决定。如云音色录一整套只要两三个积分，录好后永久免费播放；不接如云，也可以直接用 Mac 自带的声音。试听音频仅供试听，不得提取或商用（<a href="https://github.com/funengzhe/bobao/blob/main/docs/audio/LICENSE.md">条款</a>）。</p>
 <nav id="tabs"></nav>
 <p class="intro" id="intro"></p>
 <div class="filters" id="filters"></div>
@@ -38,9 +38,9 @@ const INTRO = {
   "风格": "风格决定每类通知怎么说。下面每种风格各放三句：收款、注册、告警。",
   "音色": "所有音色念的都是同一段话，方便对比。打勾的是推荐音色。英文音色念的是英文示例。",
   "情绪": "同一句话，换不同的情绪。可以给每类通知分别设定情绪，比如收款开心、告警害怕。",
-  "Mac 免费声音": "不接如云时，用 macOS 自带的声音，不花钱。效果比如云配音生硬一些。"
+  "Mac 免费声音": "不接如云时，用 macOS 自带的声音，不花钱，效果比如云配音生硬一些。这些是苹果的声音，所以网页上不放音频：在你自己的 Mac 上运行 bobao gallery，就会现场生成并试听。"
 };
-let items = [], tab = "场景", filter = {};
+let items = [], tab = "场景", filter = {}, macHere = false;
 const $ = s => document.getElementById(s);
 let current = null;
 function play(btn, src){
@@ -61,7 +61,9 @@ function card(e){
   const cfg = tab === "场景" ? `"scene": "${e.group}"` : tab === "风格" ? `"style": "${e.group}"` : tab === "Mac 免费声音" ? `"engine": "mac", "macVoice": "${e.voiceId}"` : `{"voice": "${e.voiceId}"${e.emotion ? `, "emotion": "${e.emotion}"` : ""}}`;
   const code = document.createElement("code"); code.textContent = cfg; c.append(code);
   const b = document.createElement("button"); b.className = "play";
-  if (e.ready) { b.textContent = "▶ 试听"; b.onclick = () => play(b, e.file); } else { b.textContent = "试听音频生成中"; b.disabled = true; }
+  if (e.ready || (e.engine === "mac" && macHere)) { b.textContent = "▶ 试听"; b.onclick = () => play(b, e.file); }
+  else if (e.engine === "mac") { b.textContent = "在你的 Mac 上运行 bobao gallery 试听"; b.disabled = true; }
+  else { b.textContent = "试听音频生成中"; b.disabled = true; }
   c.append(b);
   return c;
 }
@@ -85,8 +87,10 @@ function show(list){
     Object.values(seen).forEach(group => group.forEach(e => g.append(card(e))));
   } else list.forEach(e => g.append(card(e)));
 }
-fetch("gallery.json").then(r => r.json()).then(d => {
+fetch("gallery.json").then(r => r.json()).then(async d => {
   items = d;
+  const mac = d.find(e => e.engine === "mac");
+  if (mac) { try { macHere = (await fetch(mac.file, {method: "HEAD"})).ok; } catch (e) {} }
   ["场景", "风格", "音色", "情绪", "Mac 免费声音"].forEach(k => {
     const b = document.createElement("button"); b.textContent = k; b.dataset.tab = k; b.onclick = () => { tab = k; render(); }; $("tabs").append(b);
   });
