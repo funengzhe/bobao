@@ -12,92 +12,182 @@
   {
    "group": "上班",
    "text": "注意注意，老板刚刚在群里点你名了，好像挺着急的，快去看看吧。",
-   "file": "audio/scene01.mp3"
+   "file": "audio/scene01.mp3",
+   "popup": {
+    "app": "飞书",
+    "title": "产品研发群",
+    "body": "张总：@你 这个需求今天能上线吗？"
+   }
   },
   {
    "group": "上班",
    "text": "提醒一下，十分钟后就要开会了，记得带上电脑，别迟到哦。",
-   "file": "audio/scene02.mp3"
+   "file": "audio/scene02.mp3",
+   "popup": {
+    "app": "日历",
+    "title": "周会 · 10 分钟后开始",
+    "body": "15:00 · 会议室 A"
+   }
   },
   {
    "group": "上班",
    "text": "好消息，你上周提交的报销已经批下来啦，钱很快就到账。",
-   "file": "audio/scene03.mp3"
+   "file": "audio/scene03.mp3",
+   "popup": {
+    "app": "企业微信",
+    "title": "审批通过",
+    "body": "你提交的差旅报销 ¥1,286.00 已通过"
+   }
   },
   {
    "group": "上班",
    "text": "六点啦，今天的工作就到这里吧，辛苦了一整天，准时下班。",
-   "file": "audio/scene04.mp3"
+   "file": "audio/scene04.mp3",
+   "popup": {
+    "app": "定时提醒",
+    "title": "18:00 下班提醒",
+    "body": "工作日每天"
+   }
   },
   {
    "group": "生意",
    "text": "叮咚，到账 299 元，新客户第一次下单，今天也太棒了吧。",
-   "file": "audio/scene05.mp3"
+   "file": "audio/scene05.mp3",
+   "popup": {
+    "app": "收款",
+    "title": "收款到账 ¥299.00",
+    "body": "新客户 · 首单"
+   }
   },
   {
    "group": "生意",
    "text": "大单来啦，刚刚到账 5000 元，老板威武，今晚加个鸡腿。",
-   "file": "audio/scene06.mp3"
+   "file": "audio/scene06.mp3",
+   "popup": {
+    "app": "收款",
+    "title": "收款到账 ¥5,000.00",
+    "body": "大额订单"
+   }
   },
   {
    "group": "生意",
    "text": "又有新客户下单了，这已经是今天第十单，生意越来越好啦。",
-   "file": "audio/scene07.mp3"
+   "file": "audio/scene07.mp3",
+   "popup": {
+    "app": "我的店",
+    "title": "新订单 #10010",
+    "body": "今日第 10 单"
+   }
   },
   {
    "group": "开发",
    "text": "上线成功，所有检查都通过了，可以安心去喝杯咖啡了。",
-   "file": "audio/scene08.mp3"
+   "file": "audio/scene08.mp3",
+   "popup": {
+    "app": "GitHub",
+    "title": "Deploy succeeded",
+    "body": "main · 所有检查已通过"
+   }
   },
   {
    "group": "开发",
    "text": "构建失败了，好像是测试没过，快去看看是哪里出错了。",
-   "file": "audio/scene09.mp3"
+   "file": "audio/scene09.mp3",
+   "popup": {
+    "app": "GitHub",
+    "title": "Build failed",
+    "body": "main · test 未通过"
+   }
   },
   {
    "group": "开发",
    "text": "警报警报，服务器出故障了，用户已经访问不了，请尽快处理。",
-   "file": "audio/scene10.mp3"
+   "file": "audio/scene10.mp3",
+   "popup": {
+    "app": "监控",
+    "title": "【严重】服务不可用",
+    "body": "api.example.com 无法访问"
+   }
   },
   {
    "group": "开发",
    "text": "虚惊一场，服务已经恢复正常啦，大家可以松一口气了。",
-   "file": "audio/scene11.mp3"
+   "file": "audio/scene11.mp3",
+   "popup": {
+    "app": "监控",
+    "title": "已恢复",
+    "body": "api.example.com 恢复正常"
+   }
   },
   {
    "group": "直播",
    "text": "感谢大哥送的火箭，直播间一下子沸腾啦，快跟大哥说声谢谢。",
-   "file": "audio/scene12.mp3"
+   "file": "audio/scene12.mp3",
+   "popup": {
+    "app": "直播助手",
+    "title": "大哥 送出 火箭 ×1",
+    "body": "直播间人气 +9999"
+   }
   },
   {
    "group": "直播",
    "text": "恭喜，今天又涨了一百个粉丝，大家都很喜欢你，继续加油。",
-   "file": "audio/scene13.mp3"
+   "file": "audio/scene13.mp3",
+   "popup": {
+    "app": "直播助手",
+    "title": "今日新增粉丝 100",
+    "body": "粉丝总数 12,580"
+   }
   },
   {
    "group": "生活",
    "text": "外卖到楼下啦，忙了一上午，先放下手里的事，快去吃饭吧。",
-   "file": "audio/scene14.mp3"
+   "file": "audio/scene14.mp3",
+   "popup": {
+    "app": "外卖",
+    "title": "您的外卖已送达",
+    "body": "骑手已放在一楼前台"
+   }
   },
   {
    "group": "生活",
    "text": "快递已经到驿站了，取件码是三八六二，记得下班顺路去取。",
-   "file": "audio/scene15.mp3"
+   "file": "audio/scene15.mp3",
+   "popup": {
+    "app": "驿站",
+    "title": "包裹已到驿站",
+    "body": "取件码 3862"
+   }
   },
   {
    "group": "生活",
    "text": "妈妈发来消息了，问你周末回不回家，有空记得回一下哦。",
-   "file": "audio/scene16.mp3"
+   "file": "audio/scene16.mp3",
+   "popup": {
+    "app": "微信",
+    "title": "妈妈",
+    "body": "周末回家吃饭吗？"
+   }
   },
   {
    "group": "生活",
    "text": "已经晚上十点了，你还在忙，辛苦啦，剩下的明天再做，早点休息。",
-   "file": "audio/scene17.mp3"
+   "file": "audio/scene17.mp3",
+   "popup": {
+    "app": "定时提醒",
+    "title": "22:00 休息提醒",
+    "body": "每天"
+   }
   },
   {
    "group": "生活",
    "text": "明天早上八点的高铁，别忘了定好闹钟，身份证也记得带上。",
-   "file": "audio/scene18.mp3"
+   "file": "audio/scene18.mp3",
+   "popup": {
+    "app": "日历",
+    "title": "明早 08:00 高铁 G1234",
+    "body": "北京南 → 上海虹桥"
+   }
   }
  ],
  "intro": "我是{名字}，这是我的声音，之后由我来为你播报。",
@@ -106,133 +196,177 @@
    "id": "female-shaonv-jingpin",
    "name": "小柚",
    "label": "少女",
-   "intro": "audio/intro-female-shaonv-jingpin.mp3"
+   "intro": "audio/intro-female-shaonv-jingpin.mp3",
+   "desc": "清亮活泼的少女，页面上的示范都是她",
+   "kind": "女声"
   },
   {
    "id": "female-shaonv",
    "name": "小桃",
    "label": "少女（经典）",
-   "intro": "audio/intro-female-shaonv.mp3"
+   "intro": "audio/intro-female-shaonv.mp3",
+   "desc": "清清亮亮，听着就舒服",
+   "kind": "女声"
   },
   {
    "id": "Chinese (Mandarin)_News_Anchor",
    "name": "安然",
    "label": "新闻女声",
-   "intro": "audio/intro-Chinese_Mandarin__News_Anchor.mp3"
+   "intro": "audio/intro-Chinese_Mandarin__News_Anchor.mp3",
+   "desc": "新闻主播，字正腔圆",
+   "kind": "女声"
   },
   {
    "id": "Chinese (Mandarin)_Mature_Woman",
    "name": "苏姐",
    "label": "傲娇御姐",
-   "intro": "audio/intro-Chinese_Mandarin__Mature_Woman.mp3"
+   "intro": "audio/intro-Chinese_Mandarin__Mature_Woman.mp3",
+   "desc": "傲娇御姐，嘴硬心软",
+   "kind": "女声"
   },
   {
    "id": "tianxin_xiaoling",
    "name": "小玲",
    "label": "甜心",
-   "intro": "audio/intro-tianxin_xiaoling.mp3"
+   "intro": "audio/intro-tianxin_xiaoling.mp3",
+   "desc": "甜到心里的甜心",
+   "kind": "女声"
   },
   {
    "id": "qiaopi_mengmei",
    "name": "糖糖",
    "label": "俏皮萌妹",
-   "intro": "audio/intro-qiaopi_mengmei.mp3"
+   "intro": "audio/intro-qiaopi_mengmei.mp3",
+   "desc": "俏皮萌妹，古灵精怪",
+   "kind": "女声"
   },
   {
    "id": "junlang_nanyou",
    "name": "阿泽",
    "label": "俊朗男友",
-   "intro": "audio/intro-junlang_nanyou.mp3"
+   "intro": "audio/intro-junlang_nanyou.mp3",
+   "desc": "温柔男友，句句宠溺",
+   "kind": "男声"
   },
   {
    "id": "Robot_Armor",
    "name": "零号",
    "label": "机械战甲",
-   "intro": "audio/intro-Robot_Armor.mp3"
+   "intro": "audio/intro-Robot_Armor.mp3",
+   "desc": "机械战甲，来自未来的播报员",
+   "kind": "童声和特别"
   },
   {
    "id": "female-yujie-jingpin",
    "name": "沈姐",
    "label": "御姐",
-   "intro": "audio/intro-female-yujie-jingpin.mp3"
+   "intro": "audio/intro-female-yujie-jingpin.mp3",
+   "desc": "干练御姐，自带气场",
+   "kind": "女声"
   },
   {
    "id": "female-chengshu-jingpin",
    "name": "若溪",
    "label": "成熟女声",
-   "intro": "audio/intro-female-chengshu-jingpin.mp3"
+   "intro": "audio/intro-female-chengshu-jingpin.mp3",
+   "desc": "知性稳重，一字一句很清楚",
+   "kind": "女声"
   },
   {
    "id": "female-yujie",
    "name": "韩姐",
    "label": "御姐（经典）",
-   "intro": "audio/intro-female-yujie.mp3"
+   "intro": "audio/intro-female-yujie.mp3",
+   "desc": "利落干练，不拖泥带水",
+   "kind": "女声"
   },
   {
    "id": "female-chengshu",
    "name": "素心",
    "label": "成熟女声（经典）",
-   "intro": "audio/intro-female-chengshu.mp3"
+   "intro": "audio/intro-female-chengshu.mp3",
+   "desc": "温和稳重，让人安心",
+   "kind": "女声"
   },
   {
    "id": "Chinese (Mandarin)_Kind-hearted_Antie",
    "name": "王阿姨",
    "label": "热心大婶",
-   "intro": "audio/intro-Chinese_Mandarin__Kind-hearted_Antie.mp3"
+   "intro": "audio/intro-Chinese_Mandarin__Kind-hearted_Antie.mp3",
+   "desc": "热心大婶，接地气",
+   "kind": "女声"
   },
   {
    "id": "danya_xuejie",
    "name": "知夏",
    "label": "淡雅学姐",
-   "intro": "audio/intro-danya_xuejie.mp3"
+   "intro": "audio/intro-danya_xuejie.mp3",
+   "desc": "淡雅学姐，安安静静",
+   "kind": "女声"
   },
   {
    "id": "male-qn-jingying-jingpin",
    "name": "陆川",
    "label": "精英青年",
-   "intro": "audio/intro-male-qn-jingying-jingpin.mp3"
+   "intro": "audio/intro-male-qn-jingying-jingpin.mp3",
+   "desc": "精英青年，专业干净",
+   "kind": "男声"
   },
   {
    "id": "male-qn-daxuesheng-jingpin",
    "name": "小凯",
    "label": "大学生",
-   "intro": "audio/intro-male-qn-daxuesheng-jingpin.mp3"
+   "intro": "audio/intro-male-qn-daxuesheng-jingpin.mp3",
+   "desc": "阳光大学生，元气满满",
+   "kind": "男声"
   },
   {
    "id": "male-qn-qingse",
    "name": "小宇",
    "label": "青涩青年（经典）",
-   "intro": "audio/intro-male-qn-qingse.mp3"
+   "intro": "audio/intro-male-qn-qingse.mp3",
+   "desc": "清爽少年",
+   "kind": "男声"
   },
   {
    "id": "male-qn-daxuesheng",
    "name": "阿杰",
    "label": "大学生（经典）",
-   "intro": "audio/intro-male-qn-daxuesheng.mp3"
+   "intro": "audio/intro-male-qn-daxuesheng.mp3",
+   "desc": "朝气男生，说话带笑",
+   "kind": "男声"
   },
   {
    "id": "lengdan_xiongzhang",
    "name": "顾学长",
    "label": "冷淡学长",
-   "intro": "audio/intro-lengdan_xiongzhang.mp3"
+   "intro": "audio/intro-lengdan_xiongzhang.mp3",
+   "desc": "高冷学长，话少但靠谱",
+   "kind": "男声"
   },
   {
    "id": "clever_boy",
    "name": "豆豆",
    "label": "聪明男童",
-   "intro": "audio/intro-clever_boy.mp3"
+   "intro": "audio/intro-clever_boy.mp3",
+   "desc": "聪明的小男孩",
+   "kind": "童声和特别"
   },
   {
    "id": "cute_boy",
    "name": "乐乐",
    "label": "可爱男童",
-   "intro": "audio/intro-cute_boy.mp3"
+   "intro": "audio/intro-cute_boy.mp3",
+   "desc": "奶声奶气的小可爱",
+   "kind": "童声和特别"
   },
   {
    "id": "cartoon_pig",
    "name": "小琪",
    "label": "卡通",
-   "intro": "audio/intro-cartoon_pig.mp3"
+   "intro": "audio/intro-cartoon_pig.mp3",
+   "desc": "卡通音，萌就完事了",
+   "kind": "童声和特别"
   }
  ]
 }

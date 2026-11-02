@@ -388,7 +388,7 @@ def cmd_init(a):
     print("2) 这些消息从哪来？可以多选")
     first = scenes.get(user["scenes"][0], {})
     picked = choose("选择", [("电脑上的弹窗：飞书、企业微信、钉钉、微信、日历、邮件…", "notifications"),
-                             ("飞书群里的机器人通知（要建一个「飞书播报」应用，见 README）", "feishu"),
+                             ("飞书群里的机器人通知（要建一个「飞书播报」应用，见 AGENTS.md）", "feishu"),
                              ("你自己的系统推过来（Webhook）", "webhook"),
                              ("定时提醒（例如工作日六点提醒下班）", "remind")],
                     ",".join(str(i) for i, s in enumerate(("notifications", "feishu", "webhook", "remind"), 1)

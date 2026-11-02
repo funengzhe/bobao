@@ -151,7 +151,7 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 
 ## 把用户的话变成设置
 
-设置在 `~/.bobao/config.json`，改完立即生效，不用重启。先读一遍现有内容再改，不要整个覆盖。字段说明见 README「设置文件」。
+设置在 `~/.bobao/config.json`，改完立即生效，不用重启。先读一遍现有内容再改，不要整个覆盖。字段说明见 [GUIDE.md「设置文件」](GUIDE.md#设置文件)。
 
 | 用户说 | 你做 |
 |---|---|
@@ -169,7 +169,7 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 
 ## 换声音
 
-1. 给他试听页 <https://funengzhe.github.io/bobao/>（本地：`bobao gallery`），或者运行 `bobao voices` 列出推荐的 22 个声音。他也可以用如云里的其他声音，包括自己克隆的：`bobao voices --all`。
+1. 给他试听页 <https://funengzhe.github.io/bobao/>（本地：`bobao gallery`），或者运行 `bobao voices` 列出推荐的 22 个声音。声音可以个性化定制：如云里有更多音色，他也可以在 <https://www.rooyun.com> 克隆自己或家人的声音、或描述一个声音让如云设计。做好后运行 `bobao voices --all`（要先登录如云）找到它，`bobao voice use <音色 id>`。
 2. `bobao rooyun me` 看有没有登录。没有的话：`bobao rooyun login`，请他在打开的如云页面登录（没有账号就在那里注册）并点「授权」。Bobao 自己连如云，不需要另外安装如云的 skill 或工具。
 3. `bobao voice use 安然`：报出用这个声音要生成多少句、多少积分、大约多久，以及他的可用积分。告诉他，等他同意。可用积分不够的话，请他先到 <https://www.rooyun.com> 充值。这时设置还没变；他不想换了就 `bobao voice use --cancel`。
 4. `bobao voice record --yes`：生成。全部生成完才换成新声音，并念一句自我介绍，问他听到没有。中途断了重跑同一条命令，不会重复扣费。

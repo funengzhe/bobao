@@ -1,89 +1,392 @@
 <!doctype html>
-<html lang="zh">
+<html lang="zh-CN">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Bobao 试听</title>
+<title>Bobao 定制播报</title>
+<meta name="description" content="把你在意的消息，用你喜欢的声音、你想听的话念出来。上班、做生意、写代码、做直播、过日子都能用。">
+<meta property="og:title" content="Bobao 定制播报">
+<meta property="og:description" content="把你在意的消息，用你喜欢的声音、你想听的话念出来。点开听听。">
+<meta property="og:image" content="https://funengzhe.github.io/bobao/og.png">
+<meta property="og:url" content="https://funengzhe.github.io/bobao/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 <style>
-:root{--bg:#f6f6f4;--fg:#1b1b1b;--mute:#6d6d6d;--card:#fff;--line:#e2e2de;--acc:#1f6feb;--tag:#efefea}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--fg:#ececec;--mute:#9a9a9a;--card:#1c1c1c;--line:#2e2e2e;--acc:#6ea8ff;--tag:#262626}}
-:root[data-theme="dark"]{--bg:#121212;--fg:#ececec;--mute:#9a9a9a;--card:#1c1c1c;--line:#2e2e2e;--acc:#6ea8ff;--tag:#262626}
+:root{
+  --bg:#FBFAF7;--bg2:#F4F1EC;--card:#FFFFFF;--fg:#1F1D1A;--mute:#77716A;--line:#ECE7E0;
+  --acc:#FF6B4A;--acc2:#FF9A5C;--accbg:#FFF0EB;--shadow:0 1px 2px rgba(31,29,26,.04),0 8px 24px rgba(31,29,26,.06);
+  --ok:#16A34A;--bad:#E5484D;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141312;--bg2:#1A1917;--card:#1F1D1B;--fg:#F2EFEA;--mute:#A39D95;--line:#2F2C29;
+  --acc:#FF8566;--acc2:#FFAA70;--accbg:#2E1E19;--shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25)}}
+:root[data-theme="dark"]{
+  --bg:#141312;--bg2:#1A1917;--card:#1F1D1B;--fg:#F2EFEA;--mute:#A39D95;--line:#2F2C29;
+  --acc:#FF8566;--acc2:#FFAA70;--accbg:#2E1E19;--shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
-main{max-width:920px;margin:auto;padding:24px 16px 80px}
-h1{font-size:24px;margin:0 0 4px}
-h2{font-size:18px;margin:32px 0 4px}
-h3{font-size:14px;color:var(--mute);font-weight:600;margin:18px 0 8px}
-.lead,.hint{color:var(--mute);margin:0 0 12px}
-a{color:var(--acc)}
-.lines{display:grid;gap:8px}
-.line{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.line span{flex:1}
-button.p{font:inherit;font-size:13px;border:0;border-radius:999px;background:var(--acc);color:#fff;width:34px;height:34px;cursor:pointer;flex:none}
-button.p.on{background:var(--fg);color:var(--bg)}
-.voices{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
-.v{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.v .n{font-weight:600}
-.v .s{font-size:12px;color:var(--mute)}
-.all{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:3px 12px;cursor:pointer}
-.start{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
-code{background:var(--tag);padding:1px 6px;border-radius:4px;font-size:13px;word-break:break-all}
-.foot{margin-top:40px;font-size:13px;color:var(--mute)}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+button{font:inherit;color:inherit;cursor:pointer}
+
+/* nav */
+nav{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid transparent}
+nav.scrolled{border-bottom-color:var(--line)}
+nav .wrap{display:flex;align-items:center;gap:24px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;text-decoration:none}
+.brand img{width:30px;height:30px}
+nav .links{display:flex;gap:22px;margin-left:auto;font-size:15px}
+nav .links a{text-decoration:none;color:var(--mute)}
+nav .links a:hover{color:var(--fg)}
+@media (max-width:640px){nav .links a:not(.gh){display:none}}
+
+/* hero */
+.hero{padding:56px 0 40px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center}
+@media (max-width:900px){.hero .wrap{grid-template-columns:1fr;gap:36px}.hero{padding-top:32px}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--acc);background:var(--accbg);padding:4px 12px;border-radius:999px;font-weight:600}
+.nw{white-space:nowrap}
+@media (max-width:520px){.nw{white-space:normal}}
+.hero .wrap>*{min-width:0}
+h1{font-size:clamp(30px,5.2vw,54px);line-height:1.18;letter-spacing:-.02em;margin:18px 0 18px;font-weight:800}
+h1 em{font-style:normal;background:linear-gradient(120deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:18px;color:var(--mute);margin:0 0 28px;max-width:30em}
+.cta{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;border:0;border-radius:12px;padding:12px 22px;font-weight:600;font-size:16px;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--acc);color:#fff;box-shadow:0 6px 18px color-mix(in srgb,var(--acc) 35%,transparent)}
+.btn.primary:hover{transform:translateY(-1px)}
+.btn.ghost{background:var(--card);border:1px solid var(--line)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:22px;font-size:14px;color:var(--mute)}
+.meta span::before{content:"✓ ";color:var(--ok);font-weight:700}
+
+/* demo */
+.demo{position:relative;background:linear-gradient(160deg,#FFE3D6,#FFD3C2 45%,#FFC7B8);border-radius:22px;padding:14px;box-shadow:var(--shadow);aspect-ratio:5/4;overflow:hidden}
+@media (max-width:900px){.demo{aspect-ratio:auto;height:380px}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .demo{background:linear-gradient(160deg,#3A2620,#2E1F1B 50%,#271A17)}}
+:root[data-theme="dark"] .demo{background:linear-gradient(160deg,#3A2620,#2E1F1B 50%,#271A17)}
+.demo .bar{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:rgba(31,29,26,.7);padding:2px 8px 10px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .demo .bar{color:rgba(255,255,255,.6)}}
+:root[data-theme="dark"] .demo .bar{color:rgba(255,255,255,.6)}
+.stack{position:absolute;top:44px;right:14px;left:14px;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.note{width:min(330px,100%);display:flex;gap:10px;align-items:flex-start;background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:14px;padding:10px 12px;box-shadow:0 4px 16px rgba(0,0,0,.08);animation:slidein .45s cubic-bezier(.2,.9,.3,1.2) both}
+.note.old{opacity:.55;transform:scale(.97);transition:opacity .4s,transform .4s}
+@keyframes slidein{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+.icon{flex:none;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px}
+.note .a{font-size:12px;color:var(--mute);display:flex;justify-content:space-between}
+.note .t{font-size:14px;font-weight:600;line-height:1.35}
+.note .b{font-size:13px;color:var(--mute);line-height:1.4}
+.speaker{position:absolute;left:14px;right:14px;bottom:14px;background:var(--card);border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.1)}
+.av{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:18px}
+.speaker .who{font-size:12px;color:var(--mute);display:flex;align-items:center;gap:8px}
+.speaker .say{font-size:15px;line-height:1.5;min-height:3em}
+.speaker .say .done{color:var(--fg)}
+.speaker .say .todo{color:color-mix(in srgb,var(--fg) 28%,transparent)}
+.wave{display:inline-flex;gap:2px;align-items:center;height:12px}
+.wave i{width:3px;height:4px;border-radius:2px;background:var(--acc);opacity:.35}
+.playing .wave i{opacity:1;animation:w .9s ease-in-out infinite}
+.wave i:nth-child(2){animation-delay:.15s}.wave i:nth-child(3){animation-delay:.3s}.wave i:nth-child(4){animation-delay:.45s}.wave i:nth-child(5){animation-delay:.2s}
+@keyframes w{0%,100%{height:4px}50%{height:12px}}
+
+/* sections */
+section{padding:72px 0}
+section.alt{background:var(--bg2)}
+h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.01em;margin:0 0 10px;font-weight:800}
+.sub{color:var(--mute);margin:0 0 32px;font-size:17px}
+.why{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:760px){.why{grid-template-columns:1fr}}
+.why div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.why b{display:block;font-size:18px;margin:10px 0 6px}
+.why p{margin:0;color:var(--mute);font-size:15px}
+.why .e{font-size:26px}
+
+/* scenes */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.tab{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 16px;font-size:15px}
+.tab[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.lines{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media (max-width:760px){.lines{grid-template-columns:1fr}}
+.line{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;cursor:pointer;transition:border-color .2s,box-shadow .2s;text-align:left}
+.line:hover{border-color:color-mix(in srgb,var(--acc) 40%,var(--line))}
+.line.playing{border-color:var(--acc);box-shadow:0 0 0 3px var(--accbg)}
+.line .pop{display:flex;gap:10px;align-items:center;background:var(--bg2);border-radius:12px;padding:9px 10px}
+.line .pop .icon{width:30px;height:30px;font-size:13px;border-radius:8px}
+.line .pop .t{font-size:14px;font-weight:600;line-height:1.3}
+.line .pop .b{font-size:12.5px;color:var(--mute);line-height:1.35}
+.line .bubble{display:flex;gap:10px;align-items:flex-start}
+.pbtn{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:var(--accbg);color:var(--acc);display:grid;place-items:center}
+.playing .pbtn,.v.playing .pbtn{background:var(--acc);color:#fff}
+.pbtn svg{width:14px;height:14px}
+.line .text{font-size:15.5px;line-height:1.55;padding-top:4px}
+
+/* voices */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.voices{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.v{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;transition:border-color .2s,box-shadow .2s}
+.v.playing{border-color:var(--acc);box-shadow:0 0 0 3px var(--accbg)}
+.v .top{display:flex;gap:12px;align-items:center}
+.v .n{font-weight:700;font-size:17px;display:flex;align-items:center;gap:8px}
+.v .l{font-size:12px;color:var(--mute);background:var(--bg2);border-radius:6px;padding:1px 7px;font-weight:500}
+.v .d{font-size:14px;color:var(--mute);line-height:1.45}
+.v .row{display:flex;gap:8px;align-items:center;margin-top:auto}
+.v .row .pbtn{width:auto;border-radius:999px;padding:0 14px;gap:6px;display:inline-flex;align-items:center;height:34px;font-size:14px;font-weight:600}
+.v.more{border-style:dashed;background:transparent}
+.v.more .d a{color:var(--acc)}
+.v.more .pbtn{text-decoration:none}
+.pick{margin-left:auto;border:1px solid var(--line);background:transparent;border-radius:999px;height:34px;padding:0 14px;font-size:14px;color:var(--mute)}
+.pick:hover{color:var(--fg);border-color:var(--fg)}
+.pick.ok{color:var(--ok);border-color:var(--ok)}
+
+/* first sound + start */
+.first{display:flex;gap:16px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin-bottom:28px}
+.first .text{flex:1;font-size:15.5px}
+.first .k{font-size:13px;color:var(--mute);margin-bottom:2px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+@media (max-width:760px){.steps{grid-template-columns:1fr}}
+.step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
+.step .num{width:28px;height:28px;border-radius:50%;background:var(--accbg);color:var(--acc);display:grid;place-items:center;font-weight:700;font-size:14px}
+.step b{display:block;margin:10px 0 4px;font-size:17px}
+.step p{margin:0;color:var(--mute);font-size:15px}
+.prompt{display:flex;gap:12px;align-items:center;background:var(--fg);color:var(--bg);border-radius:16px;padding:16px 16px 16px 20px;flex-wrap:wrap}
+.prompt code{flex:1;font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all;min-width:240px}
+.prompt button{border:0;border-radius:10px;padding:9px 16px;background:var(--acc);color:#fff;font-weight:600}
+.small{font-size:14px;color:var(--mute);margin-top:12px}
+
+/* faq */
+.faq{max-width:760px}
+details{border-bottom:1px solid var(--line);padding:16px 0}
+summary{cursor:pointer;font-weight:600;font-size:17px;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--mute);font-weight:400;font-size:22px;line-height:1}
+details[open] summary::after{content:"–"}
+details p{margin:10px 0 0;color:var(--mute)}
+
+footer{padding:40px 0 60px;color:var(--mute);font-size:14px;border-top:1px solid var(--line)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:12px;font-size:15px;opacity:0;pointer-events:none;transition:.25s;z-index:20;max-width:calc(100% - 32px);text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-<main>
-<h1>Bobao 定制播报</h1>
-<p class="lead">把你在意的消息，用你喜欢的声音、你想听的话念出来。上班、做生意、写代码、做直播、过日子，都可以。</p>
+</head>
+<body>
+<nav id="nav"><div class="wrap">
+  <a class="brand" href="#"><img src="logo.svg" alt="">Bobao</a>
+  <div class="links"><a href="#scenes">示范</a><a href="#voices">声音</a><a href="#start">安装</a><a href="#faq">问答</a><a class="gh" href="https://github.com/funengzhe/bobao">GitHub</a></div>
+</div></nav>
 
-<h2>能做什么</h2>
-<p class="hint">每一句都可以换成你自己的说法。示范声音：<span id="mainName"></span>。 <button class="all" id="playAll">▶ 连续播放</button></p>
-<div id="scenes"></div>
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="eyebrow">🔔 Bobao 定制播报</span>
+    <h1>把你在意的消息，<br><span class="nw">用<em>你喜欢的声音</em>念出来</span></h1>
+    <p class="lead">老板 @你、钱到账、构建失败、外卖到了、妈妈来消息……不用一直盯着屏幕，有人替你听着，用你想听的话告诉你。</p>
+    <div class="cta">
+      <button class="btn primary" id="heroPlay"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 1.5v11l9.5-5.5z" fill="currentColor"/></svg>听一遍</button>
+      <a class="btn ghost" href="#start">怎么安装</a>
+    </div>
+    <div class="meta"><span>免费，源码公开</span><span>消息不出你的电脑</span><span>交给智能体自动装好</span></div>
+  </div>
+  <div class="demo" id="demo" aria-label="演示：通知弹出后被念出来">
+    <div class="bar"><span id="soundHint">🔈 点「听一遍」打开声音</span><span>14:32</span></div>
+    <div class="stack" id="stack"></div>
+    <div class="speaker" id="speaker">
+      <div class="av" style="background:linear-gradient(135deg,#FF8A65,#FF5E62)">柚</div>
+      <div style="flex:1;min-width:0">
+        <div class="who">小柚 <span class="wave"><i></i><i></i><i></i><i></i><i></i></span></div>
+        <div class="say" id="say"></div>
+      </div>
+    </div>
+  </div>
+</div></header>
 
-<h2>谁来念</h2>
-<p class="hint">挑一个你喜欢的声音。接入如云后，用它把你的播报内容生成一遍就能用；不接如云，用电脑自带的声音。</p>
-<div class="voices" id="voices"></div>
+<section class="alt"><div class="wrap">
+  <div class="why">
+    <div><span class="e">👂</span><b>有人替你盯着</b><p>不用一直看手机。小事轻轻提一句，大事语气一紧，一听就知道要不要马上处理。</p></div>
+    <div><span class="e">💛</span><b>说你想听的话</b><p>赚了钱有人夸，加班有人心疼，出了事有人陪你急。每一句都能换成你自己的说法。</p></div>
+    <div><span class="e">🎙️</span><b>用你喜欢的声音</b><p>新闻主播、御姐、温柔男友、机器人、小朋友……挑一个声音，以后都由 TA 来念。</p></div>
+  </div>
+</div></section>
 
-<h2>装好的第一声</h2>
-<p class="hint">安装成功时会听到这一句。</p>
-<div class="lines"><div class="line" id="welcome"><span id="welcomeText"></span></div></div>
+<section id="scenes"><div class="wrap">
+  <h2>上班、做生意、写代码、做直播、过日子</h2>
+  <p class="sub">消息弹出来，就这样念给你听。点一张卡片试试，示范声音是小柚。</p>
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="lines" id="lines"></div>
+</div></section>
 
-<h2>怎么开始</h2>
-<div class="start">
-  <p>把这个链接发给你的智能体（Claude Code、Codex、Cursor 等），说一句：</p>
-  <p><code>帮我装上 Bobao：https://github.com/funengzhe/bobao</code></p>
-  <p>它会问你想听哪些提醒、消息从哪来、怎么称呼你，然后装好。想换声音、改说法，之后也直接跟它说。目前只支持 macOS。</p>
-</div>
+<section id="voices" class="alt"><div class="wrap">
+  <h2>谁来念，你来挑</h2>
+  <p class="sub">这里先放 22 个，每个都念了一句自我介绍。看中哪个，点「就要 TA」，把复制的话发给你的智能体。声音也能个性化定制：如云里有更多音色，还能用你自己的声音。</p>
+  <div class="filters" id="filters"></div>
+  <div class="voices" id="voiceGrid"></div>
+  <p class="small">不挑也能用：默认用电脑自带的声音，免费。想换成这里的声音，用如云生成一次你的全部说法，一般一两个积分，之后一直免费播。</p>
+</div></section>
 
-<p class="foot">试听音频仅供试听，不得提取或商用（<a href="https://github.com/funengzhe/bobao/blob/main/docs/audio/LICENSE.md">条款</a>）。代码：<a href="https://github.com/funengzhe/bobao">github.com/funengzhe/bobao</a></p>
-</main>
+<section id="start"><div class="wrap">
+  <h2>让智能体帮你装</h2>
+  <p class="sub">不用懂技术。Claude Code、Codex、Cursor 这类智能体都能照着说明装。目前支持 macOS。</p>
+  <div class="steps">
+    <div class="step"><div class="num">1</div><b>发一句话</b><p>把下面这句话复制给你的智能体。</p></div>
+    <div class="step"><div class="num">2</div><b>回答三个问题</b><p>想听哪些提醒、消息从哪来、怎么称呼你。</p></div>
+    <div class="step"><div class="num">3</div><b>听到这一声，就装好了</b><p>想换声音、改说法、加提醒，之后也直接跟它说。</p></div>
+  </div>
+  <div class="prompt"><code id="promptText">帮我装上 Bobao：https://github.com/funengzhe/bobao</code><button id="copyPrompt">复制</button></div>
+  <div class="first" id="first" style="margin-top:28px;margin-bottom:0"></div>
+</div></section>
+
+<section id="faq" class="alt"><div class="wrap faq">
+  <h2>常见问题</h2>
+  <details><summary>要花钱吗？</summary><p>Bobao 免费。用电脑自带的声音完全不花钱。想用这里的好听声音，要用你自己的如云账号生成一次你的全部说法，一般一两个积分；生成前智能体会先告诉你价格，你同意才生成。生成好存在你的电脑上，以后每次播报都不再花钱，断网也能念。</p></details>
+  <details><summary>我的消息会被上传吗？</summary><p>不会。消息只在你自己的电脑上处理。只有生成声音的那一次，要念的句子（不是你的消息）会发给如云。</p></details>
+  <details><summary>能读哪些消息？</summary><p>电脑上任何 App 弹出的通知：飞书、企业微信、钉钉、微信、日历、邮件……；飞书群里机器人发的卡片；你自己系统发来的 Webhook；还有你设定的定时提醒。</p></details>
+  <details><summary>公司电脑、公司的飞书也能用吗？</summary><p>能。读电脑弹窗不需要公司开任何权限，也不碰你的账号。个人微信、钉钉也只读弹窗，不做任何接口或外挂，没有封号风险。</p></details>
+  <details><summary>还要另外装如云吗？</summary><p>不用。Bobao 自己会连如云，换声音时浏览器里登录如云、点一下「授权」就行。</p></details>
+  <details><summary>能用我自己的声音吗？</summary><p>能。声音可以个性化定制：在<a href="https://www.rooyun.com">如云</a>里克隆你自己或家人的声音，或者描述一个声音让如云设计，也可以挑如云里这 22 个以外的音色。做好后告诉智能体「用我在如云做的那个声音」，它会找到并帮你生成。</p></details>
+  <details><summary>Windows 能用吗？</summary><p>目前只支持 macOS。</p></details>
+</div></section>
+
+<footer><div class="wrap">
+  <span>Bobao 定制播报 · <a href="https://github.com/funengzhe/bobao">github.com/funengzhe/bobao</a> · <a href="https://github.com/funengzhe/bobao/blob/main/LICENSE">MIT + Commons Clause</a></span>
+  <span>声音由<a href="https://www.rooyun.com">如云</a>生成，试听音频仅供试听（<a href="https://github.com/funengzhe/bobao/blob/main/docs/audio/LICENSE.md">条款</a>）</span>
+</div></footer>
+<div class="toast" id="toast"></div>
+
 <script>
 const $ = id => document.getElementById(id);
-let audio = null, btn = null, queue = [];
-function stop(){ if (audio) audio.pause(); if (btn) { btn.classList.remove("on"); btn.textContent = "▶"; } audio = btn = null; }
-function play(b, src, next){
-  const same = btn === b; stop(); queue = next || [];
-  if (same) { queue = []; return; }
-  audio = new Audio(src); btn = b; b.classList.add("on"); b.textContent = "■";
-  audio.onended = () => { stop(); const n = queue.shift(); if (n) play(n[0], n[1], queue); };
-  audio.play();
+const COLORS = {"飞书":"#3370FF","日历":"#FF3B30","企业微信":"#0082EF","定时提醒":"#FF6B4A","收款":"#F5A300","我的店":"#FF7A45",
+  "GitHub":"#24292F","监控":"#E5484D","直播助手":"#FE2C55","外卖":"#FFB300","驿站":"#00A870","微信":"#07C160"};
+const AV = [["#FF8A65","#FF5E62"],["#F6A5C0","#E86A92"],["#7F9CF5","#5A67D8"],["#B794F4","#805AD5"],["#FDB4C6","#F56598"],["#FBD38D","#ED8936"],
+  ["#68D3B5","#319795"],["#A0AEC0","#4A5568"],["#F687B3","#B83280"],["#90CDF4","#3182CE"],["#FEB2B2","#C53030"],["#C3DAFE","#667EEA"],
+  ["#FBB6CE","#D53F8C"],["#9AE6B4","#38A169"],["#81E6D9","#2C7A7B"],["#FBD38D","#DD6B20"],["#A3BFFA","#4C51BF"],["#F6E05E","#D69E2E"],
+  ["#CBD5E0","#2D3748"],["#9DECF9","#00A3C4"],["#FED7E2","#ED64A6"],["#FEEBC8","#F6AD55"]];
+const PLAY = '<svg viewBox="0 0 14 14"><path d="M3 1.5v11l9.5-5.5z" fill="currentColor"/></svg>';
+const STOP = '<svg viewBox="0 0 14 14"><rect x="2.5" y="2.5" width="9" height="9" rx="1.5" fill="currentColor"/></svg>';
+const icon = (app, cls = "icon") => `<div class="${cls}" style="background:${COLORS[app] || "#888"}">${app === "GitHub" ? "GH" : app[0]}</div>`;
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// One player for the whole page: whatever plays marks its element .playing
+const audio = new Audio();
+let current = null, onEnd = null, heroRunning = false, stopHero = () => {};
+function stopAll() {
+  audio.pause(); onEnd = null;
+  if (current) { current.classList.remove("playing"); const b = current.querySelector(".pbtn"); if (b) b.innerHTML = b.dataset.idle || PLAY; }
+  current = null;
 }
-function pbtn(src){ const b = document.createElement("button"); b.className = "p"; b.textContent = "▶"; b.onclick = () => play(b, src); return b; }
+function play(el, src, then) {
+  if (heroRunning && el !== $("demo")) stopHero();
+  const same = current === el; stopAll(); if (same && !then) return;
+  current = el; el.classList.add("playing");
+  const b = el.querySelector(".pbtn"); if (b) { b.dataset.idle = b.dataset.idle || b.innerHTML; b.innerHTML = b.innerHTML.includes("试听") ? STOP + "停止" : STOP; }
+  audio.src = src; onEnd = then || null; audio.play().catch(() => {});
+}
+audio.onended = () => { const f = onEnd; const el = current; stopAll(); if (f) f(el); };
+
+function toast(t) { const e = $("toast"); e.textContent = t; e.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("on"), 2600); }
+async function copy(text, msg) {
+  try { await navigator.clipboard.writeText(text); } catch (e) {
+    const ta = document.createElement("textarea"); ta.value = text; document.body.append(ta); ta.select(); document.execCommand("copy"); ta.remove();
+  }
+  toast(msg);
+}
+
+addEventListener("scroll", () => $("nav").classList.toggle("scrolled", scrollY > 8), {passive: true});
 
 fetch("samples.json").then(r => r.json()).then(S => {
-  $("mainName").textContent = S.main.name;
-  const sc = $("scenes"); let group = "", box, all = [];
-  S.scenes.forEach(e => {
-    if (e.group !== group) { group = e.group; const h = document.createElement("h3"); h.textContent = group; sc.append(h); box = document.createElement("div"); box.className = "lines"; sc.append(box); }
-    const row = document.createElement("div"); row.className = "line"; const b = pbtn(e.file);
-    const t = document.createElement("span"); t.textContent = e.text; row.append(b, t); box.append(row); all.push([b, e.file]);
+  // ---- hero demo ----------------------------------------------------------
+  const DEMO = [0, 4, 13, 8, 15].map(i => S.scenes[i]);
+  let step = 0, typing = null;
+  function showNote(e) {
+    const st = $("stack");
+    [...st.children].forEach(n => n.classList.add("old"));
+    const n = document.createElement("div"); n.className = "note";
+    n.innerHTML = `${icon(e.popup.app)}<div style="min-width:0"><div class="a"><span>${esc(e.popup.app)}</span><span>刚刚</span></div><div class="t">${esc(e.popup.title)}</div><div class="b">${esc(e.popup.body)}</div></div>`;
+    st.prepend(n);
+    while (st.children.length > 3) st.lastChild.remove();
+  }
+  function setSay(text, frac) {
+    const k = Math.round(text.length * Math.min(1, frac));
+    $("say").innerHTML = `<span class="done">${esc(text.slice(0, k))}</span><span class="todo">${esc(text.slice(k))}</span>`;
+  }
+  function silentStep() {   // before any click: the demo runs quietly
+    const e = DEMO[step++ % DEMO.length]; showNote(e);
+    const t0 = performance.now(), dur = 380 * e.text.length / 4.2;
+    clearInterval(typing);
+    typing = setInterval(() => { const f = (performance.now() - t0) / dur; setSay(e.text, f); if (f >= 1) clearInterval(typing); }, 60);
+  }
+  let quiet = setInterval(silentStep, 5200); silentStep();
+  stopHero = () => { heroRunning = false; $("demo").classList.remove("playing"); $("heroPlay").innerHTML = PLAY + "听一遍"; };
+  function heroNext(i) {
+    if (!heroRunning) return;
+    if (i >= DEMO.length) { stopHero(); $("soundHint").textContent = "🔈 点「听一遍」再听一次"; quiet = setInterval(silentStep, 5200); return; }
+    const e = DEMO[i]; showNote(e); setSay(e.text, 0);
+    setTimeout(() => {
+      if (!heroRunning) return;
+      $("demo").classList.add("playing");
+      play($("demo"), e.file, () => setTimeout(() => heroNext(i + 1), 700));
+      $("demo").classList.add("playing");
+    }, 650);
+  }
+  audio.ontimeupdate = () => { if (heroRunning && audio.duration) setSay(DEMO.find(e => audio.src.endsWith(e.file))?.text || "", audio.currentTime / audio.duration * 1.08); };
+  $("heroPlay").onclick = () => {
+    if (heroRunning) { stopAll(); stopHero(); return; }
+    clearInterval(quiet); clearInterval(typing); stopAll();
+    heroRunning = true; $("soundHint").textContent = "🔊 正在播放"; $("heroPlay").innerHTML = STOP + "停止";
+    $("stack").innerHTML = ""; heroNext(0);
+    if (innerWidth < 900) $("demo").scrollIntoView({behavior: "smooth", block: "center"});
+  };
+
+  // ---- scenes -------------------------------------------------------------
+  const groups = [...new Set(S.scenes.map(e => e.group))];
+  function showGroup(g) {
+    [...$("tabs").children].forEach(t => t.setAttribute("aria-selected", t.textContent === g));
+    $("lines").innerHTML = "";
+    S.scenes.filter(e => e.group === g).forEach(e => {
+      const el = document.createElement("div"); el.className = "line"; el.tabIndex = 0;
+      el.innerHTML = `<div class="pop">${icon(e.popup.app)}<div style="min-width:0"><div class="t">${esc(e.popup.title)}</div><div class="b">${esc(e.popup.app)} · ${esc(e.popup.body)}</div></div></div>
+        <div class="bubble"><button class="pbtn" aria-label="播放">${PLAY}</button><div class="text">${esc(e.text)}</div></div>`;
+      el.onclick = () => play(el, e.file);
+      el.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); play(el, e.file); } };
+      $("lines").append(el);
+    });
+  }
+  groups.forEach(g => { const t = document.createElement("button"); t.className = "tab"; t.role = "tab"; t.textContent = g; t.onclick = () => showGroup(g); $("tabs").append(t); });
+  showGroup(groups[0]);
+
+  // ---- voices -------------------------------------------------------------
+  const kinds = ["全部", ...new Set(S.voices.map(v => v.kind))];
+  function showKind(k) {
+    [...$("filters").children].forEach(t => t.setAttribute("aria-selected", t.textContent === k));
+    [...$("voiceGrid").children].forEach(c => c.style.display = k === "全部" || c.dataset.kind === k || c.classList.contains("more") ? "" : "none");
+  }
+  kinds.forEach(k => { const t = document.createElement("button"); t.className = "tab"; t.textContent = k; t.onclick = () => showKind(k); $("filters").append(t); });
+  S.voices.forEach((v, i) => {
+    const [c1, c2] = AV[i % AV.length];
+    const el = document.createElement("div"); el.className = "v"; el.id = "voice-" + v.name; el.dataset.kind = v.kind;
+    el.innerHTML = `<div class="top"><div class="av" style="background:linear-gradient(135deg,${c1},${c2})">${esc(v.name[0])}</div>
+      <div><div class="n">${esc(v.name)}<span class="l">${esc(v.label)}</span></div></div></div>
+      <div class="d">${esc(v.desc)}</div>
+      <div class="row"><button class="pbtn">${PLAY}试听</button><button class="pick">就要 TA</button></div>`;
+    el.querySelector(".pbtn").onclick = () => play(el, v.intro);
+    el.querySelector(".pick").onclick = ev => {
+      copy(`帮我把 Bobao 的声音换成${v.name}`, `已复制「帮我把 Bobao 的声音换成${v.name}」，发给你的智能体就行`);
+      ev.target.classList.add("ok"); ev.target.textContent = "已复制";
+      setTimeout(() => { ev.target.classList.remove("ok"); ev.target.textContent = "就要 TA"; }, 2400);
+    };
+    $("voiceGrid").append(el);
   });
-  $("playAll").onclick = () => { const q = all.slice(); const f = q.shift(); play(f[0], f[1], q); };
-  S.voices.forEach(v => {
-    const card = document.createElement("div"); card.className = "v";
-    const info = document.createElement("div");
-    const n = document.createElement("div"); n.className = "n"; n.textContent = v.name;
-    const s = document.createElement("div"); s.className = "s"; s.textContent = v.label;
-    info.append(n, s); card.append(pbtn(v.intro), info); $("voices").append(card);
-  });
-  $("welcomeText").textContent = S.welcome.text;
-  const b = pbtn(S.welcome.chime); b.onclick = () => play(b, S.welcome.chime, [[b, S.welcome.file]]); $("welcome").prepend(b);
+  const more = document.createElement("div"); more.className = "v more"; more.dataset.kind = "全部";
+  more.innerHTML = `<div class="top"><div class="av" style="background:var(--fg);color:var(--bg)">＋</div><div class="n">想要独一无二的声音？</div></div>
+    <div class="d">这 22 个只是推荐。<a href="https://www.rooyun.com">如云</a>里有更多音色；也可以克隆你自己、家人的声音，或者描述一个声音让如云帮你设计。做好以后告诉智能体用它就行。</div>
+    <div class="row"><a class="pbtn" href="https://www.rooyun.com" target="_blank" rel="noopener">去如云看看 →</a></div>`;
+  $("voiceGrid").append(more);
+  showKind("全部");
+  if (location.hash.startsWith("#voice-")) { const el = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (el) setTimeout(() => el.scrollIntoView({block: "center"}), 50); }
+
+  // ---- first sound --------------------------------------------------------
+  $("first").innerHTML = `<button class="pbtn" aria-label="播放">${PLAY}</button><div class="text"><div class="k">装好时你会听到</div>${esc(S.welcome.text)}</div>`;
+  $("first").querySelector(".pbtn").onclick = () => play($("first"), S.welcome.chime, () => play($("first"), S.welcome.file));
 });
+$("copyPrompt").onclick = () => copy($("promptText").textContent, "已复制，发给你的智能体就行");
 </script>
+</body>
+</html>
