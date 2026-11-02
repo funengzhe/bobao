@@ -114,6 +114,23 @@ bobao remind list
 
 `--days` 可以写 `工作日`、`周末`、`每天`，或 `1-5`、`6,7`（1 是周一）。说法里可以用 `{称呼}`。先听一遍用 `bobao remind test 编号 --play`，删除用 `bobao remind remove 编号`。定时提醒不受静音时段限制。
 
+### 飞书群（用你自己的身份）
+
+不建机器人、不用把机器人拉进群，就用你自己的飞书账号读你选的群。Windows 上推荐这样用。
+
+```bash
+npm install -g @larksuite/cli
+lark-cli config init --new          # 浏览器里一键建一个只属于你的应用
+lark-cli auth login --domain im     # 浏览器里点授权
+bobao feishu me                     # 列出你所在的群
+bobao feishu me --chats 产品群,项目群 --people
+```
+
+- 每分钟查一次；Windows 上一出现飞书弹窗就马上查，几秒内念出来。
+- `--people`：人发的消息也按规则念，例如有人 @你、@所有人、请你审批。不加只念机器人发的通知。
+- 含「测试」「模拟」的消息默认不念（`skipTitles`）。
+- 授权大约 7 天内没用到会过期，过期后重新运行 `lark-cli auth login --domain im`。
+
 ### 飞书群（机器人）
 
 适合自己能建飞书应用的人和团队。在你的飞书里建一个自建应用「飞书播报」，把它的机器人拉进要播报的群：

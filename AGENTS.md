@@ -100,7 +100,9 @@ git -C ~/bobao fetch origin && git -C ~/bobao reset --hard origin/main
 
 ### Windows
 
-Windows 版是测试版。能用的：飞书机器人、Webhook、定时提醒、智能体播报、GitHub、喊话页、分享句子、RooYun（如云）的声音。**还读不了其他 App 的弹窗**，第 3 步「消息从哪来」不要选 `notifications`，跟用户说明，建议用飞书机器人或定时提醒。
+Windows 版是测试版。能用的：飞书（推荐「用你自己的身份」，见下）、Webhook、定时提醒、智能体播报、GitHub、喊话页、分享句子、RooYun（如云）的声音。**读不了微信和其他 App 的弹窗**（微信 4 在 Windows 上不弹窗、界面也读不出来），第 3 步「消息从哪来」不要选 `notifications`，跟用户说明。
+
+飞书用你自己的身份：`npm install -g @larksuite/cli`；`lark-cli config init --new --brand feishu --lang zh`（它会给一个链接，转给用户在浏览器里完成）；`lark-cli auth login --domain im --no-wait --json`（把 verification_url 给用户授权，他说好了再 `lark-cli auth login --device-code <device_code>`）；然后 `bobao feishu me` 列出他的群，问他要播哪些，`bobao feishu me --chats 群1,群2 --people`。Bobao 会留意飞书弹窗，一弹出就去读，几秒内念出来。
 
 1. **Python**：`py -3 --version` 或 `python --version`（3.9 以上）。没有的话 `winget install Python.Python.3.12`，或请用户到 python.org 下载安装（勾选 Add to PATH）。装完重新打开终端。注意 Windows 自带的 `python` 可能只是打开应用商店的快捷方式，以 `py -3 --version` 能运行为准。
 2. **Git**：`git --version`，没有的话 `winget install Git.Git`。
