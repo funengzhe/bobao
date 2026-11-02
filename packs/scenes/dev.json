@@ -1,0 +1,64 @@
+{
+  "order": 3,
+  "name": "开发",
+  "who": "开发、运维、值班的人",
+  "description": "上线成功、构建失败、告警和恢复，不用一直盯屏幕。告警全天都播，一听语气就知道要不要马上处理。",
+  "style": "formal",
+  "称呼": "你",
+  "rulePacks": [
+    "generic"
+  ],
+  "rules": [
+    {
+      "when": {
+        "title": [
+          "部署成功",
+          "上线成功",
+          "发布成功",
+          "Deploy succeeded",
+          "deployed"
+        ]
+      },
+      "type": "提醒",
+      "platform": "",
+      "say": "上线成功，所有检查都通过了，可以安心去喝杯咖啡了。"
+    },
+    {
+      "when": {
+        "title": [
+          "构建失败",
+          "Build failed",
+          "CI 失败",
+          "workflow run failed",
+          "Run failed",
+          "流水线失败"
+        ]
+      },
+      "type": "告警",
+      "platform": "",
+      "say": "构建失败了，好像有检查没通过，快去看看是哪里出错了。"
+    }
+  ],
+  "types": {
+    "告警": {
+      "always": true,
+      "cooldownMinutes": 5
+    },
+    "恢复": {
+      "always": true
+    },
+    "收款": {
+      "enabled": false
+    },
+    "套餐": {
+      "enabled": false
+    },
+    "注册": {
+      "enabled": false
+    }
+  },
+  "suggestSources": [
+    "webhook",
+    "feishu"
+  ]
+}

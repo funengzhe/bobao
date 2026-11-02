@@ -1,14 +1,22 @@
-# 给智能体的安装说明
+# 写给智能体
 
-用户把这个仓库地址交给你，是想在**这台 Mac** 上装好 Bobao，让通知被念出来。按下面的顺序做。每一步都有检查方法，检查不通过就停下来，告诉用户哪一步、什么原因，不要跳过。
+用户把这个仓库交给你，是想在**这台 Mac** 上装好 Bobao：把他在意的消息，用他喜欢的声音、他想听的话念出来。你负责安装、按他的要求配置，以及之后帮他改。用户不需要懂任何技术细节，你自己运行命令，不要把命令甩给他去跑（第 4 条规矩里的那一步除外）。
 
-## 三条规矩
+下面的命令都写成 `bobao`，实际用 `~/bobao/bin/bobao`。
 
-1. **飞书 App Secret 和如云登录永远不经过你。** 不要让用户把 Secret 发到对话里，也不要读取、打印或保存它。让用户复制 Secret 后，在**他自己的终端**里运行 `pbpaste | ~/bobao/bin/bobao feishu login --app cli_xxx`。如果用户已经把 Secret 贴进了对话，提醒他去开放平台「凭证与基础信息」重置 Secret，再按上面的方式重新连接。
-2. **花钱的事先问。** `bobao voice record` 会用如云积分。先运行 `bobao voice quote`，把句数和积分原样告诉用户，等他明确同意后再录。
-3. **一个飞书应用只在一台 Mac 上运行。** 飞书只把每条推送发给一个连接。两台 Mac 用同一个应用，会互相漏播。如果这个应用之前在别的电脑上跑过，装好后提醒用户把那台停掉（那台运行 `bobao uninstall`）。
+## 规矩
 
-## 1. 检查环境
+1. **先问清楚再动手，但只问三件事**：想听哪些提醒、消息从哪来、怎么称呼他。其余用默认值，装好后再按他的反馈改。
+2. **花钱前必须报价**：生成如云声音会用积分。`bobao voice use` 或 `bobao voice quote` 会报出句数和积分，把这两个数原样告诉用户，等他明确说"可以"，再运行 `bobao voice record --yes`。他之前说过"你看着办"也一样要问。
+3. **改完就念给他听**：每次改说法、加提醒，都用 `bobao test ... --play` 念一遍，让他确认。
+4. **密钥不经过你**：飞书 App Secret 让用户复制后，在**他自己的终端**里运行 `pbpaste | ~/bobao/bin/bobao feishu login --app cli_xxx`；如云登录他在浏览器里点「授权」。不要让他把密钥发到对话里，也不要读取、打印或保存它。他已经贴进对话的话，提醒他去重置。
+5. **一个飞书应用只在一台电脑上跑**。飞书只把每条推送发给一个连接，两台电脑用同一个应用会互相漏播。这个应用以前在别的电脑上用过的话，提醒用户在那台运行 `bobao uninstall`。
+
+## 安装
+
+每一步都有检查方法。检查不通过就停下来，告诉用户哪一步、什么原因，不要跳过。
+
+### 1. 检查环境
 
 ```bash
 sw_vers -productName
@@ -22,49 +30,138 @@ sw_vers -productName
 
 没有的话运行 `xcode-select --install`，请用户在弹窗里点安装，装完再继续。
 
-只有用飞书时才需要 Node 和 lark-cli：
-
-```bash
-command -v lark-cli || npm install -g @larksuite/cli
-```
-
-没有 `npm` 的话，先请用户装 Node（<https://nodejs.org>，或 `brew install node`）。
-
-## 2. 下载
+### 2. 下载
 
 ```bash
 git clone https://github.com/funengzhe/bobao ~/bobao
 ```
 
-已经有了就 `git -C ~/bobao pull`。下面的命令都用 `~/bobao/bin/bobao`。
+已经有了就 `git -C ~/bobao pull`。
 
-## 3. 设置：二选一
+### 3. 设置：二选一
 
-**A. 用户给了你一个配置包**（`bobao-xxx.zip`，由别人在他的 Mac 上用 `bobao export` 导出）：
+**A. 用户给了你一个配置包**（`bobao-xxx.zip`，别人用 `bobao export` 导出的）：
 
 ```bash
 ~/bobao/bin/bobao import ~/Downloads/bobao-xxx.zip
 ```
 
-里面有规则、文案、录好的声音，导入后不需要再录音、也不花钱。它会提示下一步要连接的飞书应用。
+里面有设置和生成好的声音，导入后不用再生成、也不花钱。按它的提示接着连飞书，然后到第 4 步。
 
-**B. 从头开始**：先问用户做什么工作、想播哪些通知，从下面选一个场景。
+**B. 从头开始**：问用户三个问题。
+
+1. **你主要想听哪些提醒？** 可以多选，也可以直接描述，你来对应：
+   - 上班 `work`：有人在群里 @你、会议、审批、到点下班
+   - 生意 `business`：到账、订单、大单、退款
+   - 开发 `dev`：上线、构建失败、告警
+   - 直播 `live`：打赏、新粉丝、订阅
+   - 生活 `life`：外卖、快递、家人消息、该休息了
+   - 都不像的话用空白 `blank`，再按他说的加规则
+2. **这些消息从哪来？** 可以多选：
+   - 电脑上的弹窗 `notifications`：飞书、企业微信、钉钉、微信、日历、邮件。上班的人通常只能用这个（公司不让自己建应用）。
+   - 飞书群里的机器人通知 `feishu`：他能在飞书里建应用时才选。
+   - 他自己的系统 `webhook`：开发者、有自己后台的商家。
+   - 定时提醒 `remind`：例如工作日六点提醒下班。
+3. **怎么称呼你？** 你、老板、名字都行。
 
 ```bash
-~/bobao/bin/bobao packs
+~/bobao/bin/bobao init --scenes work,life --sources notifications,remind --name 小王
+```
+
+可用的参数：`--scenes`（逗号隔开，中文名也行）、`--sources`、`--name`、`--apps`（读哪些 App 的弹窗，例如 `lark,wechat`；不给就按场景选）、`--style formal|playful|warm`、`--chats`（只播这些飞书群）。
+
+**检查**：输出里的场景、来源、称呼和用户说的一致。
+
+### 4. 装成后台运行
+
+```bash
+~/bobao/bin/bobao install
+```
+
+成功后会播一声门铃，然后小柚说一句安装提示。问用户听到没有。没听到就检查音量和输出设备。
+
+### 5. 按来源补设置
+
+**电脑上的弹窗**：请用户打开 系统设置 → 隐私与安全性 → 完全磁盘访问权限，在列表里打开「Bobao 通知」（不在列表里就点「+」，选 `~/.bobao/app/Bobao 通知.app`）。然后：
+
+```bash
+~/bobao/bin/bobao notifications apps
+```
+
+它列出这台电脑最近弹过通知的 App，打勾的是正在读的。问用户还要听哪些，用 `init --apps 原有的,新的` 改。
+
+**飞书群**：见下面「飞书」一节。
+
+**Webhook**：把这个示例给用户或他的开发同事，让他们的系统在有消息时发过来：
+
+```bash
+curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
+  -d '{"title": "充值到账", "platform": "我的店", "fields": {"金额": "¥99", "方式": "微信"}}'
+```
+
+**定时提醒**：场景自带的会自动加上。看一下、再按他的要求加：
+
+```bash
+~/bobao/bin/bobao remind list
 ```
 
 ```bash
-~/bobao/bin/bobao init --scene saas --name 老板 --sources feishu,webhook
+~/bobao/bin/bobao remind add 18:00 "六点啦，今天辛苦了，准时下班" --days 工作日
 ```
 
-可用的参数：`--scene`、`--style`、`--name`（怎么称呼用户）、`--engine mac|rooyun`、`--sources feishu,webhook,notifications`、`--rule-packs`、`--chats`。没给的用场景默认值。试听各种场景和风格：<https://funengzhe.github.io/bobao/>。
+### 6. 念几条给他听
 
-## 4. 接飞书（用飞书时）
+挑两三条他关心的提醒念出来，确认声音和说法他满意：
 
-**4.1 用户已经有「飞书播报」应用**（例如配置包里已经写了 App ID）：直接到 4.3。
+```bash
+~/bobao/bin/bobao test "张三" --text "张三在群里@你" --source notifications --channel com.electron.lark --play
+```
 
-**4.2 还没有应用**：请用户在 <https://open.feishu.cn/app> 里操作，你一步步告诉他点哪里：
+```bash
+~/bobao/bin/bobao test "充值到账" -f 金额=¥99 -f 方式=微信 --play
+```
+
+输出里会写认成了什么类型、用了哪条规则、念什么。
+
+### 7. 确认在运行
+
+```bash
+~/bobao/bin/bobao status
+```
+
+应该显示「运行中」。等来一条真实消息，日志里出现「播报」那一行，才算完成。
+
+最后告诉用户：现在用的是电脑自带的声音；想换好听的，打开 <https://funengzhe.github.io/bobao/> 挑一个告诉你。
+
+## 把用户的话变成设置
+
+设置在 `~/.bobao/config.json`，改完立即生效，不用重启。先读一遍现有内容再改，不要整个覆盖。字段说明见 README「设置文件」。
+
+| 用户说 | 你做 |
+|---|---|
+| "老板在群里 @我就提醒我，说'老板找你啦'" | 在 `rules` 最前面加 `{"when": {"source": "notifications", "app": ["lark"], "text": ["@你"]}, "type": "提醒", "say": "{称呼}，老板找你啦，快去看看"}`。要限定是谁发的，把名字放进 `title` |
+| "工作日六点提醒我下班" | `bobao remind add 18:00 "..." --days 工作日` |
+| "到账超过一千加一句大单" | `"bigOrder": {"*": 1000}` |
+| "晚上十一点后别出声，告警除外" | `"schedule": {"quietHours": "23:00-08:00"}`，`"types": {"告警": {"always": true}}` |
+| "说话温柔一点 / 活泼一点 / 正经一点" | `"style": "warm"` / `"playful"` / `"formal"`；或者直接改那几条说法 |
+| "这条不用念了" | `bobao replay`（飞书群）或 `bobao test`（弹窗）找到是哪条规则，给它加 `"skip": true`，或在它的 `when` 里加 `not` |
+| "也念微信的消息" | `bobao notifications apps` 看 App id，加进 `sources.notifications.apps` |
+| "再加上生活的提醒" | `bobao init --scenes 原有的,life` |
+
+改完用 `bobao test ... --play` 念给他听。用的是如云声音的话，新说法要生成一次：`bobao voice quote` 报价，他同意后 `bobao voice record --yes`。
+
+## 换声音
+
+1. 给他试听页 <https://funengzhe.github.io/bobao/>（本地：`bobao gallery`），或者运行 `bobao voices` 列出推荐的 22 个声音。他也可以用如云里的其他声音，包括自己克隆的：`bobao voices --all`。
+2. 没登录过如云的话：`bobao rooyun login`，请他在打开的浏览器页面点「授权」。
+3. `bobao voice use 安然`：换成这个声音，并报出要生成多少句、多少积分。把这两个数告诉他，等他同意。
+4. `bobao voice record --yes`：生成。完成后新声音会念一句自我介绍，问他听到没有。中途断了重跑同一条命令，不会重复扣费。
+
+## 飞书（用飞书群时）
+
+**已经有「飞书播报」应用**（例如配置包里写了 App ID）：直接到第 3 步。
+
+**还没有应用**：请用户在 <https://open.feishu.cn/app> 里操作，你一步步告诉他点哪里：
 
 1. 「创建企业自建应用」，名字叫「飞书播报」。
 2. 左侧「添加应用能力」→「机器人」→「添加」。
@@ -73,27 +170,33 @@ git clone https://github.com/funengzhe/bobao ~/bobao
    - `im:message.group_msg` 获取群组中所有消息（断线后补查）
    - `im:message:readonly` 获取单聊、群组消息
    - `im:chat:read` 查看群信息
-4. 左侧「凭证与基础信息」，把 **App ID** 告诉你（App ID 不是机密）。
+4. 左侧「凭证与基础信息」，请他把 **App ID** 告诉你（App ID 不是机密）。
 
-**4.3 连接**：请用户复制 **App Secret**，在他自己的终端运行：
+**连接**：需要 Node 和 lark-cli：
+
+```bash
+command -v lark-cli || npm install -g @larksuite/cli
+```
+
+没有 `npm` 的话，先请用户装 Node（<https://nodejs.org>，或 `brew install node`）。然后请用户复制 **App Secret**，在他自己的终端运行（把 `cli_xxx` 换成他的 App ID，你把整行给他）：
 
 ```bash
 pbpaste | ~/bobao/bin/bobao feishu login --app cli_xxx
 ```
 
-然后启动后台，长连接会随之连上：
+再重启后台，长连接会随之连上：
 
 ```bash
-~/bobao/bin/bobao install
+~/bobao/bin/bobao install --quiet
 ```
 
-**4.4 打开推送并发布**（新应用才需要）：请用户在开放平台：
+**打开推送并发布**（新应用才需要）：请用户在开放平台：
 
-1. 「事件与回调」→「订阅方式」点编辑 → 选「使用长连接接收事件」→「保存」。保存前飞书会检查有没有客户端连上，所以必须先做完 4.3。
+1. 「事件与回调」→「订阅方式」点编辑 → 选「使用长连接接收事件」→「保存」。保存前飞书会检查有没有客户端连上，所以必须先完成上面的连接。
 2. 同一页「添加事件」→ 搜「接收消息」→ 勾选 `im.message.receive_v1` →「添加」。
 3. 「版本管理与发布」→「创建版本」，填版本号和说明。要进**外部群**（别的企业的群），勾选「允许机器人被添加到外部群中使用」。「保存」→「确认发布」。公司飞书可能要管理员审批。
 
-**4.5 把机器人拉进群**：请用户在飞书客户端打开每个要播报的群 →「设置」→「群机器人」→「添加机器人」→ 搜应用名。外部群如果加不进去，要请那个群的群主操作。
+**把机器人拉进群**：请用户在飞书客户端打开每个要播报的群 →「设置」→「群机器人」→「添加机器人」→ 搜应用名。外部群加不进去的话，要请那个群的群主操作。
 
 **检查**：
 
@@ -101,45 +204,13 @@ pbpaste | ~/bobao/bin/bobao feishu login --app cli_xxx
 ~/bobao/bin/bobao feishu groups
 ```
 
-应该列出这些群。机器人所在的群默认全部会播；只想播其中几个，用 `init --chats 群1,群2`。
-
-## 5. 试听
-
-```bash
-~/bobao/bin/bobao test "充值到账" -f 金额=¥99 -f 方式=微信 --play
-```
-
-请用户确认听到了声音、音量合适。没装 4.3 的 `install` 的话，现在运行 `~/bobao/bin/bobao install`。
-
-## 6. 确认在运行
-
-```bash
-~/bobao/bin/bobao status
-```
-
-应该显示「运行中」。用飞书时，日志里会有「飞书推送已连接」。等群里来一条真实通知，看日志里出现「播报」那一行，才算完成。
-
-## 7. 如云配音（可选）
-
-`--engine rooyun` 且不是从配置包导入的，才需要录音：
-
-```bash
-~/bobao/bin/bobao rooyun login
-```
-
-```bash
-~/bobao/bin/bobao voice quote
-```
-
-把价格告诉用户，同意后：
-
-```bash
-~/bobao/bin/bobao voice record --yes
-```
+应该列出这些群。机器人所在的群默认全部会播；只想播其中几个，用 `init --chats 群1,群2`。日志里会有「飞书推送已连接」。
 
 ## 出问题时
 
 - 日志：`~/.bobao/bobao.log`
-- 群里有通知但没播：`~/bobao/bin/bobao replay --chat 群名` 看每条会怎么处理、为什么不播。
+- 有消息没念：飞书群用 `bobao replay --chat 群名`，弹窗用 `bobao test "标题" --text "内容" --source notifications --channel App`，看认成了什么、为什么不念。
+- 弹窗没反应：完全磁盘访问权限没开，或者那个 App 不在 `sources.notifications.apps` 里（`bobao notifications apps` 查）。
 - 「机器人读不到群」：权限没开全，或开了权限后没发布版本。
 - 「找不到飞书群」：机器人不在那个群里，或群名写错。
+- 声音突然变成电脑自带的：那句话还没生成，运行 `bobao voice plan` 看哪些没生成，报价后补上。

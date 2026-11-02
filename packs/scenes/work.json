@@ -1,0 +1,140 @@
+{
+  "order": 1,
+  "name": "上班",
+  "who": "上班的人：领导消息、会议、审批、到点下班",
+  "description": "有人在工作群里 @你、日程快开始、审批有结果，都念给你听；工作日六点提醒下班。读电脑上飞书、企业微信、钉钉、日历的弹窗，不用公司开权限。",
+  "style": "warm",
+  "称呼": "你",
+  "rulePacks": [],
+  "rules": [
+    {
+      "when": {
+        "source": "notifications",
+        "app": [
+          "lark",
+          "wework",
+          "dingtalk"
+        ],
+        "text": [
+          "@所有人",
+          "@全体"
+        ]
+      },
+      "type": "提醒",
+      "platform": "",
+      "say": "群里有一条发给所有人的通知，记得看一下。"
+    },
+    {
+      "when": {
+        "source": "notifications",
+        "app": [
+          "lark",
+          "wework",
+          "dingtalk"
+        ],
+        "text": [
+          "@你",
+          "提到了你",
+          "mentioned you",
+          "@了你"
+        ]
+      },
+      "type": "提醒",
+      "platform": "",
+      "say": "注意注意，有人在群里点你名了，快去看看吧。"
+    },
+    {
+      "when": {
+        "source": "notifications",
+        "app": [
+          "lark",
+          "wework",
+          "dingtalk"
+        ],
+        "text": [
+          "审批通过",
+          "已通过",
+          "已同意",
+          "审批已完成"
+        ]
+      },
+      "type": "提醒",
+      "platform": "",
+      "say": "好消息，你的审批已经通过啦。"
+    },
+    {
+      "when": {
+        "source": "notifications",
+        "app": [
+          "lark",
+          "wework",
+          "dingtalk"
+        ],
+        "text": [
+          "驳回",
+          "拒绝了",
+          "未通过"
+        ]
+      },
+      "type": "提醒",
+      "platform": "",
+      "say": "你有一个审批被退回了，有空去看看原因。"
+    },
+    {
+      "when": {
+        "source": "notifications",
+        "app": [
+          "lark",
+          "wework",
+          "dingtalk"
+        ],
+        "text": [
+          "待审批",
+          "待你审批",
+          "请审批"
+        ]
+      },
+      "type": "提醒",
+      "platform": "",
+      "say": "有一个审批在等你处理，记得去看看哦。"
+    },
+    {
+      "when": {
+        "source": "notifications",
+        "app": [
+          "ical",
+          "calendar",
+          "lark",
+          "wework",
+          "dingtalk"
+        ],
+        "text": [
+          "会议",
+          "日程",
+          "即将开始",
+          "分钟后开始"
+        ]
+      },
+      "type": "提醒",
+      "platform": "",
+      "say": "提醒一下，你有一个日程快开始了，记得准备一下，别迟到哦。"
+    }
+  ],
+  "reminders": [
+    {
+      "at": "18:00",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "say": "六点啦，今天的工作就到这里吧，辛苦了一整天，准时下班。"
+    }
+  ],
+  "suggestSources": [
+    "notifications",
+    "remind"
+  ]
+}

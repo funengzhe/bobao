@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .DS_Store
-docs/.gallery-tasks.json
+docs/.samples-tasks.json
+.bobao-samples/
 .claude/
 docs/audio/mac/

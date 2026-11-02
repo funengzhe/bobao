@@ -116,23 +116,91 @@ class Coverage(unittest.TestCase):
                     self.assertIsNotNone(found, (style, utt["text"]))
 
 
+def library(cfg):
+    """Exactly what plan() asks to record."""
+    return {vk: {clips.key(t): "x" for t in e["phrases"] + (vocabulary() if e["numbers"] else [])}
+            for vk, e in compose.plan(cfg).items()}
+
+
+def matching_event(rule):
+    """An event that the rule's `when` matches."""
+    w = rule["when"]
+    first = lambda k: (w[k] if isinstance(w[k], str) else w[k][0]) if k in w else ""
+    source = first("source") or "webhook"
+    return Event(source, first("app") or first("channel"), first("title") or "通知", text=first("text"), bot=True)
+
+
 class Scenes(unittest.TestCase):
     def test_every_scene_loads_and_speaks(self):
         for name in config.list_packs("scenes"):
-            cfg = config.load({"scene": name, "engine": "rooyun"})
+            cfg = config.load({"scenes": [name], "engine": "rooyun"})
             self.assertTrue(cfg["types"], name)
-            plan = compose.plan(cfg)
-            lib = {vk: {clips.key(t): "x" for t in e["phrases"] + (vocabulary() if e["numbers"] else [])} for vk, e in plan.items()}
+            lib = library(cfg)
             for title, f in (("充值到账", {"金额": "$19.9", "方式": "支付宝"}), ("新用户注册", {}), ("服务器宕机", {}), ("已恢复", {})):
                 utt, why = daemon.decide(Event("webhook", "", title, fields=f), cfg, dry=True, rnd=random.Random(1))
                 if utt:
                     self.assertIsNotNone(clips.for_segments(utt["segments"], lib), (name, utt["text"]))
 
+    def test_scene_rules_and_reminders_are_recorded(self):
+        """Every scene rule fires on its own example and says something already planned."""
+        for name in config.list_packs("scenes"):
+            cfg = config.load({"scenes": [name], "engine": "rooyun", "schedule": {}})
+            lib = library(cfg)
+            spoken = [r for r in cfg["rules"] if not r.get("skip") and cfg["types"].get(r["type"], {}).get("enabled") is not False]
+            for i, rule in enumerate(spoken):
+                daemon.last_spoken.clear()
+                utt, why = daemon.decide(matching_event(rule), cfg, dry=True, rnd=random.Random(i))
+                self.assertIsNotNone(utt, (name, rule["when"], why))
+                self.assertIsNotNone(clips.for_segments(utt["segments"], lib), (name, utt["text"]))
+            for r in cfg["reminders"]:
+                utt = daemon.reminder_utterance(cfg, r)
+                self.assertIsNotNone(clips.for_segments(utt["segments"], lib), (name, utt["text"]))
+
     def test_user_overrides_scene(self):
-        cfg = config.load({"scene": "oncall", "types": {"收款": {"enabled": True}}, "称呼": "小王"})
+        cfg = config.load({"scenes": ["dev"], "types": {"收款": {"enabled": True}}, "称呼": "小王"})
         self.assertIsNot(cfg["types"]["收款"].get("enabled"), False)
         self.assertEqual(cfg["称呼"], "小王")
-        self.assertEqual(config.voice_for(cfg, "告警")["voice"], "Robot_Armor")
+        self.assertEqual(cfg["style"], "formal")
+        self.assertEqual(config.load({"scene": "dev"})["style"], "formal")   # the old single key still works
+
+    def test_several_scenes_add_up(self):
+        work, life = (config.load({"scenes": [n]}) for n in ("work", "life"))
+        mine = {"when": {"title": ["周报"]}, "type": "通知", "skip": True}
+        both = config.load({"scenes": ["上班", "life"], "rules": [mine]})
+        self.assertEqual(both["style"], work["style"])           # the first scene sets the tone
+        self.assertEqual(both["rules"][0], mine)                  # the user's rules come first
+        for r in work["rules"] + life["rules"]:
+            self.assertIn(r, both["rules"])
+        self.assertEqual(len(both["reminders"]), len(work["reminders"]) + len(life["reminders"]))
+        own = [{"at": "09:00", "say": "早"}]
+        self.assertEqual(config.load({"scenes": ["work", "life"], "reminders": own})["reminders"], own)
+        self.assertEqual(config.load({"scenes": ["work"], "reminders": []})["reminders"], [])
+
+
+class Popups(unittest.TestCase):
+    def test_app_condition(self):
+        cfg = config.load({"scenes": ["work"]})
+        at = lambda app: classify(Event("notifications", app, "张三", text="张三在群里@你"), cfg)[0]
+        self.assertIsNotNone(at("com.electron.lark"))
+        self.assertIsNotNone(at("com.tencent.WeWorkMac"))
+        self.assertIsNone(at("com.tencent.xinWeChat"))
+
+
+class Reminders(unittest.TestCase):
+    def test_due_once_on_its_days(self):
+        cfg = {"reminders": [{"at": "18:00", "days": [1, 2, 3, 4, 5], "say": "下班"}, {"at": "18:00", "say": "每天"}]}
+        monday = time.strptime("2026-11-02 18:00", "%Y-%m-%d %H:%M")
+        sunday = time.strptime("2026-11-08 18:00", "%Y-%m-%d %H:%M")
+        fired = set()
+        self.assertEqual([r["say"] for r in daemon.due_reminders(cfg, monday, fired)], ["下班", "每天"])
+        self.assertEqual(daemon.due_reminders(cfg, monday, fired), [])
+        self.assertEqual([r["say"] for r in daemon.due_reminders(cfg, sunday, fired)], ["每天"])
+        self.assertEqual(daemon.due_reminders(cfg, time.strptime("2026-11-02 18:01", "%Y-%m-%d %H:%M"), set()), [])
+
+    def test_names_are_filled(self):
+        cfg = config.load({"scenes": ["work"], "称呼": "小王"})
+        utt = daemon.reminder_utterance(cfg, {"at": "09:00", "say": "{称呼}，早上好"})
+        self.assertEqual(utt["text"], "小王，早上好")
 
 
 class Schedule(unittest.TestCase):

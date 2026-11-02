@@ -1,0 +1,238 @@
+{
+ "main": {
+  "id": "female-shaonv-jingpin",
+  "name": "小柚"
+ },
+ "welcome": {
+  "text": "叮～Bobao 装好啦！这是安装提示的声音。想换成你喜欢的音色，告诉智能体就行，它会帮你挑音色、生成播报；没生成之前，会先用系统自带的声音。",
+  "file": "audio/welcome.mp3",
+  "chime": "audio/chime.wav"
+ },
+ "scenes": [
+  {
+   "group": "上班",
+   "text": "注意注意，老板刚刚在群里点你名了，好像挺着急的，快去看看吧。",
+   "file": "audio/scene01.mp3"
+  },
+  {
+   "group": "上班",
+   "text": "提醒一下，十分钟后就要开会了，记得带上电脑，别迟到哦。",
+   "file": "audio/scene02.mp3"
+  },
+  {
+   "group": "上班",
+   "text": "好消息，你上周提交的报销已经批下来啦，钱很快就到账。",
+   "file": "audio/scene03.mp3"
+  },
+  {
+   "group": "上班",
+   "text": "六点啦，今天的工作就到这里吧，辛苦了一整天，准时下班。",
+   "file": "audio/scene04.mp3"
+  },
+  {
+   "group": "赚钱",
+   "text": "叮咚，到账 299 元，新客户第一次下单，今天也太棒了吧。",
+   "file": "audio/scene05.mp3"
+  },
+  {
+   "group": "赚钱",
+   "text": "大单来啦，刚刚到账 5000 元，老板威武，今晚加个鸡腿。",
+   "file": "audio/scene06.mp3"
+  },
+  {
+   "group": "赚钱",
+   "text": "又有新客户下单了，这已经是今天第十单，生意越来越好啦。",
+   "file": "audio/scene07.mp3"
+  },
+  {
+   "group": "开发和运维",
+   "text": "上线成功，所有检查都通过了，可以安心去喝杯咖啡了。",
+   "file": "audio/scene08.mp3"
+  },
+  {
+   "group": "开发和运维",
+   "text": "构建失败了，好像是测试没过，快去看看是哪里出错了。",
+   "file": "audio/scene09.mp3"
+  },
+  {
+   "group": "开发和运维",
+   "text": "警报警报，服务器出故障了，用户已经访问不了，请尽快处理。",
+   "file": "audio/scene10.mp3"
+  },
+  {
+   "group": "开发和运维",
+   "text": "虚惊一场，服务已经恢复正常啦，大家可以松一口气了。",
+   "file": "audio/scene11.mp3"
+  },
+  {
+   "group": "主播和创作者",
+   "text": "感谢大哥送的火箭，直播间一下子沸腾啦，快跟大哥说声谢谢。",
+   "file": "audio/scene12.mp3"
+  },
+  {
+   "group": "主播和创作者",
+   "text": "恭喜，今天又涨了一百个粉丝，大家都很喜欢你，继续加油。",
+   "file": "audio/scene13.mp3"
+  },
+  {
+   "group": "生活",
+   "text": "外卖到楼下啦，忙了一上午，先放下手里的事，快去吃饭吧。",
+   "file": "audio/scene14.mp3"
+  },
+  {
+   "group": "生活",
+   "text": "快递已经到驿站了，取件码是三八六二，记得下班顺路去取。",
+   "file": "audio/scene15.mp3"
+  },
+  {
+   "group": "生活",
+   "text": "妈妈发来消息了，问你周末回不回家，有空记得回一下哦。",
+   "file": "audio/scene16.mp3"
+  },
+  {
+   "group": "生活",
+   "text": "已经晚上十点了，你还在忙，辛苦啦，剩下的明天再做，早点休息。",
+   "file": "audio/scene17.mp3"
+  },
+  {
+   "group": "生活",
+   "text": "明天早上八点的高铁，别忘了定好闹钟，身份证也记得带上。",
+   "file": "audio/scene18.mp3"
+  }
+ ],
+ "intro": "我是{名字}，这是我的声音，之后由我来为你播报。",
+ "voices": [
+  {
+   "id": "female-shaonv-jingpin",
+   "name": "小柚",
+   "label": "少女",
+   "intro": "audio/intro-female-shaonv-jingpin.mp3"
+  },
+  {
+   "id": "female-shaonv",
+   "name": "小桃",
+   "label": "少女（经典）",
+   "intro": "audio/intro-female-shaonv.mp3"
+  },
+  {
+   "id": "Chinese (Mandarin)_News_Anchor",
+   "name": "安然",
+   "label": "新闻女声",
+   "intro": "audio/intro-Chinese_Mandarin__News_Anchor.mp3"
+  },
+  {
+   "id": "Chinese (Mandarin)_Mature_Woman",
+   "name": "苏姐",
+   "label": "傲娇御姐",
+   "intro": "audio/intro-Chinese_Mandarin__Mature_Woman.mp3"
+  },
+  {
+   "id": "tianxin_xiaoling",
+   "name": "小玲",
+   "label": "甜心",
+   "intro": "audio/intro-tianxin_xiaoling.mp3"
+  },
+  {
+   "id": "qiaopi_mengmei",
+   "name": "糖糖",
+   "label": "俏皮萌妹",
+   "intro": "audio/intro-qiaopi_mengmei.mp3"
+  },
+  {
+   "id": "junlang_nanyou",
+   "name": "阿泽",
+   "label": "俊朗男友",
+   "intro": "audio/intro-junlang_nanyou.mp3"
+  },
+  {
+   "id": "Robot_Armor",
+   "name": "零号",
+   "label": "机械战甲",
+   "intro": "audio/intro-Robot_Armor.mp3"
+  },
+  {
+   "id": "female-yujie-jingpin",
+   "name": "沈姐",
+   "label": "御姐",
+   "intro": "audio/intro-female-yujie-jingpin.mp3"
+  },
+  {
+   "id": "female-chengshu-jingpin",
+   "name": "若溪",
+   "label": "成熟女声",
+   "intro": "audio/intro-female-chengshu-jingpin.mp3"
+  },
+  {
+   "id": "female-yujie",
+   "name": "韩姐",
+   "label": "御姐（经典）",
+   "intro": "audio/intro-female-yujie.mp3"
+  },
+  {
+   "id": "female-chengshu",
+   "name": "素心",
+   "label": "成熟女声（经典）",
+   "intro": "audio/intro-female-chengshu.mp3"
+  },
+  {
+   "id": "Chinese (Mandarin)_Kind-hearted_Antie",
+   "name": "王阿姨",
+   "label": "热心大婶",
+   "intro": "audio/intro-Chinese_Mandarin__Kind-hearted_Antie.mp3"
+  },
+  {
+   "id": "danya_xuejie",
+   "name": "知夏",
+   "label": "淡雅学姐",
+   "intro": "audio/intro-danya_xuejie.mp3"
+  },
+  {
+   "id": "male-qn-jingying-jingpin",
+   "name": "陆川",
+   "label": "精英青年",
+   "intro": "audio/intro-male-qn-jingying-jingpin.mp3"
+  },
+  {
+   "id": "male-qn-daxuesheng-jingpin",
+   "name": "小凯",
+   "label": "大学生",
+   "intro": "audio/intro-male-qn-daxuesheng-jingpin.mp3"
+  },
+  {
+   "id": "male-qn-qingse",
+   "name": "小宇",
+   "label": "青涩青年（经典）",
+   "intro": "audio/intro-male-qn-qingse.mp3"
+  },
+  {
+   "id": "male-qn-daxuesheng",
+   "name": "阿杰",
+   "label": "大学生（经典）",
+   "intro": "audio/intro-male-qn-daxuesheng.mp3"
+  },
+  {
+   "id": "lengdan_xiongzhang",
+   "name": "顾学长",
+   "label": "冷淡学长",
+   "intro": "audio/intro-lengdan_xiongzhang.mp3"
+  },
+  {
+   "id": "clever_boy",
+   "name": "豆豆",
+   "label": "聪明男童",
+   "intro": "audio/intro-clever_boy.mp3"
+  },
+  {
+   "id": "cute_boy",
+   "name": "乐乐",
+   "label": "可爱男童",
+   "intro": "audio/intro-cute_boy.mp3"
+  },
+  {
+   "id": "cartoon_pig",
+   "name": "小琪",
+   "label": "卡通",
+   "intro": "audio/intro-cartoon_pig.mp3"
+  }
+ ]
+}

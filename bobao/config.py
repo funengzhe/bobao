@@ -32,6 +32,7 @@ DEFAULTS = {
     "bigOrder": {},             # {"BigModel": 100, "*": 1000}: amounts that get the 大单 line
     "maxAgeMinutes": 30,
     "schedule": {},             # {"days": [1-7], "hours": "09:00-18:00", "quietHours": "23:00-08:00"} for all types
+    "reminders": [],            # [{"at": "18:00", "days": [1-5], "say": "..."}]: spoken at that time
     "sources": {
         "feishu": {"enabled": False, "chats": [], "botsOnly": True},   # + profile: the 飞书播报 bot's lark-cli profile
         "webhook": {"enabled": True, "port": 8766, "secret": ""},
@@ -59,7 +60,7 @@ def pack_path(kind, name):
         p = os.path.join(base, name + ".json")
         if os.path.exists(p):
             return p
-    raise SystemExit(f"找不到{'风格' if kind == 'styles' else '规则'}包「{name}」")
+    raise SystemExit(f"找不到{ {'styles': '风格', 'scenes': '场景'}.get(kind, '规则包')}「{name}」")
 
 
 def list_packs(kind):
@@ -77,15 +78,21 @@ def _merge_values(into, more):
         into[k] = list(dict.fromkeys(into.get(k, []) + list(v)))
 
 
-def with_scene(user):
-    """A scene (packs/scenes/*.json) is a ready-made setup for a kind of work: style,
-    rules, voices, schedule and which types to play. The user's own keys win; types
-    and voices are merged per entry."""
-    if not user.get("scene"):
-        return user
-    scene = read_json(pack_path("scenes", user["scene"]), {})
-    out = {k: v for k, v in scene.items() if k not in ("name", "who", "description", "suggestSources", "order", "demo")}
-    for k, v in user.items():
+SCENE_ONLY = ("name", "who", "description", "suggestSources", "order", "demo")
+
+
+def scene_names(user):
+    """The scenes a config uses: "scenes": [...] (several), or the older "scene": "...". Names
+    may be the file name (work) or the display name (上班)."""
+    names = user.get("scenes") or ([user["scene"]] if user.get("scene") else [])
+    by_title = {p.get("name"): k for k, p in list_packs("scenes").items()}
+    return [by_title.get(n, n) for n in names]
+
+
+def _merge(out, more):
+    """Adds one layer on top: types and voices merge per entry, tease merges, rules and
+    reminders add up (earlier layers first), anything else is replaced."""
+    for k, v in more.items():
         if k in ("types", "voices") and isinstance(v, dict):
             merged = {t: dict(x) for t, x in out.get(k, {}).items()}
             for t, x in v.items():
@@ -93,8 +100,33 @@ def with_scene(user):
             out[k] = merged
         elif k == "tease" and isinstance(v, dict):
             out[k] = dict(out.get(k, {}), **v)
+        elif k in ("rules", "reminders", "rulePacks") and k in out:
+            out[k] = list(out[k]) + [x for x in v if x not in out[k]]
         else:
             out[k] = v
+
+
+def with_scene(user):
+    """Scenes (packs/scenes/*.json) are ready-made setups for a kind of life or work: which
+    notifications, what is said, style, schedule, reminders. Several can be combined; the
+    first one's style and form of address win. The user's own keys go on top, and the
+    user's rules come before the scenes' so they win."""
+    names = scene_names(user)
+    if not names:
+        return user
+    out = {}
+    for i, name in enumerate(names):
+        scene = {k: v for k, v in read_json(pack_path("scenes", name), {}).items() if k not in SCENE_ONLY}
+        if i:   # later scenes add notifications, not a different voice or style
+            for k in ("style", "称呼", "voices", "schedule"):
+                scene.pop(k, None)
+        _merge(out, scene)
+    rules = list(user.get("rules", [])) + out.pop("rules", [])
+    user_rest = {k: v for k, v in user.items() if k not in ("rules", "scene", "scenes")}
+    if "reminders" in user_rest:   # the user's list is the whole list once they have one
+        out.pop("reminders", None)
+    _merge(out, user_rest)
+    out["rules"] = rules
     return out
 
 

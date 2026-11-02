@@ -74,6 +74,24 @@ def decide(ev, cfg, dry=False, rnd=random):
     return utt, ""
 
 
+def due_reminders(cfg, now, fired):
+    """Reminders whose time is this minute and whose day is today, each once a minute."""
+    hm, day = time.strftime("%H:%M", now), now.tm_wday + 1
+    out = []
+    for i, r in enumerate(cfg.get("reminders") or []):
+        key = (i, r.get("at"), time.strftime("%Y-%m-%d", now))
+        if r.get("at") == hm and day in (r.get("days") or range(1, 8)) and key not in fired:
+            fired.add(key)
+            out.append(r)
+    return out
+
+
+def reminder_utterance(cfg, r):
+    text = compose.tidy(compose.fill(r["say"], {"称呼": cfg["称呼"]}))
+    return {"type": "提醒", "sound": r.get("sound") or cfg["sounds"].get("提醒"), "text": text,
+            "segments": [(config.voice_for(cfg, "提醒"), text)]}
+
+
 def run():
     speaker = Speaker()
     feishu, spool = Feishu(), notifications.Spool()
@@ -95,6 +113,7 @@ def run():
 
     web = None
     next_feishu, failing_since, warned = 0, None, False
+    fired = set()
     while True:
         try:
             state["cfg"] = cfg = config.load()
@@ -106,6 +125,10 @@ def run():
             if src["webhook"].get("enabled") and not web:
                 from .sources import webhook
                 web = webhook.serve(int(src["webhook"].get("port", 8766)), lambda: state["cfg"], handle)
+            for r in due_reminders(cfg, time.localtime(), fired):   # timed reminders are never muted
+                utt = reminder_utterance(cfg, r)
+                log(f"定时提醒 {r['at']} → {utt['text']}")
+                speaker.put(utt, cfg)
             nudged = set()
             for n in spool.read():
                 if n.get("nudge") or (notifications.is_lark(n.get("app", "")) and n.get("title") in src["feishu"].get("chats", [])):

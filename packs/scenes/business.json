@@ -1,0 +1,23 @@
+{
+  "order": 2,
+  "name": "生意",
+  "who": "商家、店主、创业者、销售",
+  "description": "到账、新订单、大单、退款、注册、日报，每一单都有仪式感。消息来自飞书群里的机器人、你自己的系统（Webhook），或收款 App 的弹窗。",
+  "style": "playful",
+  "称呼": "老板",
+  "rulePacks": [
+    "generic"
+  ],
+  "bigOrder": {
+    "*": 1000
+  },
+  "types": {
+    "告警": {
+      "always": true
+    }
+  },
+  "suggestSources": [
+    "feishu",
+    "webhook"
+  ]
+}

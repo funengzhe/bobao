@@ -1,16 +1,10 @@
 {
-  "name": "正经播报",
-  "description": "简洁、中性，像银行和收款音箱。默认风格。",
+  "name": "正经",
+  "description": "简洁、中性，只说事实。适合工作和告警。",
   "称呼": "老板",
   "voices": {
     "default": {
-      "voice": "female-chengshu-jingpin"
-    },
-    "告警": {
-      "voice": "female-chengshu-jingpin"
-    },
-    "接话": {
-      "voice": "female-chengshu-jingpin"
+      "voice": "female-shaonv-jingpin"
     }
   },
   "sounds": {

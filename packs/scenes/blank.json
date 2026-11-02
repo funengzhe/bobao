@@ -1,0 +1,13 @@
+{
+  "order": 9,
+  "name": "空白",
+  "who": "想全部自己说了算的人",
+  "description": "什么都不预设。告诉智能体你想听什么、怎么说，它帮你加。",
+  "style": "formal",
+  "称呼": "你",
+  "rulePacks": [],
+  "catchAll": {},
+  "suggestSources": [
+    "notifications"
+  ]
+}

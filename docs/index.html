@@ -4,96 +4,86 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bobao 试听</title>
 <style>
-:root{--bg:#f7f7f5;--fg:#1b1b1b;--mute:#6f6f6f;--card:#fff;--line:#e3e3e0;--acc:#1f6feb;--tag:#f0f0ec;--ok:#1a7f37}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--fg:#ececec;--mute:#9a9a9a;--card:#1c1c1c;--line:#2e2e2e;--acc:#6ea8ff;--tag:#262626;--ok:#56d364}}
-:root[data-theme="dark"]{--bg:#121212;--fg:#ececec;--mute:#9a9a9a;--card:#1c1c1c;--line:#2e2e2e;--acc:#6ea8ff;--tag:#262626;--ok:#56d364}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
-main{max-width:980px;margin:auto;padding:24px 16px 64px}
-h1{font-size:26px;margin:0 0 4px}.lead{color:var(--mute);margin:0 0 20px}
-nav{display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:2;border-bottom:1px solid var(--line)}
-nav button,.chip{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:4px 14px;cursor:pointer}
-nav button.on,.chip.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.filters{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}.chip{font-size:13px;padding:2px 10px}
-.intro{color:var(--mute);margin:14px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
-.t{font-weight:600;display:flex;gap:8px;align-items:center}.rec{font-size:11px;color:var(--ok);border:1px solid var(--ok);border-radius:4px;padding:0 4px}
-.sub{color:var(--mute);font-size:13px}.say{font-size:14px}.meta{font-size:12px;color:var(--mute)}
-.tags{display:flex;flex-wrap:wrap;gap:4px}.tag{background:var(--tag);border-radius:4px;padding:0 6px;font-size:12px}
-.play{margin-top:auto;font:inherit;border:0;border-radius:8px;background:var(--acc);color:#fff;padding:6px 12px;cursor:pointer;align-self:flex-start}
-.play[disabled]{background:var(--tag);color:var(--mute);cursor:default}
-code{background:var(--tag);padding:1px 6px;border-radius:4px;font-size:12px;word-break:break-all}
+:root{--bg:#f6f6f4;--fg:#1b1b1b;--mute:#6d6d6d;--card:#fff;--line:#e2e2de;--acc:#1f6feb;--tag:#efefea}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--fg:#ececec;--mute:#9a9a9a;--card:#1c1c1c;--line:#2e2e2e;--acc:#6ea8ff;--tag:#262626}}
+:root[data-theme="dark"]{--bg:#121212;--fg:#ececec;--mute:#9a9a9a;--card:#1c1c1c;--line:#2e2e2e;--acc:#6ea8ff;--tag:#262626}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+main{max-width:920px;margin:auto;padding:24px 16px 80px}
+h1{font-size:24px;margin:0 0 4px}
+h2{font-size:18px;margin:32px 0 4px}
+h3{font-size:14px;color:var(--mute);font-weight:600;margin:18px 0 8px}
+.lead,.hint{color:var(--mute);margin:0 0 12px}
+a{color:var(--acc)}
+.lines{display:grid;gap:8px}
+.line{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.line span{flex:1}
+button.p{font:inherit;font-size:13px;border:0;border-radius:999px;background:var(--acc);color:#fff;width:34px;height:34px;cursor:pointer;flex:none}
+button.p.on{background:var(--fg);color:var(--bg)}
+.voices{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.v{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.v .n{font-weight:600}
+.v .s{font-size:12px;color:var(--mute)}
+.all{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:3px 12px;cursor:pointer}
+.start{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+code{background:var(--tag);padding:1px 6px;border-radius:4px;font-size:13px;word-break:break-all}
+.foot{margin-top:40px;font-size:13px;color:var(--mute)}
 </style>
 <main>
-<h1>Bobao 定制播报 · 试听</h1>
-<p class="lead">每个场景、风格、音色都可以先听一下再决定。如云音色录一整套只要两三个积分，录好后永久免费播放；不接如云，也可以直接用 Mac 自带的声音。试听音频仅供试听，不得提取或商用（<a href="https://github.com/funengzhe/bobao/blob/main/docs/audio/LICENSE.md">条款</a>）。</p>
-<nav id="tabs"></nav>
-<p class="intro" id="intro"></p>
-<div class="filters" id="filters"></div>
-<div class="grid" id="grid"></div>
+<h1>Bobao 定制播报</h1>
+<p class="lead">把你在意的消息，用你喜欢的声音、你想听的话念出来。上班、做生意、写代码、做直播、过日子，都可以。</p>
+
+<h2>能做什么</h2>
+<p class="hint">每一句都可以换成你自己的说法。示范声音：<span id="mainName"></span>。 <button class="all" id="playAll">▶ 连续播放</button></p>
+<div id="scenes"></div>
+
+<h2>谁来念</h2>
+<p class="hint">挑一个你喜欢的声音。接入如云后，用它把你的播报内容生成一遍就能用；不接如云，用电脑自带的声音。</p>
+<div class="voices" id="voices"></div>
+
+<h2>装好的第一声</h2>
+<p class="hint">安装成功时会听到这一句。</p>
+<div class="lines"><div class="line" id="welcome"><span id="welcomeText"></span></div></div>
+
+<h2>怎么开始</h2>
+<div class="start">
+  <p>把这个链接发给你的智能体（Claude Code、Codex、Cursor 等），说一句：</p>
+  <p><code>帮我装上 Bobao：https://github.com/funengzhe/bobao</code></p>
+  <p>它会问你想听哪些提醒、消息从哪来、怎么称呼你，然后装好。想换声音、改说法，之后也直接跟它说。目前只支持 macOS。</p>
+</div>
+
+<p class="foot">试听音频仅供试听，不得提取或商用（<a href="https://github.com/funengzhe/bobao/blob/main/docs/audio/LICENSE.md">条款</a>）。代码：<a href="https://github.com/funengzhe/bobao">github.com/funengzhe/bobao</a></p>
 </main>
 <script>
-const INTRO = {
-  "场景": "按你的工作选一个场景：播哪些类型的通知、什么时段播、用什么风格和音色，都已经配好。在配置里写上 \"scene\" 就能直接用，也可以在此基础上改。",
-  "风格": "风格决定每类通知怎么说。下面每种风格各放三句：收款、注册、告警。",
-  "音色": "所有音色念的都是同一段话，方便对比。打勾的是推荐音色。英文音色念的是英文示例。",
-  "情绪": "同一句话，换不同的情绪。可以给每类通知分别设定情绪，比如收款开心、告警害怕。",
-  "Mac 免费声音": "不接如云时，用 macOS 自带的声音，不花钱，效果比如云配音生硬一些。这些是苹果的声音，所以网页上不放音频：在你自己的 Mac 上运行 bobao gallery，就会现场生成并试听。"
-};
-let items = [], tab = "场景", filter = {}, macHere = false;
-const $ = s => document.getElementById(s);
-let current = null;
-function play(btn, src){
-  if (current) { current.pause(); }
-  const a = new Audio(src); current = a; btn.textContent = "播放中…";
-  a.onended = a.onpause = () => btn.textContent = "▶ 试听"; a.play();
+const $ = id => document.getElementById(id);
+let audio = null, btn = null, queue = [];
+function stop(){ if (audio) audio.pause(); if (btn) { btn.classList.remove("on"); btn.textContent = "▶"; } audio = btn = null; }
+function play(b, src, next){
+  const same = btn === b; stop(); queue = next || [];
+  if (same) { queue = []; return; }
+  audio = new Audio(src); btn = b; b.classList.add("on"); b.textContent = "■";
+  audio.onended = () => { stop(); const n = queue.shift(); if (n) play(n[0], n[1], queue); };
+  audio.play();
 }
-function card(e){
-  const c = document.createElement("div"); c.className = "card";
-  const t = document.createElement("div"); t.className = "t"; t.textContent = e.title;
-  if (e.recommended) { const r = document.createElement("span"); r.className = "rec"; r.textContent = "推荐"; t.append(r); }
-  c.append(t);
-  const s = document.createElement("div"); s.className = "sub"; s.textContent = e.sub || ""; c.append(s);
-  if (e.description && tab !== "风格") { const d = document.createElement("div"); d.className = "meta"; d.textContent = e.description; c.append(d); }
-  const say = document.createElement("div"); say.className = "say"; say.textContent = "「" + e.text + "」"; c.append(say);
-  if (e.plays) { const m = document.createElement("div"); m.className = "meta"; m.textContent = "播：" + e.plays.join("、") + "　时段：" + e.schedule; c.append(m); }
-  if (e.goodFor) { const g = document.createElement("div"); g.className = "tags"; e.goodFor.forEach(x => { const s = document.createElement("span"); s.className = "tag"; s.textContent = x; g.append(s); }); c.append(g); }
-  const cfg = tab === "场景" ? `"scene": "${e.group}"` : tab === "风格" ? `"style": "${e.group}"` : tab === "Mac 免费声音" ? `"engine": "mac", "macVoice": "${e.voiceId}"` : `{"voice": "${e.voiceId}"${e.emotion ? `, "emotion": "${e.emotion}"` : ""}}`;
-  const code = document.createElement("code"); code.textContent = cfg; c.append(code);
-  const b = document.createElement("button"); b.className = "play";
-  if (e.ready || (e.engine === "mac" && macHere)) { b.textContent = "▶ 试听"; b.onclick = () => play(b, e.file); }
-  else if (e.engine === "mac") { b.textContent = "在你的 Mac 上运行 bobao gallery 试听"; b.disabled = true; }
-  else { b.textContent = "试听音频生成中"; b.disabled = true; }
-  c.append(b);
-  return c;
-}
-function render(){
-  $("intro").textContent = INTRO[tab] || "";
-  [...$("tabs").children].forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
-  const list = items.filter(e => e.section === tab);
-  const f = $("filters"); f.innerHTML = "";
-  if (tab === "音色") {
-    const opts = {"全部": () => true, "推荐": e => e.recommended, "女声": e => e.sub.startsWith("女"), "男声": e => e.sub.startsWith("男"), "童声 / 卡通": e => /童|卡通|机器人/.test(e.sub), "英文": e => e.lang === "en"};
-    Object.keys(opts).forEach(k => { const b = document.createElement("button"); b.className = "chip" + ((filter[tab] || "全部") === k ? " on" : ""); b.textContent = k; b.onclick = () => { filter[tab] = k; render(); }; f.append(b); });
-    const fn = opts[filter[tab] || "全部"];
-    show(list.filter(fn));
-  } else show(list);
-}
-function show(list){
-  const g = $("grid"); g.innerHTML = "";
-  if (tab === "风格") {
-    const seen = {};
-    list.forEach(e => { (seen[e.group] = seen[e.group] || []).push(e); });
-    Object.values(seen).forEach(group => group.forEach(e => g.append(card(e))));
-  } else list.forEach(e => g.append(card(e)));
-}
-fetch("gallery.json").then(r => r.json()).then(async d => {
-  items = d;
-  const mac = d.find(e => e.engine === "mac");
-  if (mac) { try { macHere = (await fetch(mac.file, {method: "HEAD"})).ok; } catch (e) {} }
-  ["场景", "风格", "音色", "情绪", "Mac 免费声音"].forEach(k => {
-    const b = document.createElement("button"); b.textContent = k; b.dataset.tab = k; b.onclick = () => { tab = k; render(); }; $("tabs").append(b);
+function pbtn(src){ const b = document.createElement("button"); b.className = "p"; b.textContent = "▶"; b.onclick = () => play(b, src); return b; }
+
+fetch("samples.json").then(r => r.json()).then(S => {
+  $("mainName").textContent = S.main.name;
+  const sc = $("scenes"); let group = "", box, all = [];
+  S.scenes.forEach(e => {
+    if (e.group !== group) { group = e.group; const h = document.createElement("h3"); h.textContent = group; sc.append(h); box = document.createElement("div"); box.className = "lines"; sc.append(box); }
+    const row = document.createElement("div"); row.className = "line"; const b = pbtn(e.file);
+    const t = document.createElement("span"); t.textContent = e.text; row.append(b, t); box.append(row); all.push([b, e.file]);
   });
-  render();
+  $("playAll").onclick = () => { const q = all.slice(); const f = q.shift(); play(f[0], f[1], q); };
+  S.voices.forEach(v => {
+    const card = document.createElement("div"); card.className = "v";
+    const info = document.createElement("div");
+    const n = document.createElement("div"); n.className = "n"; n.textContent = v.name;
+    const s = document.createElement("div"); s.className = "s"; s.textContent = v.label;
+    info.append(n, s); card.append(pbtn(v.intro), info); $("voices").append(card);
+  });
+  $("welcomeText").textContent = S.welcome.text;
+  const b = pbtn(S.welcome.chime); b.onclick = () => play(b, S.welcome.chime, [[b, S.welcome.file]]); $("welcome").prepend(b);
 });
 </script>

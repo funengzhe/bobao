@@ -1,0 +1,75 @@
+{
+  "order": 5,
+  "name": "生活",
+  "who": "每个人",
+  "description": "家人来消息、快递和外卖到了、该休息了，生活里的小事也有人提醒你。读微信、邮件、日历等弹窗，加上你设的定时提醒。",
+  "style": "warm",
+  "称呼": "你",
+  "rulePacks": [],
+  "rules": [
+    {
+      "when": {
+        "source": "notifications",
+        "title": [
+          "妈妈",
+          "老妈",
+          "爸爸",
+          "老爸",
+          "Mom",
+          "Dad"
+        ]
+      },
+      "type": "提醒",
+      "platform": "",
+      "say": "家里来消息了，有空记得回一下哦。"
+    },
+    {
+      "when": {
+        "source": "notifications",
+        "text": [
+          "取件码",
+          "驿站",
+          "快递柜",
+          "已签收",
+          "派送中"
+        ]
+      },
+      "type": "提醒",
+      "platform": "",
+      "say": "快递到了，记得顺路去取。"
+    },
+    {
+      "when": {
+        "source": "notifications",
+        "text": [
+          "外卖",
+          "骑手",
+          "已送达",
+          "放在门口"
+        ]
+      },
+      "type": "提醒",
+      "platform": "",
+      "say": "外卖到啦，先放下手里的事，快去吃饭吧。"
+    }
+  ],
+  "reminders": [
+    {
+      "at": "22:00",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "say": "已经晚上十点了，辛苦啦，剩下的明天再做，早点休息。"
+    }
+  ],
+  "suggestSources": [
+    "notifications",
+    "remind"
+  ]
+}

@@ -179,6 +179,8 @@ def plan(cfg):
                 for line in lines[k]:
                     for text in expand(line, {"称呼": [cfg["称呼"]], "平台": [spoken_platform(cfg, p) for p in cfg["platforms"]] + [""]}):
                         want(voice_for(cfg, "接话"), text)
+    for r in cfg.get("reminders") or []:
+        want(voice_for(cfg, "提醒"), tidy(fill(r["say"], {"称呼": cfg["称呼"]})))
     for key, kind in (("say", "告警"), ("back", "恢复")):
         for line in cfg["health"].get(key, []):
             want(voice_for(cfg, kind), fill(line, {"称呼": cfg["称呼"]}))

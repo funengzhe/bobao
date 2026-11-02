@@ -1,31 +1,37 @@
-"""Bobao 定制播报 — your notifications, read aloud the way you want.
+"""Bobao 定制播报 — the messages you care about, read aloud in a voice you like, in your words.
 
-  bobao init                      set up: form of address, style, voice, sources
-  bobao init --scene saas --style formal --name 老板 --engine mac --sources feishu,webhook
+  bobao init                      set up: which reminders, where messages come from, how to call you
+  bobao init --scenes work,life --sources notifications,remind --apps lark,wechat --name 你
                                   the same without questions (for scripts and agents)
+  bobao install [--quiet]         start at login and play the install greeting
+  bobao uninstall                 stop for good
+  bobao status                    is it running, what was said lately
+  bobao run                       run in the foreground
+
+  bobao remind add 18:00 "下班啦" [--days 工作日] | list | remove N
+                                  timed reminders
+  bobao notifications apps        apps that showed popups lately, and which are read
   bobao feishu login --app cli_xxx
                                   connect your 飞书播报 bot; the App Secret is read from
                                   stdin (pbpaste | bobao feishu login ...) or asked hidden
   bobao feishu groups             the groups the bot was added to
-  bobao run                       run in the foreground (the agent runs this)
-  bobao install | uninstall       start at login / stop for good
-  bobao status                    is it running, what was said lately
 
-  bobao test "<title>" [-f 金额=$19.9 ...] [--channel 群名] [--play]
-                                  what a notification would be classified and said as
-  bobao replay [--chat 群名] [--limit 30]
-                                  run a Feishu group's recent messages through the rules
-  bobao send "<title>" [-f k=v ...] [--type 收款 --platform X]
-                                  post a test notification to the local webhook
-
-  bobao packs                     list style and rule packs
-  bobao voices                    list RooYun voices (system and your own)
+  bobao voices [--all]            recommended voices (--all: every RooYun voice, yours too)
   bobao rooyun login              connect your RooYun account
+  bobao voice use 小柚             pick a voice, record your sentences with it, hear it introduce itself
   bobao voice plan                every sentence your setup can say, and what is unrecorded
   bobao voice quote               price of recording what is missing
   bobao voice record [--yes]      record it (asks first, shows the price)
-  bobao gallery                   listen to every scene, style, voice and emotion before choosing
-  bobao review                    listen to everything, mark pieces to re-record
+  bobao gallery                   the listening page, served locally
+  bobao review                    listen to your recordings, mark pieces to re-record
+
+  bobao test "<title>" [-f 金额=$19.9 ...] [--channel 群名] [--source notifications] [--play]
+                                  what a message would be classified and said as
+  bobao replay [--chat 群名] [--limit 30]
+                                  run a Feishu group's recent messages through the rules
+  bobao send "<title>" [-f k=v ...] [--type 收款 --platform X]
+                                  post a test message to the local webhook
+  bobao packs                     list scenes, styles and rule packs
   bobao sounds                    (re)make the sound effects
   bobao export [file.zip]         settings + recordings in one file, to set up another Mac
   bobao import file.zip           take them over (no secrets inside: log in again there)
@@ -119,11 +125,30 @@ def cmd_packs(a):
             print(f"  {name:10} {p.get('name', '')}：{p.get('description', '')}")
 
 
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def catalog():
+    return config.read_json(os.path.join(ROOT, "packs", "voices.json"), {"voices": []})["voices"]
+
+
 def cmd_voices(a):
+    if not a.all:
+        print("推荐音色（试听：https://funengzhe.github.io/bobao/ ，选好后 bobao voice use 名字）")
+        for v in catalog():
+            print(f"  {v['name']:4} {v['label']:10} {v['gender']}·{v['age']} {'、'.join(v['tags']):12} {v['id']}")
+        print("如云里的全部音色（含你自己克隆的）：bobao voices --all")
+        return
     from .rooyun import Client
     cfg = config.load()
     for v in Client(cfg["rooyun"]["base"]).voices():
         print(f"{v['voiceId']:32} {v['name']}  {'（你的音色）' if v.get('kind') == 'user' else ''}")
+
+
+def play_files(*files):
+    for f in files:
+        if f and os.path.exists(f):
+            subprocess.run(["/usr/bin/afplay", f])
 
 
 def cmd_rooyun(a):
@@ -136,7 +161,33 @@ def cmd_rooyun(a):
         print(json.dumps({k: me.get(k) for k in ("userId", "scopes", "expiresAt")}, ensure_ascii=False))
 
 
+INTRO_PENDING = "intro-pending"   # the voice chosen with `voice use`, introduced once recorded
+
+
+def intro_pending():
+    path = os.path.join(paths.HOME, INTRO_PENDING)
+    try:
+        name = open(path, encoding="utf-8").read().strip()
+    except FileNotFoundError:
+        return None
+    return next((v for v in catalog() if v["id"] == name), None)
+
+
 def cmd_voice(a):
+    if a.action == "use":
+        if not a.name:
+            raise SystemExit("用法：bobao voice use 名字（或如云音色 id）；推荐音色见 bobao voices")
+        picked = next((v for v in catalog() if a.name in (v["name"], v["id"])), None)
+        voice_id = picked["id"] if picked else a.name
+        user = config.read_json(paths.CONFIG, {}) or {}
+        user["engine"] = "rooyun"
+        user["voices"] = {"default": {"voice": voice_id}}
+        config.save_user(user)
+        with open(os.path.join(paths.HOME, INTRO_PENDING), "w", encoding="utf-8") as f:
+            f.write(voice_id)
+        print(f"已选音色：{picked['name'] if picked else voice_id}。把你的播报内容用它生成一遍：")
+        a.action = "record" if a.yes else "quote"
+    picked = intro_pending()
     cfg = config.load()
     p = compose.plan(cfg)
     todo = clips.missing(p, clips.load())
@@ -151,6 +202,8 @@ def cmd_voice(a):
         return
     if not todo:
         print("全部都录好了")
+        if a.action == "record" and picked:
+            introduce(picked)
         return
     from . import rooyun
     client = rooyun.Client(cfg["rooyun"]["base"])
@@ -160,6 +213,7 @@ def cmd_voice(a):
     minutes = round(len(jobs) * rooyun.SUBMIT_GAP / 60)
     print(f"要录 {len(jobs)} 句，约 {price} 积分，你的可用积分 {round(available, 2)}（如云每分钟最多提交 10 句，约 {minutes} 分钟）")
     if a.action == "quote":
+        print("确认后：bobao voice record --yes")
         return
     if price > available:
         sys.exit("积分不够，请先到如云充值")
@@ -168,6 +222,15 @@ def cmd_voice(a):
         return
     done, failed = rooyun.record(client, jobs)
     print(f"录好 {done} 句" + (f"，{failed} 句没录成（重跑同一条命令补录）" if failed else ""))
+    if picked and not failed:
+        introduce(picked)
+
+
+def introduce(v):
+    """The newly chosen voice says who it is (the page's sample)."""
+    os.remove(os.path.join(paths.HOME, INTRO_PENDING))
+    print(f"{v['name']}：我是{v['name']}，这是我的声音，之后由我来为你播报。")
+    play_files(os.path.join(ROOT, "docs", v["intro"]))
 
 
 def cmd_sounds(a):
@@ -187,8 +250,12 @@ def cmd_status(a):
 # ---- setup ------------------------------------------------------------------
 
 AGENT, HELPER = "io.bobao.agent", "io.bobao.notify"
-APPS = [("微信", "com.tencent.xinWeChat"), ("企业微信", "com.tencent.WeWorkMac"), ("钉钉", "com.alibaba.DingTalkMac"),
-        ("邮件", "com.apple.mail"), ("Slack", "com.tinyspeck.slackmacgap")]
+# Popup sources, by a part of the app id (matched ignoring case)
+APPS = [("飞书", "lark"), ("企业微信", "wework"), ("钉钉", "dingtalk"), ("微信", "wechat"), ("日历", "ical"),
+        ("邮件", "com.apple.mail"), ("提醒事项", "reminders"), ("Slack", "slack")]
+SCENE_APPS = {"work": ["lark", "wework", "dingtalk", "ical"], "life": ["wechat", "com.apple.mail", "ical", "reminders"],
+              "live": ["wechat"], "business": [], "dev": ["com.apple.mail"], "blank": []}
+SOURCES = ("feishu", "webhook", "notifications", "remind")
 
 
 def ask(q, default=""):
@@ -204,95 +271,179 @@ def choose(q, options, default=1):
     return [options[i - 1][1] for i in picks if 0 < i <= len(options)]
 
 
-def init_quiet(a):
-    """bobao init with flags: no questions, unset flags keep the current value or the scene's."""
-    user = config.read_json(paths.CONFIG, {}) or {}
-    scenes, styles, packs = config.list_packs("scenes"), config.list_packs("styles"), config.list_packs("rules")
-    for value, known, what in ((a.scene, scenes, "场景"), (a.style, styles, "风格")):
-        if value and value not in known:
-            raise SystemExit(f"没有这个{what}：{value}（可选：{'、'.join(known)}）")
-    if a.scene is not None:
-        user["scene"] = a.scene
-    scene = scenes.get(user.get("scene"), {})
-    user["style"] = a.style or user.get("style") or scene.get("style") or "formal"
-    if a.name:
-        user["称呼"] = a.name
-    user["engine"] = a.engine or user.get("engine") or "mac"
-    if a.rule_packs:
-        user["rulePacks"] = [x for x in a.rule_packs.split(",") if x]
-        for x in user["rulePacks"]:
-            if x not in packs:
-                raise SystemExit(f"没有这个规则包：{x}（可选：{'、'.join(packs)}）")
-    picked = a.sources.split(",") if a.sources else scene.get("suggestSources", ["webhook"])
+def split(v):
+    return [x.strip() for x in (v or "").replace("，", ",").split(",") if x.strip()]
+
+
+def apply_sources(user, picked, apps=None, chats=None, before=()):
     src = user.setdefault("sources", {})
     for name in ("feishu", "webhook", "notifications"):
         src[name] = dict(src.get(name, {}), enabled=name in picked)
-    if a.chats:
-        src["feishu"]["chats"] = [x for x in a.chats.split(",") if x]
+    if "notifications" in picked:
+        if apps is None:   # keep what was chosen, add what newly picked scenes read
+            had = src["notifications"].get("apps", [])
+            added = [sc for sc in config.scene_names(user) if not had or sc not in before]
+            apps = had + [x for sc in added for x in SCENE_APPS.get(sc, [])]
+        src["notifications"]["apps"] = list(dict.fromkeys(apps)) or ["wechat"]
+    if chats is not None:
+        src["feishu"]["chats"] = chats
+    if "remind" not in picked:
+        user["reminders"] = []
+    elif user.get("reminders") == []:
+        user.pop("reminders")   # back to the scenes' reminders
+
+
+def enabled_sources(user):
+    """What a saved setup uses now, in init's terms (empty for a new one)."""
+    if "sources" not in user:
+        return []
+    on = [n for n in ("notifications", "feishu", "webhook") if user["sources"].get(n, {}).get("enabled")]
+    return on + ([] if user.get("reminders") == [] else ["remind"])
+
+
+def summary(user, picked):
+    cfg = config.load()
+    names = [config.list_packs("scenes").get(n, {}).get("name", n) for n in config.scene_names(user)]
+    voice = "如云 · " + config.voice_for(cfg, "提醒")["voice"] if cfg["engine"] == "rooyun" else "电脑自带"
+    print(f"已保存 {paths.CONFIG}：场景 {'、'.join(names) or '无'}，风格 {cfg['styleName']}，称呼 {cfg['称呼']}，"
+          f"声音 {voice}，来源 {'、'.join(picked)}" + (f"，定时提醒 {len(cfg['reminders'])} 条" if cfg["reminders"] else ""))
+
+
+def init_quiet(a):
+    """bobao init with flags: no questions; what is not given keeps its value or the scenes'."""
+    user = config.read_json(paths.CONFIG, {}) or {}
+    scenes, styles = config.list_packs("scenes"), config.list_packs("styles")
+    titles = {p["name"]: k for k, p in scenes.items()}
+    wanted = split(a.scenes or a.scene)
+    for n in wanted:
+        if n not in scenes and n not in titles:
+            choices = "、".join(f"{k}（{p['name']}）" for k, p in scenes.items())
+            raise SystemExit(f"没有这个场景：{n}（可选：{choices}）")
+    if a.style and a.style not in styles:
+        raise SystemExit(f"没有这个风格：{a.style}（可选：{'、'.join(styles)}）")
+    had, before = enabled_sources(user), config.scene_names(user)
+    if wanted:
+        user["scenes"] = [titles.get(n, n) for n in wanted]
+        user.pop("scene", None)
+        if user.get("reminders"):   # the user's own list: add what the new scenes bring
+            new = config.with_scene({"scenes": user["scenes"]}).get("reminders", [])
+            user["reminders"] += [r for r in new if r not in user["reminders"]]
+        else:
+            user.pop("reminders", None)
+    if a.style:
+        user["style"] = a.style
+    if a.name:
+        user["称呼"] = a.name
+    if a.engine:
+        user["engine"] = a.engine
+    if a.rule_packs:
+        user["rulePacks"] = split(a.rule_packs)
+    first = scenes.get((config.scene_names(user) or [""])[0], {})
+    picked = split(a.sources) or had or first.get("suggestSources", ["notifications"])
+    bad = [x for x in picked if x not in SOURCES]
+    if bad:
+        raise SystemExit(f"没有这个来源：{'、'.join(bad)}（可选：{'、'.join(SOURCES)}）")
+    apply_sources(user, picked, split(a.apps) if a.apps else None, split(a.chats) if a.chats else None, before)
     config.save_user(user)
     sounds.make_all()
-    cfg = config.load()
-    print(f"已保存 {paths.CONFIG}：场景 {user.get('scene') or '无'}，风格 {cfg['styleName']}，称呼 {cfg['称呼']}，"
-          f"声音 {'如云' if cfg['engine'] == 'rooyun' else 'Mac 自带'}，来源 {'、'.join(n for n in picked)}")
+    summary(user, picked)
 
 
 def cmd_init(a):
-    if any(v is not None for v in (a.scene, a.style, a.name, a.engine, a.sources, a.rule_packs, a.chats)) or a.yes:
+    if any(v is not None for v in (a.scene, a.scenes, a.style, a.name, a.engine, a.sources, a.rule_packs, a.chats, a.apps)) or a.yes:
         return init_quiet(a)
     user = config.read_json(paths.CONFIG, {}) or {}
     print("Bobao 定制播报 · 设置（直接回车用括号里的默认值）\n")
     scenes = config.list_packs("scenes")
-    print("0) 你是哪类用户？选一个场景，播哪些类型、什么时段播、默认风格和音色都会配好")
-    picked_scene = choose("选一个", [(f"{p['name']}（{p['who']}）：{p['description']}", k) for k, p in scenes.items()]
-                          + [("自己从头配", "")], "1")
-    scene = scenes.get(picked_scene[0], {}) if picked_scene else {}
-    user["scene"] = picked_scene[0] if picked_scene else ""
-    styles = config.list_packs("styles")
-    names = list(styles)
-    print("1) 播报风格（试听：bobao gallery）")
-    default = names.index(scene["style"]) + 1 if scene.get("style") in names else names.index("formal") + 1
-    style = choose("选一个", [(f"{p.get('name')}：{p.get('description')}", k) for k, p in styles.items()], default)
-    user["style"] = (style or ["formal"])[0]
-    user["称呼"] = ask("2) 怎么称呼你（老板、哥哥、名字…）", user.get("称呼") or scene.get("称呼") or styles[user["style"]].get("称呼", "老板"))
-    print("3) 声音")
-    user["engine"] = (choose("选一个", [("Mac 自带声音（免费，马上能用）", "mac"),
-                                        ("如云配音（好听、可选音色或用你自己的声音，一整套只要几个积分，录一次永久免费播放）", "rooyun")]) or ["mac"])[0]
-    src = user.setdefault("sources", {})
-    print("4) 从哪里收通知（可多选，用逗号隔开）")
-    picked = choose("选择", [("飞书群（需要 lark-cli）", "feishu"), ("Webhook：你的系统直接推过来", "webhook"),
-                             ("系统通知：微信、钉钉、邮件等的弹窗", "notifications")],
-                    ",".join(str(i) for i, s in enumerate(("feishu", "webhook", "notifications"), 1)
-                             if s in scene.get("suggestSources", ["webhook"])))
-    src["webhook"] = dict(src.get("webhook", {}), enabled="webhook" in picked)
-    if "feishu" in picked:
-        from .sources.feishu import lark
-        app = ask("  飞书播报机器人的 App ID（推荐，见 README「接飞书」；留空则用你自己的 lark-cli 登录）", "")
-        if app:
-            src["feishu"] = dict(src.get("feishu", {}), enabled=True, app=app)
-            print(f"  设置完后运行：pbpaste | bobao feishu login --app {app}（先复制 App Secret）")
-    if "feishu" in picked and not src.get("feishu", {}).get("app"):
-        try:
-            chats = [c["name"] for c in (lark({}, "im", "+chat-list", "--page-all").get("chats") or [])]
-        except Exception as e:
-            chats = []
-            print(f"  读不到飞书群（{e}）。先安装并登录 lark-cli，再重新运行 bobao init")
-        if chats:
-            names = choose("  要播哪几个群（逗号隔开）", [(c, c) for c in chats[:40]], "")
-            src["feishu"] = dict(src.get("feishu", {}), enabled=bool(names), chats=names)
+    print("1) 你想听哪些提醒？可以多选，用逗号隔开（之后随时能改、能加）")
+    user["scenes"] = choose("选择", [(f"{p['name']}：{p['who']}", k) for k, p in scenes.items()], "1") or ["blank"]
+    user.pop("scene", None)
+    print("2) 这些消息从哪来？可以多选")
+    first = scenes.get(user["scenes"][0], {})
+    picked = choose("选择", [("电脑上的弹窗：飞书、企业微信、钉钉、微信、日历、邮件…", "notifications"),
+                             ("飞书群里的机器人通知（要建一个「飞书播报」应用，见 README）", "feishu"),
+                             ("你自己的系统推过来（Webhook）", "webhook"),
+                             ("定时提醒（例如工作日六点提醒下班）", "remind")],
+                    ",".join(str(i) for i, s in enumerate(("notifications", "feishu", "webhook", "remind"), 1)
+                             if s in first.get("suggestSources", ["notifications"])))
+    apps = None
     if "notifications" in picked:
-        apps = choose("  哪些 App 的通知（逗号隔开）", APPS, "1")
-        src["notifications"] = dict(src.get("notifications", {}), enabled=True, apps=apps)
-    packs = config.list_packs("rules")
-    print("5) 通知规则包（可多选，按顺序生效）")
-    user["rulePacks"] = choose("选择", [(f"{p.get('name')}：{p.get('description')}", k) for k, p in packs.items()],
-                               ",".join(str(i) for i, k in enumerate(packs, 1) if k == "generic") or "1")
+        default = [x for sc in user["scenes"] for x in SCENE_APPS.get(sc, [])]
+        apps = choose("  读哪些 App 的弹窗", APPS, ",".join(str(i) for i, (_, k) in enumerate(APPS, 1) if k in default) or "1")
+    user["称呼"] = ask("3) 怎么称呼你（你、老板、名字…）", user.get("称呼") or first.get("称呼") or "你")
+    apply_sources(user, picked, apps)
     config.save_user(user)
     sounds.make_all()
-    print(f"\n已保存到 {paths.CONFIG}，可以直接改这个文件来定制每一类的说法、音色、音效和夜间时段。")
-    if user["engine"] == "rooyun":
-        print("下一步：bobao rooyun login → bobao voice record → bobao review → bobao install")
+    summary(user, picked)
+    print("\n下一步：bobao install 装好（会播一句安装提示）。想换好听的声音：打开 https://funengzhe.github.io/bobao/ 挑一个，"
+          "再 bobao voice use 名字。")
+
+
+DAYS = {"每天": None, "工作日": [1, 2, 3, 4, 5], "周末": [6, 7]}
+
+
+def parse_days(v):
+    if not v or v in DAYS:
+        return DAYS.get(v or "每天")
+    out = []
+    for part in v.replace("，", ",").split(","):
+        lo, _, hi = part.partition("-")
+        out += list(range(int(lo), int(hi or lo) + 1))
+    if not out or any(d < 1 or d > 7 for d in out):
+        raise SystemExit("--days 写成 1-5、6,7、工作日、周末 或 每天（1 是周一）")
+    return out
+
+
+def cmd_remind(a):
+    user = config.read_json(paths.CONFIG, {}) or {}
+    current = config.load()["reminders"]
+    if a.action == "list":
+        if not current:
+            print("还没有定时提醒。添加：bobao remind add 18:00 \"下班啦\" --days 工作日")
+        for i, r in enumerate(current, 1):
+            days = r.get("days")
+            when = "每天" if not days or sorted(days) == list(range(1, 8)) else next((k for k, d in DAYS.items() if d == days), "周" + "、".join(map(str, days)))
+            print(f"  {i}. {when} {r['at']}  {r['say']}")
+        return
+    if a.action == "add":
+        if not a.at or not a.say:
+            raise SystemExit('用法：bobao remind add 18:00 "要说的话" [--days 工作日]')
+        h, _, m = a.at.partition(":")
+        if not (h.isdigit() and m.isdigit() and int(h) < 24 and int(m) < 60):
+            raise SystemExit("时间写成 HH:MM，比如 09:30")
+        r = {"at": f"{int(h):02d}:{int(m):02d}", "say": a.say}
+        if parse_days(a.days):
+            r["days"] = parse_days(a.days)
+        current.append(r)
     else:
-        print("下一步：bobao test \"充值到账\" -f 金额=\\$19.9 --play  试听，满意后 bobao install")
+        n = int(a.at or 0)
+        if not 0 < n <= len(current):
+            raise SystemExit("用法：bobao remind remove 编号（编号见 bobao remind list）")
+        current.pop(n - 1)
+    user["reminders"] = current   # from now on the user's own list
+    config.save_user(user)
+    print(f"已保存，共 {len(current)} 条定时提醒。" + ("后台在运行的话会自动生效；改了说法用 bobao voice record 补录。"
+                                                 if config.load()["engine"] == "rooyun" else ""))
+
+
+def cmd_notifications(a):
+    exe = os.path.join(paths.APP, "Bobao 通知.app", "Contents", "MacOS", "bobao-notify")
+    if not os.path.exists(exe):
+        raise SystemExit("还没装系统通知助手：先 bobao init 选「电脑上的弹窗」，再 bobao install")
+    r = subprocess.run([exe, "--dump", "300"], capture_output=True, text=True)
+    if r.returncode:
+        raise SystemExit("读不到通知：请在 系统设置 → 隐私与安全性 → 完全磁盘访问权限 里打开「Bobao 通知」")
+    counts = {}
+    for line in r.stdout.splitlines():
+        if line.startswith("["):
+            app = line[1:line.index("]")]
+            counts[app] = counts.get(app, 0) + 1
+    watched = config.load()["sources"]["notifications"].get("apps", [])
+    print("最近弹过通知的 App（次数）：")
+    for app, n in sorted(counts.items(), key=lambda x: -x[1]):
+        on = any(w.lower() in app.lower() for w in watched)
+        print(f"  {'✓' if on else ' '} {app:40} {n}")
+    print(f"✓ = 正在读（{', '.join(watched) or '无'}）。要加：bobao init --sources notifications --apps 原有,新的")
 
 
 def cmd_feishu(a):
@@ -427,6 +578,8 @@ def cmd_install(a):
                         "-r=designated => identifier \"io.bobao.notify\"", app], check=True, capture_output=True)
         load_agent(HELPER, plist(HELPER, [exe], os.path.join(paths.HOME, "notify.log")))
         print(f"系统通知助手已启动。请在 系统设置 → 隐私与安全性 → 完全磁盘访问权限 里添加并打开：\n  {app}")
+    if not a.quiet:   # the install greeting: a doorbell, then 小柚
+        play_files(os.path.join(paths.SOUNDS, "doorbell.wav"), os.path.join(here, "assets", "welcome.mp3"))
 
 
 def cmd_uninstall(a):
@@ -443,14 +596,27 @@ def main(argv=None):
     p = argparse.ArgumentParser(prog="bobao", description="Bobao 定制播报", formatter_class=argparse.RawDescriptionHelpFormatter,
                                 epilog=__doc__)
     sub = p.add_subparsers(dest="cmd")
-    for name in ("run", "install", "uninstall", "status", "packs", "voices", "sounds"):
+    for name in ("run", "uninstall", "status", "packs", "sounds"):
         sub.add_parser(name)
+    ins = sub.add_parser("install")
+    ins.add_argument("--quiet", action="store_true", help="不播安装提示")
+    vs = sub.add_parser("voices")
+    vs.add_argument("--all", action="store_true", help="如云里的全部音色")
+    rm = sub.add_parser("remind")
+    rm.add_argument("action", choices=["add", "list", "remove"])
+    rm.add_argument("at", nargs="?", help="add：HH:MM；remove：编号")
+    rm.add_argument("say", nargs="?")
+    rm.add_argument("--days", help="工作日、周末、每天，或 1-5、6,7（1 是周一）")
+    nt = sub.add_parser("notifications")
+    nt.add_argument("action", choices=["apps"])
     i = sub.add_parser("init")
     i.add_argument("--scene")
+    i.add_argument("--scenes", help="场景，可多个：work,life 或 上班,生活")
+    i.add_argument("--apps", help="读哪些 App 的弹窗（App id 的一部分）：lark,wechat")
     i.add_argument("--style")
     i.add_argument("--name", help="怎么称呼你")
     i.add_argument("--engine", choices=["mac", "rooyun"])
-    i.add_argument("--sources", help="feishu,webhook,notifications")
+    i.add_argument("--sources", help="notifications,feishu,webhook,remind")
     i.add_argument("--rule-packs")
     i.add_argument("--chats", help="只播这些飞书群（逗号隔开）；用机器人时可不填，播它所在的全部群")
     i.add_argument("--yes", action="store_true", help="不提问，全用场景默认值")
@@ -490,7 +656,8 @@ def main(argv=None):
     ry = sub.add_parser("rooyun")
     ry.add_argument("action", choices=["login", "me"])
     v = sub.add_parser("voice")
-    v.add_argument("action", choices=["plan", "quote", "record"])
+    v.add_argument("action", choices=["plan", "quote", "record", "use"])
+    v.add_argument("name", nargs="?", help="use：音色名字或如云音色 id")
     v.add_argument("--yes", action="store_true")
     a = p.parse_args(argv)
     if not a.cmd:
@@ -503,8 +670,6 @@ def main(argv=None):
         from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         docs = os.path.join(root, "docs")
-        print("正在用这台 Mac 的声音生成试听…")
-        subprocess.run(["/usr/bin/python3", os.path.join(root, "tools", "make_gallery.py"), "--mac"], capture_output=True)
         server = ThreadingHTTPServer(("127.0.0.1", a.port), functools.partial(SimpleHTTPRequestHandler, directory=docs))
         print(f"试听页面：http://127.0.0.1:{a.port}")
         if not a.no_open:
@@ -516,7 +681,7 @@ def main(argv=None):
     {"init": cmd_init, "install": cmd_install, "uninstall": cmd_uninstall, "status": cmd_status, "packs": cmd_packs,
      "voices": cmd_voices, "sounds": cmd_sounds, "test": cmd_test, "replay": cmd_replay, "send": cmd_send,
      "rooyun": cmd_rooyun, "voice": cmd_voice, "feishu": cmd_feishu, "export": cmd_export,
-     "import": cmd_import}[a.cmd](a)
+     "import": cmd_import, "remind": cmd_remind, "notifications": cmd_notifications}[a.cmd](a)
 
 
 if __name__ == "__main__":

@@ -1,18 +1,10 @@
 {
-  "name": "俏皮",
-  "description": "活泼可爱，随机开头和结尾，偶尔接一句鼓励。",
+  "name": "活泼",
+  "description": "轻快带点俏皮，随机开头结尾，偶尔夸你一句。适合生意和直播。",
   "称呼": "老板",
   "voices": {
     "default": {
       "voice": "female-shaonv-jingpin"
-    },
-    "告警": {
-      "voice": "female-tianmei",
-      "emotion": "fearful"
-    },
-    "接话": {
-      "voice": "female-tianmei",
-      "emotion": "happy"
     }
   },
   "sounds": {
