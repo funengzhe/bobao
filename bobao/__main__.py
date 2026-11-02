@@ -8,7 +8,7 @@
   bobao status                    is it running, what was said lately
   bobao run                       run in the foreground
 
-  bobao remind add 18:00 "下班啦" [--days 工作日] | list | remove N
+  bobao remind add 18:00 "下班啦" [--days 工作日] | list | remove N | test N [--play]
                                   timed reminders
   bobao notifications apps        apps that showed popups lately, and which are read
   bobao feishu login --app cli_xxx
@@ -60,6 +60,13 @@ def fields_arg(pairs):
     return out
 
 
+def voice_label(v, cfg):
+    if cfg["engine"] != "rooyun":
+        return "电脑自带的声音"
+    named = next((c["name"] for c in catalog() if c["id"] == v["voice"]), v["voice"])
+    return named + (f" · {v['emotion']}" if v.get("emotion") else "")
+
+
 def cmd_test(a):
     cfg = config.load()
     ev = Event(a.source, a.channel or "", a.title, a.text or "", fields_arg(a.field), bot=True,
@@ -72,7 +79,7 @@ def cmd_test(a):
     print(f"类型：{m.type}  平台：{m.platform or '—'}  规则：{'#' + str(m.index + 1) if m.index >= 0 else ('兜底' if m.index == -2 else '来源指定')}")
     print(f"音效：{utt['sound'] or '—'}")
     for v, t in utt["segments"]:
-        print(f"播报（{config.voice_key(v)}）：{t}")
+        print(f"播报（{voice_label(v, cfg)}）：{t}")
     if cfg["engine"] == "rooyun":
         print("录音：" + ("齐全" if clips.for_segments(utt["segments"], clips.load()) else "缺（运行 bobao voice record）"))
     if a.play:
@@ -164,31 +171,48 @@ def cmd_rooyun(a):
 INTRO_PENDING = "intro-pending"   # the voice chosen with `voice use`, introduced once recorded
 
 
-def intro_pending():
-    path = os.path.join(paths.HOME, INTRO_PENDING)
+def pending_voice():
     try:
-        name = open(path, encoding="utf-8").read().strip()
+        return open(os.path.join(paths.HOME, INTRO_PENDING), encoding="utf-8").read().strip() or None
     except FileNotFoundError:
         return None
-    return next((v for v in catalog() if v["id"] == name), None)
+
+
+def switch_voice(voice_id, picked):
+    """The chosen voice is recorded: use it from now on, and let it introduce itself."""
+    user = config.read_json(paths.CONFIG, {}) or {}
+    user["engine"] = "rooyun"
+    user["voices"] = {"default": {"voice": voice_id}}
+    config.save_user(user)
+    os.remove(os.path.join(paths.HOME, INTRO_PENDING))
+    name = picked["name"] if picked else voice_id
+    print(f"已换成 {name}。")
+    if picked:
+        print(f"{name}：我是{name}，这是我的声音，之后由我来为你播报。")
+        play_files(os.path.join(ROOT, "docs", picked["intro"]))
 
 
 def cmd_voice(a):
+    if a.action == "use" and a.cancel:
+        if os.path.exists(os.path.join(paths.HOME, INTRO_PENDING)):
+            os.remove(os.path.join(paths.HOME, INTRO_PENDING))
+        print("不换了，声音保持原样")
+        return
     if a.action == "use":
         if not a.name:
             raise SystemExit("用法：bobao voice use 名字（或如云音色 id）；推荐音色见 bobao voices")
         picked = next((v for v in catalog() if a.name in (v["name"], v["id"])), None)
         voice_id = picked["id"] if picked else a.name
-        user = config.read_json(paths.CONFIG, {}) or {}
-        user["engine"] = "rooyun"
-        user["voices"] = {"default": {"voice": voice_id}}
-        config.save_user(user)
         with open(os.path.join(paths.HOME, INTRO_PENDING), "w", encoding="utf-8") as f:
             f.write(voice_id)
-        print(f"已选音色：{picked['name'] if picked else voice_id}。把你的播报内容用它生成一遍：")
+        print(f"选了 {picked['name'] if picked else voice_id}。要先用它把你的播报内容生成一遍，生成完才换过去：")
         a.action = "record" if a.yes else "quote"
-    picked = intro_pending()
-    cfg = config.load()
+    pending = pending_voice()
+    picked = next((v for v in catalog() if v["id"] == pending), None)
+    user = config.read_json(paths.CONFIG, {}) or {}
+    if pending:   # plan and record for the chosen voice; the setup switches once it is recorded
+        user = dict(user, engine="rooyun", voices={"default": {"voice": pending}})
+    cfg = config.load(user)
     p = compose.plan(cfg)
     todo = clips.missing(p, clips.load())
     total = sum(len(e["phrases"]) for e in p.values())
@@ -202,8 +226,8 @@ def cmd_voice(a):
         return
     if not todo:
         print("全部都录好了")
-        if a.action == "record" and picked:
-            introduce(picked)
+        if a.action == "record" and pending:
+            switch_voice(pending, picked)
         return
     from . import rooyun
     client = rooyun.Client(cfg["rooyun"]["base"])
@@ -213,7 +237,7 @@ def cmd_voice(a):
     minutes = round(len(jobs) * rooyun.SUBMIT_GAP / 60)
     print(f"要录 {len(jobs)} 句，约 {price} 积分，你的可用积分 {round(available, 2)}（如云每分钟最多提交 10 句，约 {minutes} 分钟）")
     if a.action == "quote":
-        print("确认后：bobao voice record --yes")
+        print("确认后：bobao voice record --yes" + ("；不换了：bobao voice use --cancel" if pending else ""))
         return
     if price > available:
         sys.exit("积分不够，请先到如云充值")
@@ -222,15 +246,8 @@ def cmd_voice(a):
         return
     done, failed = rooyun.record(client, jobs)
     print(f"录好 {done} 句" + (f"，{failed} 句没录成（重跑同一条命令补录）" if failed else ""))
-    if picked and not failed:
-        introduce(picked)
-
-
-def introduce(v):
-    """The newly chosen voice says who it is (the page's sample)."""
-    os.remove(os.path.join(paths.HOME, INTRO_PENDING))
-    print(f"{v['name']}：我是{v['name']}，这是我的声音，之后由我来为你播报。")
-    play_files(os.path.join(ROOT, "docs", v["intro"]))
+    if pending and not failed:
+        switch_voice(pending, picked)
 
 
 def cmd_sounds(a):
@@ -275,6 +292,12 @@ def split(v):
     return [x.strip() for x in (v or "").replace("，", ",").split(",") if x.strip()]
 
 
+def app_ids(names):
+    """--apps takes 飞书, 企业微信… or a part of any app id."""
+    known = dict(APPS)
+    return [known.get(n, n) for n in names]
+
+
 def apply_sources(user, picked, apps=None, chats=None, before=()):
     src = user.setdefault("sources", {})
     for name in ("feishu", "webhook", "notifications"):
@@ -307,6 +330,10 @@ def summary(user, picked):
     voice = "如云 · " + config.voice_for(cfg, "提醒")["voice"] if cfg["engine"] == "rooyun" else "电脑自带"
     print(f"已保存 {paths.CONFIG}：场景 {'、'.join(names) or '无'}，风格 {cfg['styleName']}，称呼 {cfg['称呼']}，"
           f"声音 {voice}，来源 {'、'.join(picked)}" + (f"，定时提醒 {len(cfg['reminders'])} 条" if cfg["reminders"] else ""))
+    if "notifications" in picked:
+        names = {k: n for n, k in APPS}
+        apps = cfg["sources"]["notifications"].get("apps", [])
+        print("读这些 App 的弹窗：" + "、".join(names.get(x, x) for x in apps) + "（改：--apps 飞书,微信）")
 
 
 def init_quiet(a):
@@ -343,7 +370,7 @@ def init_quiet(a):
     bad = [x for x in picked if x not in SOURCES]
     if bad:
         raise SystemExit(f"没有这个来源：{'、'.join(bad)}（可选：{'、'.join(SOURCES)}）")
-    apply_sources(user, picked, split(a.apps) if a.apps else None, split(a.chats) if a.chats else None, before)
+    apply_sources(user, picked, app_ids(split(a.apps)) if a.apps else None, split(a.chats) if a.chats else None, before)
     config.save_user(user)
     sounds.make_all()
     summary(user, picked)
@@ -404,6 +431,20 @@ def cmd_remind(a):
             days = r.get("days")
             when = "每天" if not days or sorted(days) == list(range(1, 8)) else next((k for k, d in DAYS.items() if d == days), "周" + "、".join(map(str, days)))
             print(f"  {i}. {when} {r['at']}  {r['say']}")
+        return
+    if a.action == "test":
+        n = int(a.at or 0)
+        if not 0 < n <= len(current):
+            raise SystemExit("用法：bobao remind test 编号 [--play]（编号见 bobao remind list）")
+        cfg = config.load()
+        utt = daemon.reminder_utterance(cfg, current[n - 1])
+        for v, t in utt["segments"]:
+            print(f"播报（{voice_label(v, cfg)}）：{t}")
+        if cfg["engine"] == "rooyun":
+            print("录音：" + ("齐全" if clips.for_segments(utt["segments"], clips.load()) else "缺（运行 bobao voice record）"))
+        if a.play:
+            from .speaker import play
+            play(utt, cfg)
         return
     if a.action == "add":
         if not a.at or not a.say:
@@ -603,10 +644,11 @@ def main(argv=None):
     vs = sub.add_parser("voices")
     vs.add_argument("--all", action="store_true", help="如云里的全部音色")
     rm = sub.add_parser("remind")
-    rm.add_argument("action", choices=["add", "list", "remove"])
-    rm.add_argument("at", nargs="?", help="add：HH:MM；remove：编号")
+    rm.add_argument("action", choices=["add", "list", "remove", "test"])
+    rm.add_argument("at", nargs="?", help="add：HH:MM；remove、test：编号")
     rm.add_argument("say", nargs="?")
     rm.add_argument("--days", help="工作日、周末、每天，或 1-5、6,7（1 是周一）")
+    rm.add_argument("--play", action="store_true")
     nt = sub.add_parser("notifications")
     nt.add_argument("action", choices=["apps"])
     i = sub.add_parser("init")
@@ -658,6 +700,7 @@ def main(argv=None):
     v = sub.add_parser("voice")
     v.add_argument("action", choices=["plan", "quote", "record", "use"])
     v.add_argument("name", nargs="?", help="use：音色名字或如云音色 id")
+    v.add_argument("--cancel", action="store_true", help="use：不换了")
     v.add_argument("--yes", action="store_true")
     a = p.parse_args(argv)
     if not a.cmd:

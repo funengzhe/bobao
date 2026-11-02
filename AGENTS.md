@@ -7,8 +7,8 @@
 ## 规矩
 
 1. **先问清楚再动手，但只问三件事**：想听哪些提醒、消息从哪来、怎么称呼他。其余用默认值，装好后再按他的反馈改。
-2. **花钱前必须报价**：生成如云声音会用积分。`bobao voice use` 或 `bobao voice quote` 会报出句数和积分，把这两个数原样告诉用户，等他明确说"可以"，再运行 `bobao voice record --yes`。他之前说过"你看着办"也一样要问。
-3. **改完就念给他听**：每次改说法、加提醒，都用 `bobao test ... --play` 念一遍，让他确认。
+2. **花钱前必须报价**：生成如云声音会用积分。`bobao voice use` 或 `bobao voice quote` 会报出句数、积分和大约要多久，原样告诉用户，等他明确说"可以"，再运行 `bobao voice record --yes`。他之前说过"你看着办"也一样要问。
+3. **改完就念给他听**：改了说法用 `bobao test ... --play`，加了定时提醒用 `bobao remind test 编号 --play`，念一遍让他确认。
 4. **密钥不经过你**：飞书 App Secret 让用户复制后，在**他自己的终端**里运行 `pbpaste | ~/bobao/bin/bobao feishu login --app cli_xxx`；如云登录他在浏览器里点「授权」。不要让他把密钥发到对话里，也不要读取、打印或保存它。他已经贴进对话的话，提醒他去重置。
 5. **一个飞书应用只在一台电脑上跑**。飞书只把每条推送发给一个连接，两台电脑用同一个应用会互相漏播。这个应用以前在别的电脑上用过的话，提醒用户在那台运行 `bobao uninstall`。
 
@@ -68,9 +68,21 @@ git clone https://github.com/funengzhe/bobao ~/bobao
 ~/bobao/bin/bobao init --scenes work,life --sources notifications,remind --name 小王
 ```
 
-可用的参数：`--scenes`（逗号隔开，中文名也行）、`--sources`、`--name`、`--apps`（读哪些 App 的弹窗，例如 `lark,wechat`；不给就按场景选）、`--style formal|playful|warm`、`--chats`（只播这些飞书群）。
+可用的参数：`--scenes`（逗号隔开，中文名也行）、`--sources`、`--name`、`--apps`（读哪些 App 的弹窗，见下表；不给就按场景选，会多选一些）、`--style formal|playful|warm`、`--chats`（只播这些飞书群）。用户说了用哪些 App，就把它们写进 `--apps`。
 
-**检查**：输出里的场景、来源、称呼和用户说的一致。
+| `--apps` 可以写 | 弹窗的 App id（`bobao test --channel` 用） |
+|---|---|
+| 飞书 | `com.electron.lark` |
+| 企业微信 | `com.tencent.WeWorkMac` |
+| 钉钉 | `com.alibaba.DingTalkMac` |
+| 微信 | `com.tencent.xinWeChat` |
+| 日历 | `com.apple.iCal` |
+| 邮件 | `com.apple.mail` |
+| 提醒事项 | `com.apple.reminders` |
+
+别的 App 写 App id 的一部分；装好后 `bobao notifications apps` 能看到这台电脑上的真实 id。
+
+**检查**：输出里的场景、来源、称呼、读哪些 App，和用户说的一致。
 
 ### 4. 装成后台运行
 
@@ -78,11 +90,11 @@ git clone https://github.com/funengzhe/bobao ~/bobao
 ~/bobao/bin/bobao install
 ```
 
-成功后会播一声门铃，然后小柚说一句安装提示。问用户听到没有。没听到就检查音量和输出设备。
+成功后会播一声门铃，然后小柚说一句安装提示（这一句是预先录好的，所以即使用电脑自带的声音也是小柚）。问用户听到没有。没听到就检查音量和输出设备。
 
 ### 5. 按来源补设置
 
-**电脑上的弹窗**：请用户打开 系统设置 → 隐私与安全性 → 完全磁盘访问权限，在列表里打开「Bobao 通知」（不在列表里就点「+」，选 `~/.bobao/app/Bobao 通知.app`）。然后：
+**电脑上的弹窗**（要先完成第 4 步）：请用户打开 系统设置 → 隐私与安全性 → 完全磁盘访问权限，在列表里打开「Bobao 通知」（不在列表里就点「+」，选 `~/.bobao/app/Bobao 通知.app`）。然后：
 
 ```bash
 ~/bobao/bin/bobao notifications apps
@@ -111,17 +123,17 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 
 ### 6. 念几条给他听
 
-挑两三条他关心的提醒念出来，确认声音和说法他满意：
+从他选的场景里挑两三条他关心的提醒念出来，确认声音和说法他满意。弹窗用上面表里的 App id：
 
 ```bash
 ~/bobao/bin/bobao test "张三" --text "张三在群里@你" --source notifications --channel com.electron.lark --play
 ```
 
 ```bash
-~/bobao/bin/bobao test "充值到账" -f 金额=¥99 -f 方式=微信 --play
+~/bobao/bin/bobao remind test 1 --play
 ```
 
-输出里会写认成了什么类型、用了哪条规则、念什么。
+输出里会写认成了什么类型、用了哪条规则、念什么。显示「不播：没有规则」说明这条消息他的场景里没有对应的提醒，按需要加一条。`bobao voice plan` 列出他的设置会说的每一句话。
 
 ### 7. 确认在运行
 
@@ -139,7 +151,8 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 
 | 用户说 | 你做 |
 |---|---|
-| "老板在群里 @我就提醒我，说'老板找你啦'" | 在 `rules` 最前面加 `{"when": {"source": "notifications", "app": ["lark"], "text": ["@你"]}, "type": "提醒", "say": "{称呼}，老板找你啦，快去看看"}`。要限定是谁发的，把名字放进 `title` |
+| "老板在群里 @我就提醒我，说'老板找你啦'" | 在 `rules` 最前面加 `{"when": {"source": "notifications", "app": ["lark"], "text": ["@你", "@{称呼}"]}, "type": "提醒", "say": "{称呼}，老板找你啦，快去看看"}`。要限定是谁发的，把老板的名字放进 `title`。企业微信、钉钉的弹窗写的是"@名字"，称呼不是他在公司的名字的话，把名字也加进 `text` |
+| "家里人发消息提醒我" | 生活场景按发消息的人认（弹窗标题）。把家人在微信里的备注名加进那条规则的 `title`：复制场景里那条规则到 `rules`，改 `title` |
 | "工作日六点提醒我下班" | `bobao remind add 18:00 "..." --days 工作日` |
 | "到账超过一千加一句大单" | `"bigOrder": {"*": 1000}` |
 | "晚上十一点后别出声，告警除外" | `"schedule": {"quietHours": "23:00-08:00"}`，`"types": {"告警": {"always": true}}` |
@@ -153,9 +166,9 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 ## 换声音
 
 1. 给他试听页 <https://funengzhe.github.io/bobao/>（本地：`bobao gallery`），或者运行 `bobao voices` 列出推荐的 22 个声音。他也可以用如云里的其他声音，包括自己克隆的：`bobao voices --all`。
-2. 没登录过如云的话：`bobao rooyun login`，请他在打开的浏览器页面点「授权」。
-3. `bobao voice use 安然`：换成这个声音，并报出要生成多少句、多少积分。把这两个数告诉他，等他同意。
-4. `bobao voice record --yes`：生成。完成后新声音会念一句自我介绍，问他听到没有。中途断了重跑同一条命令，不会重复扣费。
+2. `bobao rooyun me` 看有没有登录。没有的话：`bobao rooyun login`，请他在打开的浏览器页面点「授权」。
+3. `bobao voice use 安然`：报出用这个声音要生成多少句、多少积分、大约多久。告诉他，等他同意。这时设置还没变；他不想换了就 `bobao voice use --cancel`。
+4. `bobao voice record --yes`：生成。全部生成完才换成新声音，并念一句自我介绍，问他听到没有。中途断了重跑同一条命令，不会重复扣费。
 
 ## 飞书（用飞书群时）
 

@@ -7,6 +7,7 @@ no rule matches stays silent, unless it looks important (catchAll keywords), in
 which case it is announced as a generic 通知 and logged so a rule can be added.
 """
 
+import json
 import re
 
 TYPES = ["收款", "套餐", "注册", "日报", "告警", "恢复", "提醒", "通知"]
@@ -51,8 +52,11 @@ def _any(words, text):
     return any(w in text for w in words)
 
 
-def matches(rule, ev):
+def matches(rule, ev, name=""):
+    """name fills {称呼} in the words, so "@{称呼}" catches "@小王" in a popup."""
     when = rule.get("when", {})
+    if name and "{称呼}" in json.dumps(when, ensure_ascii=False):
+        when = json.loads(json.dumps(when, ensure_ascii=False).replace("{称呼}", name))
     if "source" in when and ev.source not in _list(when["source"]):
         return False
     if "channel" in when and ev.channel not in _list(when["channel"]):
@@ -104,7 +108,7 @@ def classify(ev, cfg):
             return None, f"未知类型 {ev.type}"
         return Match(ev.type, ev.platform or detect_platform(ev, cfg["platforms"]), ev.name, {}, -1), ""
     for i, rule in enumerate(cfg["rules"]):
-        if not matches(rule, ev) or not on_its_channel(rule, ev, cfg):
+        if not matches(rule, ev, cfg.get("称呼", "")) or not on_its_channel(rule, ev, cfg):
             continue
         if rule.get("skip"):
             return None, f"规则 #{i + 1} 跳过"

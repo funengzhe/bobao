@@ -185,6 +185,12 @@ class Popups(unittest.TestCase):
         self.assertIsNotNone(at("com.tencent.WeWorkMac"))
         self.assertIsNone(at("com.tencent.xinWeChat"))
 
+    def test_name_in_words(self):
+        cfg = config.load({"scenes": ["work"], "称呼": "小王"})
+        popup = Event("notifications", "com.tencent.WeWorkMac", "群聊", text="李四: @小王 看下这个")
+        self.assertIsNotNone(classify(popup, cfg)[0])
+        self.assertIsNone(classify(popup, config.load({"scenes": ["work"], "称呼": "老李"}))[0])
+
 
 class Reminders(unittest.TestCase):
     def test_due_once_on_its_days(self):

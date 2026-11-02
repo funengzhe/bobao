@@ -53,7 +53,7 @@ bobao init
 bobao install
 ```
 
-`init` 问你三个问题，直接回车就用默认值。`install` 把它装成开机自动运行，并播放安装提示。日志在 `~/.bobao/bobao.log`。
+`init` 问你三个问题，直接回车就用默认值；会列出读哪些 App 的弹窗。`install` 把它装成开机自动运行，并播放安装提示。日志在 `~/.bobao/bobao.log`。
 
 ## 四个词
 
@@ -106,7 +106,7 @@ bobao voice use 安然
 bobao voice record
 ```
 
-`login` 打开如云的授权页，你点「授权」就行。`voice use` 换成这个声音，并报出要生成多少句、多少积分。`record` 生成，完成后新声音会念一句自我介绍。中途断了，重跑同一条命令就行，已经提交的句子不会重复扣费。以后改了说法、加了提醒，再运行一次 `bobao voice record`，只生成新增的句子。
+`login` 打开如云的授权页，你点「授权」就行。`voice use` 报出用这个声音要生成多少句、多少积分（不想换了：`bobao voice use --cancel`）。`record` 生成，全部生成完才换成新声音，并念一句自我介绍。中途断了，重跑同一条命令就行，已经提交的句子不会重复扣费。以后改了说法、加了提醒，再运行一次 `bobao voice record`，只生成新增的句子。
 
 ```bash
 bobao voices
@@ -124,7 +124,7 @@ bobao review
 
 飞书、企业微信、钉钉、微信、日历、邮件……任何 App 弹出的通知，都能读到标题和预览文字（谁发的、说了什么前几句）。不需要公司开权限，最适合上班的人。
 
-`install` 之后，在 系统设置 → 隐私与安全性 → 完全磁盘访问权限 里打开「Bobao 通知」。看看你的电脑上哪些 App 会弹窗、现在读了哪些：
+初始化时用 `--apps 飞书,企业微信,微信` 选 App（也可以写 App id 的一部分）。`install` 之后，在 系统设置 → 隐私与安全性 → 完全磁盘访问权限 里打开「Bobao 通知」。看看你的电脑上哪些 App 会弹窗、现在读了哪些：
 
 ```bash
 bobao notifications apps
@@ -142,7 +142,7 @@ bobao remind add 18:00 "六点啦，今天辛苦了，准时下班" --days 工�
 bobao remind list
 ```
 
-`--days` 可以写 `工作日`、`周末`、`每天`，或 `1-5`、`6,7`（1 是周一）。删除用 `bobao remind remove 编号`。定时提醒不受静音时段限制。
+`--days` 可以写 `工作日`、`周末`、`每天`，或 `1-5`、`6,7`（1 是周一）。说法里可以用 `{称呼}`。先听一遍用 `bobao remind test 编号 --play`，删除用 `bobao remind remove 编号`。定时提醒不受静音时段限制。
 
 ### 飞书群（机器人）
 
@@ -216,7 +216,7 @@ bobao export
 }
 ```
 
-**规则的 `when`** 可以用：`source`（`notifications` / `feishu` / `webhook`）、`app`（弹窗来自哪个 App，App id 的一部分）、`channel`（飞书群名）、`title`、`text`、`not`（含这些就不算）。每项写一个列表，含其中任意一个就算。
+**规则的 `when`** 里的词可以带 `{称呼}`（例如 `"@{称呼}"`）。可以用：`source`（`notifications` / `feishu` / `webhook`）、`app`（弹窗来自哪个 App，App id 的一部分）、`channel`（飞书群名）、`title`、`text`、`not`（含这些就不算）。每项写一个列表，含其中任意一个就算。
 
 **说法里的空位**：`{称呼}` `{平台}` `{金额}` `{方式}` `{套餐}` `{名称}`。空位没有值时，它所在的那一小句会自动省掉。
 
