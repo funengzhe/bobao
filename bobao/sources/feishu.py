@@ -9,7 +9,7 @@ Two ways in:
 - as yourself (no profile): lark-cli logged in with `lark-cli auth login`; groups are
   checked every pollSeconds and when the notification helper sees a Feishu popup.
 
-Every group is also checked every pollSeconds (5 minutes with a bot, else 1) and each time
+Every group is also checked every pollSeconds (5 minutes with a bot, else 20 seconds) and each time
 the push connection comes back, since Feishu does not resend what was pushed while it was
 down. The cursor (message_position) per group is kept in ~/.bobao/state.json, so nothing
 is read twice and nothing new is skipped, however many arrive at once.
@@ -49,7 +49,7 @@ def identity(src):
 
 
 def poll_seconds(src):
-    return src.get("pollSeconds") or (300 if src.get("profile") else 60)
+    return src.get("pollSeconds") or (300 if src.get("profile") else 20)   # a bot gets pushes; you are polled
 
 
 def lark(src, *args, stdin=None):
@@ -144,12 +144,12 @@ class Feishu:
         self.state = read_json(paths.STATE, {}) or {}
         self.ids, self.ids_at = {}, 0
         self.push = Push()
-        self.me = None   # your Feishu name, when reading as yourself
+        self.me, self.me_at = "", 0   # your Feishu name, when reading as yourself
         self.login_expired = False
 
     def my_name(self, src):
-        if self.me is None:
-            self.me = ""
+        if not self.me and time.time() - self.me_at > 600:   # retried: you may log in after Bobao starts
+            self.me_at = time.time()
             if not src.get("profile"):
                 try:
                     out = subprocess.run([lark_cli(src), "auth", "status"], capture_output=True, text=True,

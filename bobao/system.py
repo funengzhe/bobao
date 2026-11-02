@@ -3,7 +3,8 @@ opening a link, turning audio into a clip, and starting at login.
 
 macOS uses afplay, say, afconvert and launchd. Windows uses PowerShell (Windows Media
 Player for mp3, System.Speech for the voice), ffmpeg for clips, and a shortcut in the
-Startup folder that runs Bobao with pythonw (no console window).
+Task Scheduler task that runs Bobao with pythonw at login (no console window). A task, not
+a child process: an agent's terminal may end everything it started when its session closes.
 """
 
 import os
@@ -15,10 +16,23 @@ WINDOWS = os.name == "nt"
 NO_WINDOW = 0x08000000 if WINDOWS else 0   # CREATE_NO_WINDOW: no console flashing up
 
 
+def decode(raw):
+    """Console output on Chinese Windows is GBK, not UTF-8: try both, never raise."""
+    if raw is None:
+        return ""
+    for enc in ("utf-8", "gbk", "mbcs"):
+        try:
+            return raw.decode(enc)
+        except (UnicodeDecodeError, LookupError):
+            continue
+    return raw.decode("utf-8", "replace")
+
+
 def powershell(script, **env):
     """Runs a PowerShell script; values go in through the environment, so no quoting."""
-    return subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                          env=dict(os.environ, **env), capture_output=True, text=True, creationflags=NO_WINDOW)
+    r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+                       env=dict(os.environ, **env), capture_output=True, creationflags=NO_WINDOW)
+    return subprocess.CompletedProcess(r.args, r.returncode, decode(r.stdout), decode(r.stderr))
 
 
 PLAY_PS = r"""
@@ -129,23 +143,42 @@ $s.Save()
 """
 
 
+TASK = "Bobao"
+TASK_PS = r"""
+$a = New-ScheduledTaskAction -Execute $env:BOBAO_EXE -Argument ('"' + $env:BOBAO_ARG + '"') -WorkingDirectory $env:BOBAO_DIR
+$t = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
+$p = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive -RunLevel Limited
+$s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -MultipleInstances IgnoreNew
+Register-ScheduledTask -TaskName $env:BOBAO_TASK -Action $a -Trigger $t -Principal $p -Settings $s -Force | Out-Null
+Start-ScheduledTask -TaskName $env:BOBAO_TASK
+"""
+
+
+def lnk_path():
+    return os.path.join(startup_dir(), "Bobao.lnk")
+
+
 def install_startup(launcher, workdir):
-    """A shortcut in the Startup folder runs `launcher` at login, then starts it now."""
-    lnk = os.path.join(startup_dir(), "Bobao.lnk")
-    r = powershell(SHORTCUT_PS, BOBAO_LNK=lnk, BOBAO_EXE=pythonw(), BOBAO_ARG=launcher, BOBAO_DIR=workdir)
-    if r.returncode:
-        raise SystemExit(f"没能在启动文件夹里加上 Bobao：{r.stderr.strip()[:200]}")
+    """Runs `launcher` at login and now, as a Task Scheduler task (a Startup-folder shortcut
+    if tasks can't be made here). Returns where it is set up."""
     stop()
-    subprocess.Popen([pythonw(), launcher], cwd=workdir, creationflags=0x00000008 | NO_WINDOW,   # DETACHED_PROCESS
+    r = powershell(TASK_PS, BOBAO_EXE=pythonw(), BOBAO_ARG=launcher, BOBAO_DIR=workdir, BOBAO_TASK=TASK)
+    if not r.returncode:
+        if os.path.exists(lnk_path()):   # an older install: never two at login
+            os.remove(lnk_path())
+        return f"计划任务「{TASK}」"
+    r = powershell(SHORTCUT_PS, BOBAO_LNK=lnk_path(), BOBAO_EXE=pythonw(), BOBAO_ARG=launcher, BOBAO_DIR=workdir)
+    if r.returncode:
+        raise SystemExit(f"没能设置开机运行：{r.stderr.strip()[:200]}")
+    subprocess.Popen([pythonw(), launcher], cwd=workdir, creationflags=0x01000008 | NO_WINDOW,   # detached, out of the job
                      stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    return lnk
+    return lnk_path()
 
 
 def remove_startup():
-    try:
-        os.remove(os.path.join(startup_dir(), "Bobao.lnk"))
-    except FileNotFoundError:
-        pass
+    powershell(f"Unregister-ScheduledTask -TaskName {TASK} -Confirm:$false -ErrorAction SilentlyContinue")
+    if os.path.exists(lnk_path()):
+        os.remove(lnk_path())
     stop()
 
 
@@ -155,8 +188,8 @@ def running_pid():
         pid = int(open(paths.PID).read().strip())
     except (FileNotFoundError, ValueError):
         return None
-    r = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/NH"], capture_output=True, text=True, creationflags=NO_WINDOW)
-    return pid if str(pid) in r.stdout else None
+    r = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/NH"], capture_output=True, creationflags=NO_WINDOW)
+    return pid if str(pid).encode() in (r.stdout or b"") else None
 
 
 def stop():

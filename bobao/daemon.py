@@ -98,6 +98,10 @@ def run():
     feishu, spool, popups = Feishu(), notifications.Spool(), winpopups.Watcher()
     state = {"cfg": config.load()}
     paths.ensure()
+    from . import system
+    if system.WINDOWS and system.running_pid() not in (None, os.getpid()):
+        log("Bobao 已经在运行，这一个退出")
+        return
     with open(paths.PID, "w") as f:
         f.write(str(os.getpid()))
     log("Bobao 开始运行")

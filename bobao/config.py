@@ -123,6 +123,14 @@ def _merge(out, more):
             out[k] = v
 
 
+def scene_types(scene):
+    """The types a scene's own rules and rule packs announce (生意 -> 收款, 套餐, ...)."""
+    rules = list(scene.get("rules") or [])
+    for name in scene.get("rulePacks") or []:
+        rules += read_json(pack_path("rules", name), {}).get("rules", [])
+    return {r["type"] for r in rules if r.get("type") and not r.get("skip")}
+
+
 def with_scene(user):
     """Scenes (packs/scenes/*.json) are ready-made setups for a kind of life or work: which
     notifications, what is said, style, schedule, reminders. Several can be combined; the
@@ -131,13 +139,18 @@ def with_scene(user):
     names = scene_names(user)
     if not names:
         return user
-    out = {}
+    out, wanted = {}, set()
     for i, name in enumerate(names):
         scene = {k: v for k, v in read_json(pack_path("scenes", name), {}).items() if k not in SCENE_ONLY}
         if i:   # later scenes add notifications, not a different voice or style
             for k in ("style", "称呼", "voices", "schedule"):
                 scene.pop(k, None)
+        off = {t for t, v in (scene.get("types") or {}).items() if v.get("enabled") is False}
+        wanted |= scene_types(scene) - off
         _merge(out, scene)
+    for t in wanted:   # one scene turning a type off doesn't silence another scene that announces it
+        if (out.get("types") or {}).get(t, {}).get("enabled") is False:
+            out["types"][t] = {k: v for k, v in out["types"][t].items() if k != "enabled"}
     rules = list(user.get("rules", [])) + out.pop("rules", [])
     user_rest = {k: v for k, v in user.items() if k not in ("rules", "scene", "scenes")}
     if "reminders" in user_rest:   # the user's list is the whole list once they have one

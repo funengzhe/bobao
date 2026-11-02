@@ -1,6 +1,6 @@
 # 写给智能体
 
-用户把这个仓库交给你，是想在**这台 Mac** 上装好 Bobao：把他在意的消息，用他喜欢的声音、他想听的话念出来。你负责安装、按他的要求配置，以及之后帮他改。用户不需要懂任何技术细节，你自己运行命令，不要把命令甩给他去跑（第 4 条规矩里的那一步除外）。
+用户把这个仓库交给你，是想在**这台电脑**（macOS，或测试版的 Windows）上装好 Bobao：把他在意的消息，用他喜欢的声音、他想听的话念出来。你负责安装、按他的要求配置，以及之后帮他改。用户不需要懂任何技术细节，你自己运行命令，不要把命令甩给他去跑（第 4 条规矩里的那一步除外）。
 
 下面的命令都写成 `bobao`，实际用 `~/bobao/bin/bobao`。
 
@@ -100,23 +100,26 @@ git -C ~/bobao fetch origin && git -C ~/bobao reset --hard origin/main
 
 ### Windows
 
-Windows 版是测试版。能用的：飞书（推荐「用你自己的身份」，见下）、Webhook、定时提醒、智能体播报、GitHub、喊话页、分享句子、RooYun（如云）的声音。**读不了微信和其他 App 的弹窗**（微信 4 在 Windows 上不弹窗、界面也读不出来），第 3 步「消息从哪来」不要选 `notifications`，跟用户说明。
+Windows 版是测试版。能用的：飞书（用他自己的身份读）、Webhook、定时提醒、智能体播报、GitHub、喊话页、分享句子、RooYun（如云）的声音。**读不了微信和其他 App 的弹窗**（微信 4 在 Windows 上不弹窗、界面也读不出来），第 3 步「消息从哪来」不要选 `notifications`，跟用户说明。
 
-飞书用你自己的身份（Mac 上也能这样用）：
+**准备**（每项先检查，有了就跳过）：
+1. **Python**：`py -3 --version`（3.9 以上）。没有的话 `winget install Python.Python.3.12`，装完重新打开终端。Windows 自带的 `python` 可能只是打开应用商店的快捷方式，以 `py -3 --version` 为准。
+2. **Git**：`git --version`，没有的话 `winget install Git.Git`。
+3. 下载：`git clone https://github.com/funengzhe/bobao "%USERPROFILE%\bobao"`。
+4. **中文语音**：`bobao install` 会检查。没有的话请用户打开 设置 → 时间和语言 → 语音 → 添加语音，选「中文（简体，中国）」。
+5. 只有要用 RooYun 的好听声音才需要 **ffmpeg**：`winget install Gyan.FFmpeg`，装完重新打开终端。
+
+**飞书，用他自己的身份**（不用建机器人；Mac 上也能这样用）：
 1. `node --version`，没有的话 `winget install OpenJS.NodeJS.LTS`，装完重新打开终端。然后 `npm install -g @larksuite/cli`。
-2. `lark-cli auth status`：`identities.user.status` 已经是 `ready` 的话，跳到第 4 步，不要再建一个应用。
+2. `lark-cli auth status`：`identities.user.status` 已经是 `ready` 的话跳到第 5 步；只是 `appId` 已有而用户没登录，跳到第 4 步。不要再建一个应用。
 3. `lark-cli config init --new --brand feishu --lang zh`，在后台运行，从输出里取链接给用户，请他在**登录了同一个飞书账号的浏览器**里完成。应用会被飞书自动命名为「他的名字's Feishu Assistant」，告诉他之后可以在开发者后台改名。
 4. `lark-cli auth login --scope "im:chat:read im:message:readonly im:message.group_msg:get_as_user" --no-wait --json`：只读权限。把 verification_url 给他授权，他说好了再运行 `lark-cli auth login --device-code <device_code>`。device_code 不要打印出来。
-5. `bobao feishu me` 列出他的群，问他要播哪些：`bobao feishu me --chats 群1,群2 --people`（`--people`：人发的 @你、@所有人、审批也念）。
-6. 请他在其中一个群里 @自己 发一句话（不要带「测试」两个字，带了会被跳过），一分钟内应该念出来。别人发的消息弹窗时几秒内就念。
+5. `bobao feishu me` 列出他的群，问他要播哪些：`bobao feishu me --chats 群1,群2 --people`（`--people`：人发的 @你、@所有人、审批也念）。@他的消息会自动认出来（按他的飞书名字），不用另加规则。
+6. `bobao install`，然后请他在其中一个群里 @自己 发一句话（不要带「测试」两个字，带了会被跳过），20 秒内应该念出来。别人发的消息一弹窗，几秒内就念。
 
-1. **Python**：`py -3 --version` 或 `python --version`（3.9 以上）。没有的话 `winget install Python.Python.3.12`，或请用户到 python.org 下载安装（勾选 Add to PATH）。装完重新打开终端。注意 Windows 自带的 `python` 可能只是打开应用商店的快捷方式，以 `py -3 --version` 能运行为准。
-2. **Git**：`git --version`，没有的话 `winget install Git.Git`。
-3. 下载：`git clone https://github.com/funengzhe/bobao "%USERPROFILE%\bobao"`，之后的命令都用 `"%USERPROFILE%\bobao\bin\bobao.cmd"`（PowerShell 里写 `& "$env:USERPROFILE\bobao\bin\bobao.cmd"`）。
-4. **中文语音**：`bobao install` 会检查电脑自带的声音里有没有中文。没有的话请用户打开 设置 → 时间和语言 → 语音 → 添加语音，选「中文（简体，中国）」。
-5. **要用 RooYun 的好听声音**，还需要 ffmpeg：`winget install Gyan.FFmpeg`，装完重新打开终端。
-6. `bobao install` 会在「启动」文件夹放一个 Bobao 快捷方式，登录 Windows 时自动在后台运行（没有窗口）。`bobao status` 看是否在运行，`bobao uninstall` 停止并移除。
-7. 喊话页：Windows 第一次会弹出防火墙提示，请用户勾选「专用网络」并点允许。
+**后台**：`bobao install` 建一个 Windows 计划任务「Bobao」，登录时自动运行、出错自动重启，和你的终端无关，你的会话结束它也照常运行。再运行一次 `bobao install` 就是更新并重启，不会出现两个。`bobao status` 看是否在运行，`bobao uninstall` 停止并移除。
+
+**喊话页**：Windows 第一次会弹出防火墙提示，请用户勾选「专用网络」并点允许。
 
 ### 5. 按来源补设置
 

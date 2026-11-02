@@ -64,6 +64,9 @@ from . import clips, compose, config, daemon, paths, sounds, system
 from .events import Event
 
 
+LOCAL = urllib.request.build_opener(urllib.request.ProxyHandler({}))   # 127.0.0.1 never goes through a proxy
+
+
 def fields_arg(pairs):
     out = {}
     for p in pairs or []:
@@ -132,7 +135,7 @@ def cmd_send(a):
     if cfg["sources"]["webhook"].get("secret"):
         req.add_header("x-bobao-secret", cfg["sources"]["webhook"]["secret"])
     try:
-        print(urllib.request.urlopen(req, timeout=10).read().decode())
+        print(LOCAL.open(req, timeout=10).read().decode())
     except OSError as e:
         sys.exit(f"连不上本机 Webhook（Bobao 在运行吗？bobao status）：{e}")
 
@@ -771,8 +774,8 @@ def install_windows(a, here):
     for path, text in ((run, RUN_PYW), (os.path.join(paths.APP, "bobao_cli.py"), CLI_PY)):
         with open(path, "w", encoding="utf-8") as f:
             f.write(text.format(home=paths.HOME))
-    lnk = system.install_startup(run, paths.APP)
-    print(f"后台已启动，登录 Windows 时自动运行（{lnk}）。日志：{paths.LOG}")
+    where = system.install_startup(run, paths.APP)
+    print(f"后台已启动，登录 Windows 时自动运行（{where}）。日志：{paths.LOG}")
     if config.load()["sources"]["notifications"].get("enabled"):
         print("提示：Windows 上暂时还读不了其他 App 的弹窗，请用飞书机器人、Webhook 或定时提醒")
     if not any(lang.lower().startswith("zh") for _, lang in system.voices()):

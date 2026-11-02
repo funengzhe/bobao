@@ -239,7 +239,7 @@ class FeishuBot(unittest.TestCase):
         self.assertEqual(feishu.identity({"profile": "bobao"}), (["--profile", "bobao"], "bot"))
         self.assertEqual(feishu.identity({}), ([], "user"))
         self.assertEqual(feishu.poll_seconds({"profile": "bobao"}), 300)
-        self.assertEqual(feishu.poll_seconds({}), 60)
+        self.assertEqual(feishu.poll_seconds({}), 20)
 
     def test_push_maps_to_groups(self):
         self.f.push.queue.put("oc_2")
@@ -350,3 +350,8 @@ class WindowsFeishu(unittest.TestCase):
         cfg = config.load({"scenes": ["work"], "schedule": {}})
         utt, why = daemon.decide(Event("feishu", "产品群", readable("@_all 下午开会"), bot=False), cfg, dry=True)
         self.assertTrue(utt and "所有人" in utt["text"], why)
+
+    def test_combined_scenes_keep_what_one_turns_off(self):
+        cfg = config.load({"scenes": ["work", "business", "dev"], "schedule": {}})
+        self.assertIsNot(cfg["types"].get("收款", {}).get("enabled"), False)
+        self.assertIs(config.load({"scenes": ["dev"]})["types"]["收款"]["enabled"], False)

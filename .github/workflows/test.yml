@@ -32,4 +32,4 @@ jobs:
           python -m bobao status
           python -m bobao send 智能体完成 --channel "Claude Code" --dry
           python -m bobao uninstall
-          if (Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Bobao.lnk") { throw 'shortcut left behind' }
+          if (Get-ScheduledTask -TaskName Bobao -ErrorAction SilentlyContinue) { throw 'task left behind' }

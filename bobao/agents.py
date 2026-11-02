@@ -27,13 +27,16 @@ CLAUDE_SETTINGS = os.path.expanduser("~/.claude/settings.json")
 CODEX_CONFIG = os.path.expanduser("~/.codex/config.toml")
 
 
+LOCAL = urllib.request.build_opener(urllib.request.ProxyHandler({}))   # 127.0.0.1 never goes through a proxy
+
+
 def post(cfg, body):
     w = cfg["sources"]["webhook"]
     req = urllib.request.Request(f"http://127.0.0.1:{w.get('port', 8766)}/notify",
                                  json.dumps(body, ensure_ascii=False).encode(),
                                  {"content-type": "application/json", "x-bobao-secret": w.get("secret") or ""})
     try:
-        urllib.request.urlopen(req, timeout=2).read()
+        LOCAL.open(req, timeout=2).read()
     except Exception:
         pass
 
