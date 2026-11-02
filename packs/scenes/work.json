@@ -9,7 +9,10 @@
   "rules": [
     {
       "when": {
-        "source": "notifications",
+        "source": [
+          "notifications",
+          "feishu"
+        ],
         "app": [
           "lark",
           "wework",
@@ -26,7 +29,10 @@
     },
     {
       "when": {
-        "source": "notifications",
+        "source": [
+          "notifications",
+          "feishu"
+        ],
         "app": [
           "lark",
           "wework",
@@ -46,7 +52,10 @@
     },
     {
       "when": {
-        "source": "notifications",
+        "source": [
+          "notifications",
+          "feishu"
+        ],
         "app": [
           "lark",
           "wework",
@@ -65,7 +74,10 @@
     },
     {
       "when": {
-        "source": "notifications",
+        "source": [
+          "notifications",
+          "feishu"
+        ],
         "app": [
           "lark",
           "wework",
@@ -83,7 +95,10 @@
     },
     {
       "when": {
-        "source": "notifications",
+        "source": [
+          "notifications",
+          "feishu"
+        ],
         "app": [
           "lark",
           "wework",

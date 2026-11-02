@@ -11,7 +11,7 @@ import time
 
 from . import config, compose, events, paths
 from .log import log
-from .sources import notifications
+from .sources import notifications, winpopups
 from .sources.feishu import Feishu, poll_seconds
 from .speaker import Speaker
 
@@ -95,7 +95,7 @@ def reminder_utterance(cfg, r):
 
 def run():
     speaker = Speaker()
-    feishu, spool = Feishu(), notifications.Spool()
+    feishu, spool, popups = Feishu(), notifications.Spool(), winpopups.Watcher()
     state = {"cfg": config.load()}
     paths.ensure()
     with open(paths.PID, "w") as f:
@@ -140,14 +140,17 @@ def run():
                 utt = reminder_utterance(cfg, r)
                 log(f"定时提醒 {r['at']} → {utt['text']}")
                 speaker.put(utt, cfg)
-            nudged = set()
+            nudged, any_group = set(), False
             for n in spool.read():
+                any_group = any_group or bool(n.get("anyGroup"))   # a Windows popup: which group is unknown
                 if n.get("nudge") or (notifications.is_lark(n.get("app", "")) and n.get("title") in src["feishu"].get("chats", [])):
                     nudged.add(n.get("title"))
                 elif src["notifications"].get("enabled"):
                     handle(notifications.to_event(n))
             fs = src["feishu"]
             if fs.get("enabled") and (fs.get("chats") or fs.get("profile")):
+                if not fs.get("profile"):
+                    popups.ensure()   # Windows: Feishu's own popups say when to look
                 groups = feishu.groups(cfg)
                 if time.time() >= next_feishu:
                     ok = feishu.check(cfg, groups, handle)
@@ -157,9 +160,9 @@ def run():
                     pushed = feishu.pushed(cfg)
                     if pushed:
                         feishu.check(cfg, sorted(pushed), handle)
-                    elif nudged & set(groups):
+                    elif any_group or nudged & set(groups):
                         time.sleep(1)   # let the message settle on Feishu's side
-                        feishu.check(cfg, sorted(nudged & set(groups)), handle)
+                        feishu.check(cfg, sorted(set(groups) if any_group else nudged & set(groups)), handle)
                         next_feishu = min(next_feishu, time.time() + 5)   # the popup can beat the API
         except Exception as e:
             log(f"出错，稍后重试: {e}")

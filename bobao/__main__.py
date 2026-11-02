@@ -15,6 +15,8 @@
                                   connect your 飞书播报 bot; the App Secret is read from
                                   stdin (pbpaste | bobao feishu login ...) or asked hidden
   bobao feishu groups             the groups the bot was added to
+  bobao feishu me --chats 群1,群2 [--people]
+                                  read Feishu as yourself (lark-cli auth login), no bot needed
   bobao agent install claude|codex
                                   announce when Claude Code / Codex finish or wait for you
   bobao github add owner/repo | remove owner/repo | list
@@ -596,12 +598,35 @@ def cmd_feishu(a):
         user.setdefault("sources", {})["feishu"] = src
         config.save_user(user)
         print(f"已连接飞书应用 {a.app}（lark-cli 配置「{a.profile}」），Secret 只存在 lark-cli 里，不在 Bobao 的设置中。")
-    if not src.get("profile"):
-        raise SystemExit("还没有连接飞书机器人：bobao feishu login --app cli_xxx")
+    if a.action == "me":   # read as yourself: lark-cli logged in as you, no bot
+        cli = feishu.lark_cli(src)
+        if not shutil.which(cli) and not os.path.exists(cli):
+            raise SystemExit("没有找到 lark-cli。先安装：npm install -g @larksuite/cli，"
+                             "再运行 lark-cli config init --new 和 lark-cli auth login --recommend")
+        if src.get("profile"):
+            src["botProfile"] = src.pop("profile")   # kept, to switch back
+        src["enabled"] = True
+        if a.chats:
+            src["chats"] = split(a.chats)
+        if a.people:
+            src["botsOnly"] = False
+        user.setdefault("sources", {})["feishu"] = src
+        config.save_user(user)
+        print("改成以你自己的身份读飞书" + ("（人发的消息也算）" if src.get("botsOnly") is False else "（只看机器人发的通知；人发的也要念就加 --people）"))
+    me = not src.get("profile")
+    if me and src.get("enabled") is not True:
+        raise SystemExit("还没有连接飞书：用机器人 bobao feishu login --app cli_xxx，或用你自己 bobao feishu me")
     try:
         chats = feishu.lark(src, "im", "+chat-list", "--page-all").get("chats") or []
     except Exception as e:
-        raise SystemExit(f"机器人读不到群：{e}\n检查开放平台里是否开通了「查看群信息」等权限，并已发布版本。")
+        raise SystemExit(f"读不到群：{e}\n" + ("确认已运行 lark-cli auth login 并登录了你的飞书" if me else
+                                           "检查开放平台里是否开通了「查看群信息」等权限，并已发布版本。"))
+    if me:
+        listed = src.get("chats") or []
+        print("你所在的群（只播 --chats 列出的" + ("：" + "、".join(listed) if listed else "，现在一个都没列，加上：bobao feishu me --chats 群名") + "）：")
+        for c in chats[:80]:
+            print(f"  {c['name']}{'  ✓' if c['name'] in listed else ''}")
+        return
     if not chats:
         print("机器人还不在任何群里：在飞书里打开要播报的群 → 设置 → 群机器人 → 添加机器人，搜索你的应用。")
         return
@@ -790,7 +815,9 @@ def main(argv=None):
     i.add_argument("--chats", help="只播这些飞书群（逗号隔开）；用机器人时可不填，播它所在的全部群")
     i.add_argument("--yes", action="store_true", help="不提问，全用场景默认值")
     fe = sub.add_parser("feishu")
-    fe.add_argument("action", choices=["login", "groups"])
+    fe.add_argument("action", choices=["login", "groups", "me"])
+    fe.add_argument("--chats", help="me：只播这些群（逗号隔开）")
+    fe.add_argument("--people", action="store_true", help="me：人发的消息也念（默认只念机器人的通知）")
     fe.add_argument("--app")
     fe.add_argument("--profile", default="bobao")
     ex = sub.add_parser("export")

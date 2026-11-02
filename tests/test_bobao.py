@@ -332,3 +332,13 @@ class Shout(unittest.TestCase):
             self.assertEqual(e.exception.code, 429)
         finally:
             server.shutdown()
+
+
+class WindowsFeishu(unittest.TestCase):
+    def test_popup_line_nudges_and_feishu_rules_fire(self):
+        from bobao.sources import winpopups
+        self.assertEqual(winpopups.line_to_spool("POPUP\t产品群\r\n", now=1)["anyGroup"], True)
+        self.assertIsNone(winpopups.line_to_spool("noise"))
+        cfg = config.load({"scenes": ["work"], "schedule": {}})
+        utt, why = daemon.decide(Event("feishu", "产品群", "@你 帮我看下这个", bot=False), cfg, dry=True)
+        self.assertTrue(utt and "点你名" in utt["text"], why)

@@ -61,7 +61,8 @@ def matches(rule, ev, name=""):
         return False
     if "channel" in when and ev.channel not in _list(when["channel"]):
         return False
-    if "app" in when and not any(a.lower() in ev.channel.lower() for a in _list(when["app"])):
+    app = "lark feishu" if ev.source == "feishu" else ev.channel   # Feishu read through the API is Feishu too
+    if "app" in when and not any(a.lower() in app.lower() for a in _list(when["app"])):
         return False   # a popup's app id, by any part of it: "wework", "lark", "wechat"
     if "title" in when and not _any(when["title"], ev.title):
         return False
