@@ -144,7 +144,7 @@ def cmd_voices(a):
         print("推荐音色（试听：https://funengzhe.github.io/bobao/ ，选好后 bobao voice use 名字）")
         for v in catalog():
             print(f"  {v['name']:4} {v['label']:10} {v['gender']}·{v['age']} {'、'.join(v['tags']):12} {v['id']}")
-        print("如云里的全部音色（含你自己克隆的）：bobao voices --all")
+        print("RooYun（如云）里的全部音色（含你自己克隆的）：bobao voices --all")
         return
     from .rooyun import Client
     cfg = config.load()
@@ -200,7 +200,7 @@ def cmd_voice(a):
         return
     if a.action == "use":
         if not a.name:
-            raise SystemExit("用法：bobao voice use 名字（或如云音色 id）；推荐音色见 bobao voices")
+            raise SystemExit("用法：bobao voice use 名字（或 RooYun 音色 id）；推荐音色见 bobao voices")
         picked = next((v for v in catalog() if a.name in (v["name"], v["id"])), None)
         voice_id = picked["id"] if picked else a.name
         with open(os.path.join(paths.HOME, INTRO_PENDING), "w", encoding="utf-8") as f:
@@ -235,12 +235,12 @@ def cmd_voice(a):
     jobs = rooyun.jobs_for(todo, client, cfg, meta)
     price, available = rooyun.quote(client, jobs)
     minutes = round(len(jobs) * rooyun.SUBMIT_GAP / 60)
-    print(f"要录 {len(jobs)} 句，约 {price} 积分，你的可用积分 {round(available, 2)}（如云每分钟最多提交 10 句，约 {minutes} 分钟）")
+    print(f"要录 {len(jobs)} 句，约 {price} 积分，你的可用积分 {round(available, 2)}（RooYun 每分钟最多提交 10 句，约 {minutes} 分钟）")
     if a.action == "quote":
         print("确认后：bobao voice record --yes" + ("；不换了：bobao voice use --cancel" if pending else ""))
         return
     if price > available:
-        sys.exit("积分不够，请先到如云充值")
+        sys.exit("积分不够，请先到 RooYun（如云）充值")
     if not a.yes and input("开始录吗？[y/N] ").strip().lower() not in ("y", "yes", "是"):
         print("没有录")
         return
@@ -327,7 +327,7 @@ def enabled_sources(user):
 def summary(user, picked):
     cfg = config.load()
     names = [config.list_packs("scenes").get(n, {}).get("name", n) for n in config.scene_names(user)]
-    voice = "如云 · " + config.voice_for(cfg, "提醒")["voice"] if cfg["engine"] == "rooyun" else "电脑自带"
+    voice = "RooYun · " + config.voice_for(cfg, "提醒")["voice"] if cfg["engine"] == "rooyun" else "电脑自带"
     print(f"已保存 {paths.CONFIG}：场景 {'、'.join(names) or '无'}，风格 {cfg['styleName']}，称呼 {cfg['称呼']}，"
           f"声音 {voice}，来源 {'、'.join(picked)}" + (f"，定时提醒 {len(cfg['reminders'])} 条" if cfg["reminders"] else ""))
     if "notifications" in picked:
@@ -544,7 +544,7 @@ def cmd_export(a):
                 n += 1
     secret = ((config.read_json(paths.CONFIG, {}) or {}).get("sources", {}).get("webhook", {}) or {}).get("secret")
     print(f"已导出 {n} 个文件到 {out}（{os.path.getsize(out) // 1024} KB）")
-    print("里面没有飞书 App Secret 和如云登录；对方导入后要自己运行一次 bobao feishu login。"
+    print("里面没有飞书 App Secret 和 RooYun（如云）登录；对方导入后要自己运行一次 bobao feishu login。"
           + ("\n注意：webhook 的 secret 在设置里，会一起带过去。" if secret else ""))
 
 
@@ -642,7 +642,7 @@ def main(argv=None):
     ins = sub.add_parser("install")
     ins.add_argument("--quiet", action="store_true", help="不播安装提示")
     vs = sub.add_parser("voices")
-    vs.add_argument("--all", action="store_true", help="如云里的全部音色")
+    vs.add_argument("--all", action="store_true", help="RooYun（如云）里的全部音色")
     rm = sub.add_parser("remind")
     rm.add_argument("action", choices=["add", "list", "remove", "test"])
     rm.add_argument("at", nargs="?", help="add：HH:MM；remove、test：编号")
@@ -699,7 +699,7 @@ def main(argv=None):
     ry.add_argument("action", choices=["login", "me"])
     v = sub.add_parser("voice")
     v.add_argument("action", choices=["plan", "quote", "record", "use"])
-    v.add_argument("name", nargs="?", help="use：音色名字或如云音色 id")
+    v.add_argument("name", nargs="?", help="use：音色名字或 RooYun（如云）音色 id")
     v.add_argument("--cancel", action="store_true", help="use：不换了")
     v.add_argument("--yes", action="store_true")
     a = p.parse_args(argv)

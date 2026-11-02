@@ -66,7 +66,7 @@ class Client:
         self.base = base.rstrip("/")
         self.tok = token(self.base)
         if not self.tok:
-            raise SystemExit("还没有登录如云。运行：bobao rooyun login")
+            raise SystemExit("还没有登录 RooYun（如云）。运行：bobao rooyun login")
 
     def call(self, method, path, body=None):
         for attempt in range(6):
@@ -82,7 +82,7 @@ class Client:
                 err = env.get("error") or {}
                 raise ApiError(status, err.get("code"), err.get("message") or raw[:200].decode("utf-8", "replace"))
             return env
-        raise ApiError(status, "retry_exhausted", "如云暂时不可用，稍后再试")
+        raise ApiError(status, "retry_exhausted", "RooYun（如云）暂时不可用，稍后再试")
 
     def me(self):
         return self.call("GET", "/me")["data"]
@@ -102,7 +102,7 @@ class Client:
         for m in models:
             if want in m["name"]:
                 return m["id"], own
-        raise SystemExit(f"如云上找不到配音模型「{want}」")
+        raise SystemExit(f"RooYun（如云）上找不到配音模型「{want}」")
 
     def precheck(self, items):
         total, out = 0.0, None
@@ -141,7 +141,7 @@ def login(base, out=print):
         raise SystemExit(f"申请授权失败：{(env.get('error') or {}).get('message') or status}")
     d = env["data"]
     url = d["verificationUrl"]
-    out(f"请在浏览器里登录如云并点「授权」：{url}")
+    out(f"请在浏览器里登录 RooYun（如云）并点「授权」：{url}")
     if url.startswith(base):
         subprocess.run(["/usr/bin/open", url])
     deadline = time.time() + 600
@@ -163,7 +163,7 @@ def login(base, out=print):
             with os.fdopen(fd, "w") as f:
                 json.dump({"version": 1, "tokens": tokens}, f, indent=2)
             os.replace(CRED_FILE + ".tmp", CRED_FILE)
-            out("已登录如云，令牌保存在 ~/.rooyun/credentials.json")
+            out("已登录 RooYun（如云），令牌保存在 ~/.rooyun/credentials.json")
             return
     raise SystemExit("等了 10 分钟还没授权，请重新运行 bobao rooyun login")
 
@@ -213,7 +213,7 @@ def record(client, jobs, out=print):
         except ApiError as err:
             if err.status == 402:
                 save()
-                raise SystemExit("如云积分不够了，充值后重新运行同一条命令，已提交的不会重复扣费")
+                raise SystemExit("RooYun（如云）积分不够了，充值后重新运行同一条命令，已提交的不会重复扣费")
             out(f"  提交失败，下次重跑会再试：{text}（{err}）")
             continue
         save()

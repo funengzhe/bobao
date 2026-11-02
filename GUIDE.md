@@ -31,7 +31,7 @@ bobao install
 | **来源** | 消息从哪来 | 电脑上的弹窗、飞书群、你的系统（Webhook）、定时提醒 |
 | **场景** | 一组现成的提醒，可以多选、可以改 | 上班、生意、开发、直播、生活、空白 |
 | **说法** | 每种提醒念什么话 | "注意注意，有人在群里点你名了，快去看看吧" |
-| **声音** | 谁来念 | 电脑自带的声音，或你在如云选的声音 |
+| **声音** | 谁来念 | 电脑自带的声音，或你在 RooYun（如云）选的声音 |
 
 | 场景 | 默认会念 | 常见来源 |
 |---|---|---|
@@ -61,8 +61,8 @@ bobao install
 ## 声音
 
 - **默认用电脑自带的声音**，不用注册、不花钱，装好就能念。
-- **想要好听的声音，就接入[如云](https://www.rooyun.com)**：在试听页挑一个，用它把你的全部说法生成一遍，存在本机。之后每次播报都不再花钱，断网也能念。一整套说法通常只要一两个积分。
-- **声音可以个性化定制**：试听页的 22 个只是推荐。如云里有更多音色，也可以在如云克隆你自己、家人的声音，或者描述一个声音让如云设计。做好后用 `bobao voices --all` 找到它的 id，再 `bobao voice use <id>`。
+- **想要好听的声音，就接入[RooYun（如云）](https://www.rooyun.com/?ref=9K3XD33J&ch=github-bobao)**：在试听页挑一个，用它把你的全部说法生成一遍，存在本机。之后每次播报都不再花钱，断网也能念。一整套说法通常只要一两个积分。
+- **声音可以个性化定制**：试听页的 22 个只是推荐。RooYun（如云）里有更多音色，也可以在 RooYun 克隆你自己、家人的声音，或者描述一个声音让 RooYun 设计。做好后用 `bobao voices --all` 找到它的 id，再 `bobao voice use <id>`。
 
 ```bash
 bobao rooyun login
@@ -76,7 +76,7 @@ bobao voice use 安然
 bobao voice record
 ```
 
-不需要另外安装如云的工具。`login` 打开如云的授权页，登录（没有账号就注册）后点「授权」就行。`voice use` 报出用这个声音要生成多少句、多少积分（不想换了：`bobao voice use --cancel`）。`record` 生成，全部生成完才换成新声音，并念一句自我介绍。中途断了，重跑同一条命令就行，已经提交的句子不会重复扣费。以后改了说法、加了提醒，再运行一次 `bobao voice record`，只生成新增的句子。
+不需要另外安装 RooYun（如云）的工具。`login` 打开 RooYun 的授权页，登录（没有账号就注册）后点「授权」就行。`voice use` 报出用这个声音要生成多少句、多少积分（不想换了：`bobao voice use --cancel`）。`record` 生成，全部生成完才换成新声音，并念一句自我介绍。中途断了，重跑同一条命令就行，已经提交的句子不会重复扣费。以后改了说法、加了提醒，再运行一次 `bobao voice record`，只生成新增的句子。
 
 ```bash
 bobao voices
@@ -213,7 +213,7 @@ python3 -m unittest discover tests
 | `~/.bobao/clips/` | 生成好的声音 |
 | `~/.bobao/sounds/` | 音效 |
 | `~/.bobao/bobao.log` | 日志 |
-| `~/.bobao/recording.json` | 如云任务记录（保证不重复扣费） |
-| `~/.rooyun/credentials.json` | 如云登录令牌（权限 0600） |
+| `~/.bobao/recording.json` | RooYun（如云）任务记录（保证不重复扣费） |
+| `~/.rooyun/credentials.json` | RooYun（如云）登录令牌（权限 0600） |
 
 卸载：`bobao uninstall`，然后删除 `~/.bobao`。

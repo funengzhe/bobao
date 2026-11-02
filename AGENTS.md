@@ -7,9 +7,9 @@
 ## 规矩
 
 1. **先问清楚再动手，但只问三件事**：想听哪些提醒、消息从哪来、怎么称呼他。其余用默认值，装好后再按他的反馈改。
-2. **花钱前必须报价**：生成如云声音会用积分。`bobao voice use` 或 `bobao voice quote` 会报出句数、积分和大约要多久，原样告诉用户，等他明确说"可以"，再运行 `bobao voice record --yes`。他之前说过"你看着办"也一样要问。
+2. **花钱前必须报价**：生成 RooYun（如云）声音会用积分。`bobao voice use` 或 `bobao voice quote` 会报出句数、积分和大约要多久，原样告诉用户，等他明确说"可以"，再运行 `bobao voice record --yes`。他之前说过"你看着办"也一样要问。
 3. **改完就念给他听**：改了说法用 `bobao test ... --play`，加了定时提醒用 `bobao remind test 编号 --play`，念一遍让他确认。
-4. **密钥不经过你**：飞书 App Secret 让用户复制后，在**他自己的终端**里运行 `pbpaste | ~/bobao/bin/bobao feishu login --app cli_xxx`；如云登录他在浏览器里点「授权」。不要让他把密钥发到对话里，也不要读取、打印或保存它。他已经贴进对话的话，提醒他去重置。
+4. **密钥不经过你**：飞书 App Secret 让用户复制后，在**他自己的终端**里运行 `pbpaste | ~/bobao/bin/bobao feishu login --app cli_xxx`；RooYun（如云）登录他在浏览器里点「授权」。不要让他把密钥发到对话里，也不要读取、打印或保存它。他已经贴进对话的话，提醒他去重置。
 5. **一个飞书应用只在一台电脑上跑**。飞书只把每条推送发给一个连接，两台电脑用同一个应用会互相漏播。这个应用以前在别的电脑上用过的话，提醒用户在那台运行 `bobao uninstall`。
 
 ## 安装
@@ -165,13 +165,13 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 | "也念微信的消息" | `bobao notifications apps` 看 App id，加进 `sources.notifications.apps` |
 | "再加上生活的提醒" | `bobao init --scenes 原有的,life` |
 
-改完用 `bobao test ... --play` 念给他听。用的是如云声音的话，新说法要生成一次：`bobao voice quote` 报价，他同意后 `bobao voice record --yes`。
+改完用 `bobao test ... --play` 念给他听。用的是 RooYun（如云）声音的话，新说法要生成一次：`bobao voice quote` 报价，他同意后 `bobao voice record --yes`。
 
 ## 换声音
 
-1. 给他试听页 <https://funengzhe.github.io/bobao/>（本地：`bobao gallery`），或者运行 `bobao voices` 列出推荐的 22 个声音。声音可以个性化定制：如云里有更多音色，他也可以在 <https://www.rooyun.com> 克隆自己或家人的声音、或描述一个声音让如云设计。做好后运行 `bobao voices --all`（要先登录如云）找到它，`bobao voice use <音色 id>`。
-2. `bobao rooyun me` 看有没有登录。没有的话：`bobao rooyun login`，请他在打开的如云页面登录（没有账号就在那里注册）并点「授权」。Bobao 自己连如云，不需要另外安装如云的 skill 或工具。
-3. `bobao voice use 安然`：报出用这个声音要生成多少句、多少积分、大约多久，以及他的可用积分。告诉他，等他同意。可用积分不够的话，请他先到 <https://www.rooyun.com> 充值。这时设置还没变；他不想换了就 `bobao voice use --cancel`。
+1. 给他试听页 <https://funengzhe.github.io/bobao/>（本地：`bobao gallery`），或者运行 `bobao voices` 列出推荐的 22 个声音。声音可以个性化定制：RooYun（如云）里有更多音色，他也可以在 <https://www.rooyun.com/?ref=9K3XD33J&ch=github-bobao> 克隆自己或家人的声音、或描述一个声音让 RooYun 设计。做好后运行 `bobao voices --all`（要先登录 RooYun）找到它，`bobao voice use <音色 id>`。
+2. `bobao rooyun me` 看有没有登录。没有的话：`bobao rooyun login`，请他在打开的 RooYun（如云）页面登录（没有账号就在那里注册）并点「授权」。Bobao 自己连 RooYun，不需要另外安装 RooYun 的 skill 或工具。
+3. `bobao voice use 安然`：报出用这个声音要生成多少句、多少积分、大约多久，以及他的可用积分。告诉他，等他同意。可用积分不够的话，请他先到 <https://www.rooyun.com/?ref=9K3XD33J&ch=github-bobao> 充值。这时设置还没变；他不想换了就 `bobao voice use --cancel`。
 4. `bobao voice record --yes`：生成。全部生成完才换成新声音，并念一句自我介绍，问他听到没有。中途断了重跑同一条命令，不会重复扣费。
 
 ## 飞书（用飞书群时）

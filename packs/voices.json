@@ -1,5 +1,5 @@
 {
- "description": "Bobao 推荐的如云音色。每个都有一段自我介绍（docs/audio）。也可以用如云里的任何音色，包括你自己克隆的。",
+ "description": "Bobao 推荐的 RooYun（如云）音色。每个都有一段自我介绍（docs/audio）。也可以用 RooYun 里的任何音色，包括你自己克隆的。",
  "voices": [
   {
    "id": "female-shaonv-jingpin",

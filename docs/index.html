@@ -216,10 +216,10 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
 
 <section id="voices" class="alt"><div class="wrap">
   <h2>谁来念，你来挑</h2>
-  <p class="sub">这里先放 22 个，每个都念了一句自我介绍。看中哪个，点「就要 TA」，把复制的话发给你的智能体。声音也能个性化定制：如云里有更多音色，还能用你自己的声音。</p>
+  <p class="sub">这里先放 22 个，每个都念了一句自我介绍。看中哪个，点「就要 TA」，把复制的话发给你的智能体。声音也能个性化定制：RooYun（如云）里有更多音色，还能用你自己的声音。</p>
   <div class="filters" id="filters"></div>
   <div class="voices" id="voiceGrid"></div>
-  <p class="small">不挑也能用：默认用电脑自带的声音，免费。想换成这里的声音，用如云生成一次你的全部说法，一般一两个积分，之后一直免费播。</p>
+  <p class="small">不挑也能用：默认用电脑自带的声音，免费。想换成这里的声音，用 RooYun（如云）生成一次你的全部说法，一般一两个积分，之后一直免费播。</p>
 </div></section>
 
 <section id="start"><div class="wrap">
@@ -236,18 +236,18 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
 
 <section id="faq" class="alt"><div class="wrap faq">
   <h2>常见问题</h2>
-  <details><summary>要花钱吗？</summary><p>Bobao 免费。用电脑自带的声音完全不花钱。想用这里的好听声音，要用你自己的如云账号生成一次你的全部说法，一般一两个积分；生成前智能体会先告诉你价格，你同意才生成。生成好存在你的电脑上，以后每次播报都不再花钱，断网也能念。</p></details>
-  <details><summary>我的消息会被上传吗？</summary><p>不会。消息只在你自己的电脑上处理。只有生成声音的那一次，要念的句子（不是你的消息）会发给如云。</p></details>
+  <details><summary>要花钱吗？</summary><p>Bobao 免费。用电脑自带的声音完全不花钱。想用这里的好听声音，要用你自己的 RooYun（如云）账号生成一次你的全部说法，一般一两个积分；生成前智能体会先告诉你价格，你同意才生成。生成好存在你的电脑上，以后每次播报都不再花钱，断网也能念。</p></details>
+  <details><summary>我的消息会被上传吗？</summary><p>不会。消息只在你自己的电脑上处理。只有生成声音的那一次，要念的句子（不是你的消息）会发给 RooYun（如云）。</p></details>
   <details><summary>能读哪些消息？</summary><p>电脑上任何 App 弹出的通知：飞书、企业微信、钉钉、微信、日历、邮件……；飞书群里机器人发的卡片；你自己系统发来的 Webhook；还有你设定的定时提醒。</p></details>
   <details><summary>公司电脑、公司的飞书也能用吗？</summary><p>能。读电脑弹窗不需要公司开任何权限，也不碰你的账号。个人微信、钉钉也只读弹窗，不做任何接口或外挂，没有封号风险。</p></details>
-  <details><summary>还要另外装如云吗？</summary><p>不用。Bobao 自己会连如云，换声音时浏览器里登录如云、点一下「授权」就行。</p></details>
-  <details><summary>能用我自己的声音吗？</summary><p>能。声音可以个性化定制：在<a href="https://www.rooyun.com">如云</a>里克隆你自己或家人的声音，或者描述一个声音让如云设计，也可以挑如云里这 22 个以外的音色。做好后告诉智能体「用我在如云做的那个声音」，它会找到并帮你生成。</p></details>
+  <details><summary>还要另外装 RooYun（如云）吗？</summary><p>不用。Bobao 自己会连 RooYun，换声音时浏览器里登录 RooYun、点一下「授权」就行。</p></details>
+  <details><summary>能用我自己的声音吗？</summary><p>能。声音可以个性化定制：在<a href="https://www.rooyun.com/?ref=9K3XD33J&amp;ch=github-bobao">RooYun（如云）</a>里克隆你自己或家人的声音，或者描述一个声音让 RooYun 设计，也可以挑 RooYun 里这 22 个以外的音色。做好后告诉智能体「用我在 RooYun 做的那个声音」，它会找到并帮你生成。</p></details>
   <details><summary>Windows 能用吗？</summary><p>目前只支持 macOS。</p></details>
 </div></section>
 
 <footer><div class="wrap">
   <span>Bobao 定制播报 · <a href="https://github.com/funengzhe/bobao">github.com/funengzhe/bobao</a> · <a href="https://github.com/funengzhe/bobao/blob/main/LICENSE">MIT + Commons Clause</a></span>
-  <span>声音由<a href="https://www.rooyun.com">如云</a>生成，试听音频仅供试听（<a href="https://github.com/funengzhe/bobao/blob/main/docs/audio/LICENSE.md">条款</a>）</span>
+  <span>声音由<a href="https://www.rooyun.com/?ref=9K3XD33J&amp;ch=github-bobao">RooYun（如云）</a>生成，试听音频仅供试听（<a href="https://github.com/funengzhe/bobao/blob/main/docs/audio/LICENSE.md">条款</a>）</span>
 </div></footer>
 <div class="toast" id="toast"></div>
 
@@ -376,8 +376,8 @@ fetch("samples.json").then(r => r.json()).then(S => {
   });
   const more = document.createElement("div"); more.className = "v more"; more.dataset.kind = "全部";
   more.innerHTML = `<div class="top"><div class="av" style="background:var(--fg);color:var(--bg)">＋</div><div class="n">想要独一无二的声音？</div></div>
-    <div class="d">这 22 个只是推荐。<a href="https://www.rooyun.com">如云</a>里有更多音色；也可以克隆你自己、家人的声音，或者描述一个声音让如云帮你设计。做好以后告诉智能体用它就行。</div>
-    <div class="row"><a class="pbtn" href="https://www.rooyun.com" target="_blank" rel="noopener">去如云看看 →</a></div>`;
+    <div class="d">这 22 个只是推荐。<a href="https://www.rooyun.com/?ref=9K3XD33J&amp;ch=github-bobao">RooYun（如云）</a>里有更多音色；也可以克隆你自己、家人的声音，或者描述一个声音让 RooYun 帮你设计。做好以后告诉智能体用它就行。</div>
+    <div class="row"><a class="pbtn" href="https://www.rooyun.com/?ref=9K3XD33J&amp;ch=github-bobao" target="_blank" rel="noopener">去 RooYun 看看 →</a></div>`;
   $("voiceGrid").append(more);
   showKind("全部");
   if (location.hash.startsWith("#voice-")) { const el = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (el) setTimeout(() => el.scrollIntoView({block: "center"}), 50); }
