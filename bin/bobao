@@ -1,4 +1,11 @@
 #!/bin/sh
-# Runs Bobao from wherever this checkout is.
+# Runs Bobao from wherever this checkout is (macOS, or Git Bash on Windows).
 here="$(cd "$(dirname "$0")/.." && pwd)"
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*)
+    export PYTHONUTF8=1
+    here="$(cygpath -w "$here" 2>/dev/null || echo "$here")"
+    if command -v py >/dev/null 2>&1; then py=py; set -- -3 -m bobao "$@"; else py=python; set -- -m bobao "$@"; fi
+    PYTHONPATH="$here${PYTHONPATH:+;$PYTHONPATH}" exec "$py" "$@" ;;
+esac
 PYTHONPATH="$here${PYTHONPATH:+:$PYTHONPATH}" exec /usr/bin/python3 -m bobao "$@"

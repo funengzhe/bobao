@@ -388,7 +388,17 @@ def app_ids(names):
     return [known.get(n, n) for n in names]
 
 
+def windows_sources(picked):
+    """Windows reads no popups yet: Feishu is read through its API instead."""
+    if not system.WINDOWS or "notifications" not in picked:
+        return list(picked)
+    return list(dict.fromkeys(["feishu" if s == "notifications" else s for s in picked]))
+
+
 def apply_sources(user, picked, apps=None, chats=None, before=()):
+    if system.WINDOWS and "notifications" in picked:
+        print("Windows 上还读不了 App 的弹窗，改成读飞书（用你自己的身份：bobao feishu me）。微信暂时不支持")
+        picked = windows_sources(picked)
     src = user.setdefault("sources", {})
     for name in ("feishu", "webhook", "notifications"):
         src[name] = dict(src.get(name, {}), enabled=name in picked)
@@ -463,7 +473,7 @@ def init_quiet(a):
     apply_sources(user, picked, app_ids(split(a.apps)) if a.apps else None, split(a.chats) if a.chats else None, before)
     config.save_user(user)
     sounds.make_all()
-    summary(user, picked)
+    summary(user, windows_sources(picked))
 
 
 def cmd_init(a):
@@ -477,12 +487,13 @@ def cmd_init(a):
     user.pop("scene", None)
     print("2) 这些消息从哪来？可以多选")
     first = scenes.get(user["scenes"][0], {})
-    picked = choose("选择", [("电脑上的弹窗：飞书、企业微信、钉钉、微信、日历、邮件…", "notifications"),
-                             ("飞书群里的机器人通知（要建一个「飞书播报」应用，见 AGENTS.md）", "feishu"),
+    popups = ("（Windows 上还读不了，选了也不会念）" if system.WINDOWS else "")
+    picked = choose("选择", [("电脑上的弹窗：飞书、企业微信、钉钉、微信、日历、邮件…" + popups, "notifications"),
+                             ("飞书群（用你自己的身份读，或建一个「飞书播报」机器人，见 AGENTS.md）", "feishu"),
                              ("你自己的系统推过来（Webhook）", "webhook"),
                              ("定时提醒（例如工作日六点提醒下班）", "remind")],
                     ",".join(str(i) for i, s in enumerate(("notifications", "feishu", "webhook", "remind"), 1)
-                             if s in first.get("suggestSources", ["notifications"])))
+                             if s in windows_sources(first.get("suggestSources", ["notifications"]))))
     apps = None
     if "notifications" in picked:
         default = [x for sc in user["scenes"] for x in SCENE_APPS.get(sc, [])]
@@ -491,7 +502,7 @@ def cmd_init(a):
     apply_sources(user, picked, apps)
     config.save_user(user)
     sounds.make_all()
-    summary(user, picked)
+    summary(user, windows_sources(picked))
     print("\n下一步：bobao install 装好（会播一句安装提示）。想换好听的声音：打开 https://funengzhe.github.io/bobao/ 挑一个，"
           "再 bobao voice use 名字。")
 

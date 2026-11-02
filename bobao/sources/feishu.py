@@ -85,6 +85,10 @@ def to_event(chat, m, me=""):
     return Event("feishu", chat, title, plain, fields, bot=None if not sender else sender == "app", time=sent)
 
 
+# lark-cli's errors when your own login has run out (about 7 days unused) or was revoked
+LOGIN_GONE = re.compile(r"auth login|not logged|no logged-in|unauthori[sz]ed|token.*(expired|invalid)|"
+                        r"refresh.*(expired|invalid)|授权|登录|99991663|99991668|99991677|20026|20037", re.I)
+
 EVERY = "*"   # queued on each (re)connect of the push: check every group
 
 
@@ -141,6 +145,7 @@ class Feishu:
         self.ids, self.ids_at = {}, 0
         self.push = Push()
         self.me = None   # your Feishu name, when reading as yourself
+        self.login_expired = False
 
     def my_name(self, src):
         if self.me is None:
@@ -201,7 +206,10 @@ class Feishu:
             except Exception as e:
                 log(f"读取飞书群「{name}」失败: {e}")
                 ok = False
+                if not src.get("profile") and LOGIN_GONE.search(str(e)):
+                    self.login_expired = True
                 continue
+            self.login_expired = False
             msgs = [m for m in msgs if not m.get("deleted") and str(m.get("message_position", "")).isdigit()]
             if not msgs:
                 continue

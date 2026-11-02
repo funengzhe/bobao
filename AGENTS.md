@@ -16,7 +16,7 @@
 
 每一步都有检查方法。检查不通过就停下来，告诉用户哪一步、什么原因，不要跳过。
 
-**用户是 Windows 电脑的话**，先看下面的「Windows」一节，再按这里的步骤做（命令里的 `~/bobao/bin/bobao` 换成 `%USERPROFILE%\bobao\bin\bobao.cmd`）。
+**用户是 Windows 电脑的话**，先看下面的「Windows」一节，再按这里的步骤做。在 Git Bash 里（Claude Code 在 Windows 上用的就是它）`~/bobao/bin/bobao` 照常能用；在 cmd 或 PowerShell 里换成 `%USERPROFILE%\bobao\bin\bobao.cmd`。
 
 ### 1. 检查环境
 
@@ -102,7 +102,13 @@ git -C ~/bobao fetch origin && git -C ~/bobao reset --hard origin/main
 
 Windows 版是测试版。能用的：飞书（推荐「用你自己的身份」，见下）、Webhook、定时提醒、智能体播报、GitHub、喊话页、分享句子、RooYun（如云）的声音。**读不了微信和其他 App 的弹窗**（微信 4 在 Windows 上不弹窗、界面也读不出来），第 3 步「消息从哪来」不要选 `notifications`，跟用户说明。
 
-飞书用你自己的身份：`npm install -g @larksuite/cli`；`lark-cli config init --new --brand feishu --lang zh`（它会给一个链接，转给用户在浏览器里完成）；`lark-cli auth login --domain im --no-wait --json`（把 verification_url 给用户授权，他说好了再 `lark-cli auth login --device-code <device_code>`）；然后 `bobao feishu me` 列出他的群，问他要播哪些，`bobao feishu me --chats 群1,群2 --people`。Bobao 会留意飞书弹窗，一弹出就去读，几秒内念出来。
+飞书用你自己的身份（Mac 上也能这样用）：
+1. `node --version`，没有的话 `winget install OpenJS.NodeJS.LTS`，装完重新打开终端。然后 `npm install -g @larksuite/cli`。
+2. `lark-cli auth status`：`identities.user.status` 已经是 `ready` 的话，跳到第 4 步，不要再建一个应用。
+3. `lark-cli config init --new --brand feishu --lang zh`，在后台运行，从输出里取链接给用户，请他在**登录了同一个飞书账号的浏览器**里完成。应用会被飞书自动命名为「他的名字's Feishu Assistant」，告诉他之后可以在开发者后台改名。
+4. `lark-cli auth login --scope "im:chat:read im:message:readonly im:message.group_msg:get_as_user" --no-wait --json`：只读权限。把 verification_url 给他授权，他说好了再运行 `lark-cli auth login --device-code <device_code>`。device_code 不要打印出来。
+5. `bobao feishu me` 列出他的群，问他要播哪些：`bobao feishu me --chats 群1,群2 --people`（`--people`：人发的 @你、@所有人、审批也念）。
+6. 请他在其中一个群里 @自己 发一句话（不要带「测试」两个字，带了会被跳过），一分钟内应该念出来。别人发的消息弹窗时几秒内就念。
 
 1. **Python**：`py -3 --version` 或 `python --version`（3.9 以上）。没有的话 `winget install Python.Python.3.12`，或请用户到 python.org 下载安装（勾选 Add to PATH）。装完重新打开终端。注意 Windows 自带的 `python` 可能只是打开应用商店的快捷方式，以 `py -3 --version` 能运行为准。
 2. **Git**：`git --version`，没有的话 `winget install Git.Git`。

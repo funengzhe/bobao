@@ -116,7 +116,7 @@ def run():
         return {"spoken": not dry, "type": utt["type"], "text": utt["text"]}
 
     web = shout_page = None
-    next_feishu, next_github, failing_since, warned = 0, 0, None, False
+    next_feishu, next_github, failing_since, warned, told_login = 0, 0, None, False, 0
     fired = set()
     while True:
         try:
@@ -155,6 +155,12 @@ def run():
                 if time.time() >= next_feishu:
                     ok = feishu.check(cfg, groups, handle)
                     next_feishu = time.time() + poll_seconds(fs)
+                    if feishu.login_expired and time.time() - told_login > 86400:   # once a day, plainly
+                        told_login = time.time()
+                        say = "飞书的登录过期了，读不到群消息。跟你的智能体说：帮我重新登录飞书。"
+                        log(say + "（lark-cli auth login --domain im）")
+                        speaker.put({"sound": cfg["sounds"].get("告警"), "text": say, "segments": [({}, say)]},
+                                    dict(cfg, engine="mac"))
                     failing_since, warned = health(cfg, speaker, ok, failing_since, warned)
                 else:
                     pushed = feishu.pushed(cfg)

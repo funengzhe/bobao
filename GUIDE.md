@@ -119,9 +119,9 @@ bobao remind list
 不建机器人、不用把机器人拉进群，就用你自己的飞书账号读你选的群。Windows 上推荐这样用。
 
 ```bash
-npm install -g @larksuite/cli
+npm install -g @larksuite/cli       # 先装 Node：winget install OpenJS.NodeJS.LTS（Mac：brew install node）
 lark-cli config init --new          # 浏览器里一键建一个只属于你的应用
-lark-cli auth login --domain im     # 浏览器里点授权
+lark-cli auth login --scope "im:chat:read im:message:readonly im:message.group_msg:get_as_user"   # 只读权限，浏览器里点授权
 bobao feishu me                     # 列出你所在的群
 bobao feishu me --chats 产品群,项目群 --people
 ```
@@ -129,7 +129,9 @@ bobao feishu me --chats 产品群,项目群 --people
 - 每分钟查一次；Windows 上一出现飞书弹窗就马上查，几秒内念出来。
 - `--people`：人发的消息也按规则念，例如有人 @你、@所有人、请你审批。不加只念机器人发的通知。
 - 含「测试」「模拟」的消息默认不念（`skipTitles`）。
-- 授权大约 7 天内没用到会过期，过期后重新运行 `lark-cli auth login --domain im`。
+- 只申请读群、读消息的权限，不能替你发消息。
+- 授权 7 天没用到会过期（电脑一直关着之类），Bobao 会念一句「飞书的登录过期了」，重新运行上面那条 `lark-cli auth login` 就行。
+- 一键建的应用叫「你的名字's Feishu Assistant」，名字是飞书起的。想改：打开 [飞书开发者后台](https://open.feishu.cn/app)，在应用信息里改名，再创建版本、发布。不影响 Bobao。
 
 ### 飞书群（机器人）
 
