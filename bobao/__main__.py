@@ -326,7 +326,8 @@ def cmd_shout(a):
         print(f"打的字用 {named} 念，每天最多花 {sh['budget']} 积分，超了改用电脑声音")
     else:
         print("打的字用电脑自带的声音念，免费；你做好的句子（bobao clip）是页面上的按钮")
-    print("后台要在运行（bobao install）；第一次打开时 macOS 可能问是否允许 python3 接受连接，点允许")
+    print("后台要在运行（bobao install）；第一次有人打开时，" + ("Windows 防火墙可能弹窗，勾选「专用网络」并点允许"
+          if system.WINDOWS else "macOS 可能问是否允许 python3 接受连接，点允许"))
     if not a.no_open:
         system.open_url(shout.qr_page(urls))
 

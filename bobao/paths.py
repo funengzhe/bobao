@@ -3,7 +3,7 @@
 
 import os
 
-HOME = os.path.expanduser(os.environ.get("BOBAO_HOME", "~/.bobao"))
+HOME = os.path.normpath(os.path.expanduser(os.environ.get("BOBAO_HOME", "~/.bobao")))
 CONFIG = os.path.join(HOME, "config.json")
 STATE = os.path.join(HOME, "state.json")          # per-source cursors
 LOG = os.path.join(HOME, "bobao.log")
