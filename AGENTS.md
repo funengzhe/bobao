@@ -36,7 +36,11 @@ sw_vers -productName
 git clone https://github.com/funengzhe/bobao ~/bobao
 ```
 
-已经有了就 `git -C ~/bobao pull`。
+已经有了就更新到最新（设置和录音在 `~/.bobao`，不受影响）：
+
+```bash
+git -C ~/bobao fetch origin && git -C ~/bobao reset --hard origin/main
+```
 
 ### 3. 设置：二选一
 
