@@ -672,20 +672,6 @@
       "recommended": true
     },
     {
-      "id": "Santa_Claus ",
-      "name": "Santa Claus",
-      "gender": "男",
-      "age": "老年",
-      "tags": [
-        "jolly"
-      ],
-      "goodFor": [
-        "English holiday"
-      ],
-      "lang": "en",
-      "recommended": false
-    },
-    {
       "id": "Charming_Santa",
       "name": "Charming Santa",
       "gender": "男",
