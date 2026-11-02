@@ -6,7 +6,7 @@
 
 ## 规矩
 
-1. **先问清楚再动手，但只问三件事**：想听哪些提醒、消息从哪来、怎么称呼他。其余用默认值，装好后再按他的反馈改。
+1. **先问清楚再动手，但只问三件事**：想听哪些提醒、消息从哪来、喜欢什么样的声音。其余用默认值（包括怎么称呼他：每个场景有默认的，生意叫「老板」，上班叫「你」），装好后再按他的反馈改。
 2. **花钱前必须报价**：生成 RooYun（如云）声音会用积分。`bobao voice use` 或 `bobao voice quote` 会报出句数、积分和大约要多久，原样告诉用户，等他明确说"可以"，再运行 `bobao voice record --yes`。他之前说过"你看着办"也一样要问。
 3. **改完就念给他听**：改了说法用 `bobao test ... --play`，加了定时提醒用 `bobao remind test 编号 --play`，念一遍让他确认。
 4. **密钥不经过你**：飞书 App Secret 让用户复制后，在**他自己的终端**里运行 `pbpaste | ~/bobao/bin/bobao feishu login --app cli_xxx`；RooYun（如云）登录他在浏览器里点「授权」。不要让他把密钥发到对话里，也不要读取、打印或保存它。他已经贴进对话的话，提醒他去重置。
@@ -63,15 +63,17 @@ git -C ~/bobao fetch origin && git -C ~/bobao reset --hard origin/main
    - 直播 `live`：打赏、新粉丝、订阅
    - 生活 `life`：外卖、快递、家人消息、该休息了
    - 都不像的话用空白 `blank`，再按他说的加规则
-2. **这些消息从哪来？** 可以多选：
-   - 电脑上的弹窗 `notifications`：飞书、企业微信、钉钉、微信、日历、邮件。上班的人通常只能用这个（公司不让自己建应用）。
-   - 飞书群里的机器人通知 `feishu`：他能在飞书里建应用时才选。
+2. **这些消息从哪来？** 你先按他的电脑给出建议，他确认或改，可以多选：
+   - 电脑上的弹窗 `notifications`（**仅 macOS**）：飞书、企业微信、钉钉、微信、日历、邮件。不用建应用、不碰账号，上班的人一般用这个。
+   - 飞书群 `feishu`：Windows 上用这个（用他自己的身份读，见「Windows」一节）；Mac 上能建飞书应用的团队也可以用机器人。
    - 他自己的系统 `webhook`：开发者、有自己后台的商家。
    - 定时提醒 `remind`：例如工作日六点提醒下班。
-3. **怎么称呼你？** 你、老板、名字都行。
+3. **喜欢什么样的声音？** 告诉他电脑自带的声音比较生硬，推荐用 RooYun（如云）的真人声音，一般一两个积分。先运行 `bobao recommend` 看他的场景适合哪些声音，用 `bobao voice listen 名字` 当场放两三个给他听（免费），也可以给他试听页 <https://funengzhe.github.io/bobao/#voices>。记下他选的，装好后第 8 步再换（换之前要报价）。他说先用电脑声音也行。
+
+**不要问「怎么称呼你」**：场景自带称呼。他在群里的名字（@他时用的）不用问：飞书用他自己的身份读时，Bobao 自己会查到。他主动说了想被叫什么，再加 `--name`。
 
 ```bash
-~/bobao/bin/bobao init --scenes work,life --sources notifications,remind --name 小王
+~/bobao/bin/bobao init --scenes work,life --sources notifications,remind
 ```
 
 可用的参数：`--scenes`（逗号隔开，中文名也行）、`--sources`、`--name`、`--apps`（读哪些 App 的弹窗，见下表；不给就按场景选，会多选一些）、`--style formal|playful|warm`、`--chats`（只播这些飞书群）。用户说了用哪些 App，就把它们写进 `--apps`。
@@ -172,7 +174,16 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 
 应该显示「运行中」。等来一条真实消息，日志里出现「播报」那一行，才算完成。
 
-最后告诉用户：现在用的是电脑自带的声音；想换好听的，打开 <https://funengzhe.github.io/bobao/> 挑一个告诉你。
+### 8. 换上好听的声音，介绍玩法（一定要做）
+
+电脑自带的声音很生硬，用户多半会觉得「就这？」。所以装完**一定要**做这一步，不要只说一句「想换可以找我」：
+
+1. 运行 `bobao recommend`，把内容整理给用户：适合他场景的声音、★ 招牌搭配（小柚播报，告警时慌张、到账时有人开心地接一句）、还能加的场景、好玩的玩法。
+2. 第 3 个问题他已经选了声音的话，直接换；没选的话，挑两三个 `bobao voice listen 名字` 放给他听，请他选。
+3. 换声音按下面「换声音」一节：登录 RooYun、`bobao voice use 名字`（或 `招牌搭配`）报价、**他同意后**再生成。
+4. 最后挑一两个他可能喜欢的玩法提一下（例如「你干完活我叫你一声」，见「把用户的话变成设置」）。
+
+他明确说先不换，就记下来，不要反复劝。
 
 ## 把用户的话变成设置
 
@@ -189,7 +200,7 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 | "这条不用念了" | `bobao replay`（飞书群）或 `bobao test`（弹窗）找到是哪条规则，给它加 `"skip": true`，或在它的 `when` 里加 `not` |
 | "也念微信的消息" | `bobao notifications apps` 看 App id，加进 `sources.notifications.apps` |
 | "再加上生活的提醒" | `bobao init --scenes 原有的,life` |
-| "Claude Code / Codex 干完活叫我一声" | `bobao agent install claude`（或 `codex`）。会改 `~/.claude/settings.json`（先备份）或 `~/.codex/config.toml`，先告诉他要改哪个文件。短于 60 秒的回合不念，改 `agents.minSeconds` |
+| "你干完活叫我一声" | 配**你自己**（正在跟他对话的这个智能体）。Claude Code：`bobao agent install claude`；Codex：`bobao agent install codex`（会改 `~/.claude/settings.json` 或 `~/.codex/config.toml`，先备份，先告诉他）。其他智能体（Cursor、WorkBuddy、Trae、Gemini CLI……）：查你自己的文档里「任务结束时运行命令」的钩子或通知设置，把 `bobao agent setup` 给出的命令填进去（`bobao agent done --name 你的名字`，等他确认时 `bobao agent waiting`），然后 `bobao agent done --name 你的名字` 试一下。没有这种设置就如实告诉他 |
 | "有人给我的项目点 star 就告诉我" | `bobao github add 用户名/仓库名`，每 10 分钟看一次，新的 star、fork、Issue 都会念 |
 
 这两项用的句子只有打开后才算进 `bobao voice plan`。用 RooYun 声音的话，打开后同样要 `bobao voice quote` 报价、他同意后 `bobao voice record --yes`。

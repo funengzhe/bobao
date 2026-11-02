@@ -355,3 +355,16 @@ class WindowsFeishu(unittest.TestCase):
         cfg = config.load({"scenes": ["work", "business", "dev"], "schedule": {}})
         self.assertIsNot(cfg["types"].get("收款", {}).get("enabled"), False)
         self.assertIs(config.load({"scenes": ["dev"]})["types"]["收款"]["enabled"], False)
+
+
+class Recommend(unittest.TestCase):
+    def test_bundle_voices_exist_and_text_mentions_scenes(self):
+        from bobao import __main__ as m
+        rec = m.recommendations()
+        names = {v["name"] for v in m.catalog()}
+        for picks in rec["scenes"].values():
+            self.assertTrue(set(picks) <= names, picks)
+        text = m.recommend_text(config.load({"scenes": ["work"]}), {"scenes": ["work"]})
+        self.assertIn("招牌搭配", text)
+        self.assertIn("若溪", text)
+        self.assertIn("喊话", text)

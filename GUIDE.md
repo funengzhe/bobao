@@ -168,7 +168,10 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 ```bash
 bobao agent install claude    # Claude Code：加上钩子（会先备份 ~/.claude/settings.json）
 bobao agent install codex     # Codex：在 ~/.codex/config.toml 加一行 notify
+bobao agent setup             # 其他智能体：给出要填进它「任务结束时运行命令」设置里的命令
 ```
+
+其他智能体（Cursor、WorkBuddy……）跟它说「你干完活叫我一声」，它会按自己的设置方式接上 `bobao agent done`。
 
 一个回合超过 60 秒（`agents.minSeconds`），做完就念"智能体把活儿干完啦"；它要你批准命令时念"智能体在等你点头"。Bobao 没在运行时，钩子什么也不做，不影响智能体。
 

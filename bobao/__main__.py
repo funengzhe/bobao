@@ -1,6 +1,6 @@
 """Bobao 定制播报 — the messages you care about, read aloud in a voice you like, in your words.
 
-  bobao init                      set up: which reminders, where messages come from, how to call you
+  bobao init                      set up: which reminders, where messages come from
   bobao init --scenes work,life --sources notifications,remind --apps lark,wechat --name 你
                                   the same without questions (for scripts and agents)
   bobao install [--quiet]         start at login and play the install greeting
@@ -17,8 +17,10 @@
   bobao feishu groups             the groups the bot was added to
   bobao feishu me --chats 群1,群2 [--people]
                                   read Feishu as yourself (lark-cli auth login), no bot needed
-  bobao agent install claude|codex
-                                  announce when Claude Code / Codex finish or wait for you
+  bobao agent done | waiting [--name Cursor]
+                                  any agent's hook: a task is finished / it waits for you
+  bobao agent install claude|codex | setup
+                                  ready-made hooks for Claude Code and Codex; setup: for any other
   bobao github add owner/repo | remove owner/repo | list
                                   announce new stars, forks and issues of your repos
 
@@ -30,7 +32,9 @@
 
   bobao voices [--all]            recommended voices (--all: every RooYun voice, yours too)
   bobao rooyun login              connect your RooYun account
-  bobao voice use 小柚             pick a voice, record your sentences with it, hear it introduce itself
+  bobao voice listen 安然          hear a recommended voice introduce itself (free)
+  bobao voice use 小柚             pick a voice (or 招牌搭配), record your sentences with it
+  bobao recommend                 voices for your scenes, scenes to add, fun extras
   bobao voice plan                every sentence your setup can say, and what is unrecorded
   bobao voice quote               price of recording what is missing
   bobao voice record [--yes]      record it (asks first, shows the price)
@@ -185,28 +189,47 @@ def cmd_rooyun(a):
 INTRO_PENDING = "intro-pending"   # the voice chosen with `voice use`, introduced once recorded
 
 
+def recommendations():
+    return config.read_json(os.path.join(ROOT, "packs", "recommend.json"), {}) or {}
+
+
 def pending_voice():
+    """(voices for each type, name) chosen with `voice use`, or None. The file holds a voice
+    id (one voice) or JSON {"name", "voices"} (a bundle such as 招牌搭配)."""
     try:
-        return open(os.path.join(paths.HOME, INTRO_PENDING), encoding="utf-8").read().strip() or None
+        raw = open(os.path.join(paths.HOME, INTRO_PENDING), encoding="utf-8").read().strip()
     except FileNotFoundError:
         return None
+    if not raw:
+        return None
+    if raw.startswith("{"):
+        d = json.loads(raw)
+        return d["voices"], d["name"]
+    return {"default": {"voice": raw}}, raw
 
 
-def switch_voice(voice_id, picked):
+def switch_voice(voices, name):
     """The chosen voice is recorded: use it from now on, and let it introduce itself."""
     user = config.read_json(paths.CONFIG, {}) or {}
     user["engine"] = "rooyun"
-    user["voices"] = {"default": {"voice": voice_id}}
+    user["voices"] = voices
     config.save_user(user)
     os.remove(os.path.join(paths.HOME, INTRO_PENDING))
-    name = picked["name"] if picked else voice_id
-    print(f"已换成 {name}。")
+    picked = next((v for v in catalog() if v["id"] == voices["default"]["voice"]), None)
+    print(f"已换成 {next((v['name'] for v in catalog() if v['id'] == name), name)}。")
     if picked:
-        print(f"{name}：我是{name}，这是我的声音，之后由我来为你播报。")
+        print(f"{picked['name']}：我是{picked['name']}，这是我的声音，之后由我来为你播报。")
         play_files(os.path.join(ROOT, "docs", picked["intro"]))
 
 
 def cmd_voice(a):
+    if a.action == "listen":   # a recommended voice's self-introduction, from the listening page's audio
+        v = next((v for v in catalog() if a.name in (v["name"], v["id"])), None)
+        if not v:
+            raise SystemExit("没有这个推荐声音，看看 bobao voices")
+        print(f"{v['name']}（{v['label']}）：我是{v['name']}……")
+        play_files(os.path.join(ROOT, "docs", v["intro"]))
+        return
     if a.action == "use" and a.cancel:
         if os.path.exists(os.path.join(paths.HOME, INTRO_PENDING)):
             os.remove(os.path.join(paths.HOME, INTRO_PENDING))
@@ -215,17 +238,19 @@ def cmd_voice(a):
     if a.action == "use":
         if not a.name:
             raise SystemExit("用法：bobao voice use 名字（或 RooYun 音色 id）；推荐音色见 bobao voices")
+        preset = recommendations().get("presets", {}).get(a.name)
         picked = next((v for v in catalog() if a.name in (v["name"], v["id"])), None)
-        voice_id = picked["id"] if picked else a.name
+        paths.ensure()
         with open(os.path.join(paths.HOME, INTRO_PENDING), "w", encoding="utf-8") as f:
-            f.write(voice_id)
-        print(f"选了 {picked['name'] if picked else voice_id}。要先用它把你的播报内容生成一遍，生成完才换过去：")
+            f.write(json.dumps({"name": a.name, "voices": preset["voices"]}, ensure_ascii=False) if preset
+                    else (picked["id"] if picked else a.name))
+        label = a.name if preset else (picked["name"] if picked else a.name)
+        print(f"选了 {label}。要先用它把你的播报内容生成一遍，生成完才换过去：")
         a.action = "record" if a.yes else "quote"
     pending = pending_voice()
-    picked = next((v for v in catalog() if v["id"] == pending), None)
     user = config.read_json(paths.CONFIG, {}) or {}
     if pending:   # plan and record for the chosen voice; the setup switches once it is recorded
-        user = dict(user, engine="rooyun", voices={"default": {"voice": pending}})
+        user = dict(user, engine="rooyun", voices=pending[0])
     cfg = config.load(user)
     p = compose.plan(cfg)
     todo = clips.missing(p, clips.load())
@@ -241,7 +266,7 @@ def cmd_voice(a):
     if not todo:
         print("全部都录好了")
         if a.action == "record" and pending:
-            switch_voice(pending, picked)
+            switch_voice(*pending)
         return
     from . import rooyun
     client = rooyun.Client(cfg["rooyun"]["base"])
@@ -261,18 +286,22 @@ def cmd_voice(a):
     done, failed = rooyun.record(client, jobs)
     print(f"录好 {done} 句" + (f"，{failed} 句没录成（重跑同一条命令补录）" if failed else ""))
     if pending and not failed:
-        switch_voice(pending, picked)
+        switch_voice(*pending)
 
 
 def cmd_agent(a):
     from . import agents
     if a.action == "install":
         if a.which not in ("claude", "codex"):
-            raise SystemExit("用法：bobao agent install claude 或 codex")
+            print(agents.setup_text())   # any other agent wires its own hook to `bobao agent done`
+            return
         print(agents.install(a.which))
-        print("记得 bobao install 让后台在运行；试一下：bobao send 智能体完成 --channel \"Claude Code\"")
+        print("试一下：bobao agent done --name 测试")
         return
-    agents.hook([a.action, a.which or ""] + list(a.rest))   # called by the hooks themselves
+    if a.action == "setup":
+        print(agents.setup_text())
+        return
+    agents.hook([a.action, a.which or ""] + list(a.rest), a.name or "")   # run by the hooks themselves
 
 
 def cmd_github(a):
@@ -335,6 +364,43 @@ def cmd_shout(a):
           if system.WINDOWS else "macOS 可能问是否允许 python3 接受连接，点允许"))
     if not a.no_open:
         system.open_url(shout.qr_page(urls))
+
+
+PAGE = "https://funengzhe.github.io/bobao/"
+
+
+def recommend_text(cfg, user):
+    """What to suggest once Bobao is set up: real voices (the computer's own sounds flat),
+    scenes not picked yet, and the fun extras."""
+    import urllib.parse
+    rec, by_name = recommendations(), {v["name"]: v for v in catalog()}
+    scenes = config.scene_names(user) or ["blank"]
+    packs = config.list_packs("scenes")
+    out = []
+    if cfg["engine"] != "rooyun":
+        out += ["现在用的是电脑自带的声音，听起来比较生硬。强烈建议换成真人一样的声音：用 RooYun（如云）把你的说法生成一次，",
+                "一般一两个积分，生成前先报价；之后一直免费播，断网也能念。", ""]
+        for name, p in rec.get("presets", {}).items():
+            out.append(f"  ★ {name}：{p['desc']}")
+            out.append(f"      bobao voice use {name}")
+        for sc in scenes:
+            picks = [n for n in rec.get("scenes", {}).get(sc, []) if n in by_name]
+            if picks:
+                title = packs.get(sc, {}).get("name", sc)
+                out.append(f"  适合「{title}」：" + "、".join(f"{n}（{'、'.join(by_name[n]['tags'])}）" for n in picks))
+                out += [f"      先听：bobao voice listen {n}    网页：{PAGE}#voice-{urllib.parse.quote(n)}"
+                        for n in picks[:1]]
+        out += [f"  全部 22 个声音：{PAGE}#voices   也可以用你自己或家人的声音（RooYun 克隆）", ""]
+    rest = [p["name"] for k, p in packs.items() if k not in scenes and k != "blank"]
+    if rest:
+        out += ["还能加的场景：" + "、".join(rest) + "（跟智能体说「再加上直播的提醒」）", ""]
+    out.append("还能这样玩：")
+    out += [f"  · {t}：{d}。{how}" for t, d, how in rec.get("fun", [])]
+    return "\n".join(out)
+
+
+def cmd_recommend(a):
+    print(recommend_text(config.load(), config.read_json(paths.CONFIG, {}) or {}))
 
 
 def cmd_sounds(a):
@@ -501,7 +567,8 @@ def cmd_init(a):
     if "notifications" in picked:
         default = [x for sc in user["scenes"] for x in SCENE_APPS.get(sc, [])]
         apps = choose("  读哪些 App 的弹窗", APPS, ",".join(str(i) for i, (_, k) in enumerate(APPS, 1) if k in default) or "1")
-    user["称呼"] = ask("3) 怎么称呼你（你、老板、名字…）", user.get("称呼") or first.get("称呼") or "你")
+    if not user.get("称呼"):   # each scene has its own form of address; change it later if you like
+        user.pop("称呼", None)
     apply_sources(user, picked, apps)
     config.save_user(user)
     sounds.make_all()
@@ -750,6 +817,7 @@ def cmd_install(a):
         print(f"系统通知助手已启动。请在 系统设置 → 隐私与安全性 → 完全磁盘访问权限 里添加并打开：\n  {app}")
     if not a.quiet:   # the install greeting: a doorbell, then 小柚
         play_files(os.path.join(paths.SOUNDS, "doorbell.wav"), os.path.join(here, "assets", "welcome.mp3"))
+    print("\n" + recommend_text(cfg, config.read_json(paths.CONFIG, {}) or {}))
 
 
 # Windows: the background runs from a copy too, started by a shortcut in the Startup folder.
@@ -783,6 +851,7 @@ def install_windows(a, here):
               "选「中文（简体，中国）」，装好后不用重装 Bobao")
     if not a.quiet:
         play_files(os.path.join(paths.SOUNDS, "doorbell.wav"), os.path.join(here, "assets", "welcome.mp3"))
+    print("\n" + recommend_text(config.load(), config.read_json(paths.CONFIG, {}) or {}))
 
 
 def cmd_uninstall(a):
@@ -803,7 +872,7 @@ def main(argv=None):
     p = argparse.ArgumentParser(prog="bobao", description="Bobao 定制播报", formatter_class=argparse.RawDescriptionHelpFormatter,
                                 epilog=__doc__)
     sub = p.add_subparsers(dest="cmd")
-    for name in ("run", "uninstall", "status", "packs", "sounds"):
+    for name in ("run", "uninstall", "status", "packs", "sounds", "recommend"):
         sub.add_parser(name)
     ins = sub.add_parser("install")
     ins.add_argument("--quiet", action="store_true", help="不播安装提示")
@@ -864,9 +933,10 @@ def main(argv=None):
     s.add_argument("--channel")
     s.add_argument("--dry", action="store_true")
     ag = sub.add_parser("agent")
-    ag.add_argument("action", help="install，或钩子自己用的 claude / codex")
+    ag.add_argument("action", help="done / waiting（任何智能体的钩子用）、install claude|codex、setup")
     ag.add_argument("which", nargs="?")
     ag.add_argument("rest", nargs="*")
+    ag.add_argument("--name", help="done / waiting：是哪个智能体")
     gh = sub.add_parser("github")
     gh.add_argument("action", choices=["add", "remove", "list"])
     gh.add_argument("repo", nargs="?")
@@ -884,7 +954,7 @@ def main(argv=None):
     ry = sub.add_parser("rooyun")
     ry.add_argument("action", choices=["login", "me"])
     v = sub.add_parser("voice")
-    v.add_argument("action", choices=["plan", "quote", "record", "use"])
+    v.add_argument("action", choices=["plan", "quote", "record", "use", "listen"])
     v.add_argument("name", nargs="?", help="use：音色名字或 RooYun（如云）音色 id")
     v.add_argument("--cancel", action="store_true", help="use：不换了")
     v.add_argument("--yes", action="store_true")
@@ -911,7 +981,7 @@ def main(argv=None):
      "voices": cmd_voices, "sounds": cmd_sounds, "test": cmd_test, "replay": cmd_replay, "send": cmd_send,
      "rooyun": cmd_rooyun, "voice": cmd_voice, "feishu": cmd_feishu, "export": cmd_export,
      "import": cmd_import, "remind": cmd_remind, "notifications": cmd_notifications, "agent": cmd_agent,
-     "github": cmd_github, "clip": cmd_clip, "shout": cmd_shout}[a.cmd](a)
+     "github": cmd_github, "clip": cmd_clip, "shout": cmd_shout, "recommend": cmd_recommend}[a.cmd](a)
 
 
 if __name__ == "__main__":

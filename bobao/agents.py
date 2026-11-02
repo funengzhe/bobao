@@ -1,7 +1,13 @@
-"""Claude Code and Codex tell Bobao when they finish a task or wait for you.
+"""Any coding agent tells Bobao when it finishes a task or waits for you.
 
-    bobao agent install claude|codex   add the hook (Claude Code: ~/.claude/settings.json;
-                                       Codex: notify in ~/.codex/config.toml)
+    bobao agent done [--name Cursor]      a task is finished (run by the agent's own hook)
+    bobao agent waiting [--name Cursor]   it waits for your approval
+    bobao agent install claude|codex      ready-made hooks for Claude Code and Codex
+    bobao agent setup                     the command to put in any other agent's hook
+
+Agents differ: Claude Code has hooks, Codex a notify command, Cursor and others their own
+hook files. The agent that installs Bobao wires its own mechanism to `bobao agent done`
+(AGENTS.md says how); Claude Code and Codex have presets here:
     bobao agent claude prompt|stop|notify    run by the Claude Code hook (its JSON on stdin)
     bobao agent codex '<json>'               run by Codex's notify
 
@@ -78,11 +84,18 @@ def codex(data):
     return None
 
 
-def hook(argv):
+def generic(kind, name="", cwd=None):
+    """bobao agent done / waiting, from any agent's hook."""
+    return event(name or "智能体", "智能体完成" if kind == "done" else "智能体等你确认", cwd or os.getcwd())
+
+
+def hook(argv, name=""):
     """Entry point for the hooks themselves: never raises, never prints."""
     try:
         cfg = config.load()
-        if argv[0] == "claude":
+        if argv[0] in ("done", "waiting"):
+            body = generic(argv[0], name)
+        elif argv[0] == "claude":
             body = claude(argv[1], json.loads(sys.stdin.read() or "{}"), cfg)
         else:
             body = codex(json.loads(argv[-1]))
@@ -142,10 +155,24 @@ def install_codex():
     return f"已在 {CODEX_CONFIG} 第一行加上 notify。新开的 Codex 会话生效"
 
 
-def install(which):
-    """Adds the hook and turns on what it needs: the webhook, and the rules that speak."""
+def turn_on():
+    """What the announcements need: the webhook, and the rules that speak."""
     user = config.read_json(paths.CONFIG, {}) or {}
     user.setdefault("sources", {}).setdefault("webhook", {})["enabled"] = True
     user.setdefault("agents", {})["enabled"] = True
     config.save_user(user)
+
+
+def install(which):
+    turn_on()
     return install_claude() if which == "claude" else install_codex()
+
+
+def setup_text():
+    """For any other agent: the command its hook should run."""
+    turn_on()
+    cmd = command() if os.name == "nt" else shlex.quote(command())
+    return (f"智能体播报已打开。在你的智能体「任务结束时运行命令」的设置里（钩子、通知、hooks.json 之类）填：\n"
+            f"  任务做完：{cmd} agent done --name 智能体名字\n"
+            f"  等你确认：{cmd} agent waiting --name 智能体名字\n"
+            "命令要很快返回，Bobao 没在运行时它什么也不做。")
