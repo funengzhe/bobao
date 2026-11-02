@@ -46,7 +46,7 @@ def render_wav(utt, cfg, path):
 
 
 def play(utt, cfg):
-    s = sound_path(utt.get("sound"))
+    s = sound_path(utt.get("sound")) if cfg.get("playSounds", True) else None   # false: just the voice
     if s:
         system.play(s)
     if utt.get("file"):   # a ready-made recording (喊话, clips)

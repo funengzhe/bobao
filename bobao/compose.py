@@ -10,7 +10,7 @@ recorded separately and stitched at play time.
 import random
 import re
 
-from .config import needed, voice_for
+from .config import AGENT_NAMES, needed, voice_for
 from .numbers import UNITS, money, amount_of
 
 WHOLE_LIMIT = 40   # a template with at most this many fillings is recorded sentence by sentence
@@ -20,6 +20,26 @@ AMOUNT = "\x00"
 
 def spoken_platform(cfg, p):
     return (cfg["platforms"].get(p) or {}).get("say", p) if p else ""
+
+
+def agent_names(cfg):
+    return {**AGENT_NAMES, **(cfg.get("agents") or {}).get("names", {})}
+
+
+def recorded_agents(cfg):
+    """The agent names to record: those set up here (agents.used), else every known one and 智能体."""
+    names, used = agent_names(cfg), (cfg.get("agents") or {}).get("used")
+    if used:
+        return sorted({names.get(u, u) for u in used})
+    return sorted(set(names.values())) + ["智能体"]
+
+
+def spoken_agent(cfg, name):
+    """'Claude Code' -> 'Claude'. A name nobody recorded is read as 智能体 with recorded voices."""
+    names = agent_names(cfg)
+    if name in names:
+        return names[name]
+    return name if name and cfg["engine"] != "rooyun" else "智能体"
 
 
 def alias(cfg, value):
@@ -89,6 +109,7 @@ def render(match, ev, cfg, rnd=random):
         "金额": money(card.get("金额", "")), "方式": known(cfg, "方式", card.get("方式", "")),
         "套餐": known(cfg, "套餐", card.get("套餐", "")),
         "首单": cfg["firstOrder"] if card["首单"] else "", "大单": cfg["bigOrderSay"] if big else "",
+        "智能体": spoken_agent(cfg, ev.channel if ev.source == "webhook" else ""),
     }
     values.update({k: rnd.choice(v) for k, v in cfg["pick"].items() if v})
     template = rnd.choice(say) if isinstance(say, list) else say
@@ -155,7 +176,8 @@ def plan(cfg):
             domains = dict(picks, 称呼=[cfg["称呼"]], 平台=[spoken_platform(cfg, p) for p in platforms], 名称=[name],
                            平台的=[spoken_platform(cfg, p) + "的" if p else "" for p in platforms],
                            金额=[AMOUNT], 方式=cfg["values"].get("方式", []) + [""], 套餐=cfg["values"].get("套餐", []) + [""],
-                           首单=[cfg["firstOrder"], ""] if money_kind else [""], 大单=[cfg["bigOrderSay"], ""] if money_kind else [""])
+                           首单=[cfg["firstOrder"], ""] if money_kind else [""], 大单=[cfg["bigOrderSay"], ""] if money_kind else [""],
+                           智能体=recorded_agents(cfg))
             for template in own or templates:
                 whole = [tidy(x) for x in expand(template, domains)] if "{金额}" not in template else []
                 if whole and len(whole) <= WHOLE_LIMIT:   # few enough to record each sentence in one take

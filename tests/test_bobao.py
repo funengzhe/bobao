@@ -277,13 +277,52 @@ class Agents(unittest.TestCase):
                          "智能体等你确认")
         self.assertEqual(agents.codex({"type": "agent-turn-complete", "cwd": "/a/b"})["title"], "智能体完成")
 
+    def test_claude_events_by_length_question_error_and_background(self):
+        from bobao import agents
+        cfg = config.load({})
+        def stop(took, **data):
+            agents.claude("prompt", {"session_id": "s2"}, cfg, now=10000)
+            body = agents.claude("stop", dict(session_id="s2", **data), cfg, now=10000 + took)
+            return body and body["title"]
+        self.assertEqual(stop(120), "智能体完成")
+        self.assertEqual(stop(15 * 60), "智能体完成·久")
+        self.assertEqual(stop(45 * 60), "智能体完成·很久")
+        self.assertEqual(stop(120, last_assistant_message="要我推送吗？"), "智能体提问")
+        self.assertIsNone(stop(120, background_tasks=[{"id": "t1", "type": "subagent"}]))   # paused, not done
+        failure = lambda err: agents.claude("failure", {"session_id": "s2", "error": err}, cfg)["title"]
+        self.assertEqual(failure("rate_limit"), "智能体出错·额度")
+        self.assertEqual(failure("authentication_failed"), "智能体出错·登录")
+        self.assertEqual(failure("server_error"), "智能体出错")
+        note = lambda t: (agents.claude("notify", {"notification_type": t}, cfg) or {}).get("title")
+        self.assertEqual(note("permission_prompt"), "智能体等你确认")
+        self.assertEqual(note("elicitation_dialog"), "智能体提问")
+        self.assertEqual(note("quota_auto_resume_fired"), "智能体额度恢复")
+        self.assertIsNone(note("idle_prompt"))
+        on = config.load({"agents": {"enabled": True}})
+        for title in ("智能体完成·很久", "智能体完成·久", "智能体提问", "智能体出错·额度", "智能体额度恢复"):
+            utt, why = daemon.decide(Event("webhook", "Claude Code", title, bot=True), on, dry=True)
+            self.assertTrue(utt and "Claude" in utt["text"] or "额度" in utt["text"], (title, why))
+
+    def test_only_agents_in_use_are_recorded(self):
+        said = lambda cfg: [t for e in compose.plan(cfg).values() for t in e["phrases"]]
+        mine = said(config.load({"agents": {"enabled": True, "used": ["Claude Code"]}}))
+        self.assertTrue(any("Claude" in t for t in mine))
+        self.assertFalse(any("Codex" in t or "Cursor" in t or "智能体" in t for t in mine))
+
     def test_spoken_once_turned_on_recorded_only_then(self):
         on = config.load({"agents": {"enabled": True}})
         utt, why = daemon.decide(Event("webhook", "Claude Code", "智能体完成", bot=True), on, dry=True)
-        self.assertTrue(utt and "智能体" in utt["text"] or "任务" in utt["text"], why)
+        self.assertTrue(utt and "Claude" in utt["text"] and "智能体" not in utt["text"], why)
         said = lambda cfg: [t for e in compose.plan(cfg).values() for t in e["phrases"]]
-        self.assertTrue(any("智能体" in t for t in said(on)))
-        self.assertFalse(any("智能体" in t or "点星" in t for t in said(config.load({}))))
+        self.assertTrue(any("智能体" in t for t in said(on)) and any("Claude" in t for t in said(on)))
+        self.assertFalse(any("智能体" in t or "Claude" in t or "点星" in t for t in said(config.load({}))))
+
+    def test_agent_named_as_said_unknown_ones_as_agent(self):
+        rec = config.load({"agents": {"enabled": True, "names": {"WorkBuddy": "小助手"}}, "engine": "rooyun"})
+        self.assertEqual(compose.spoken_agent(rec, "Claude Code"), "Claude")
+        self.assertEqual(compose.spoken_agent(rec, "WorkBuddy"), "小助手")
+        self.assertEqual(compose.spoken_agent(rec, "Trae"), "智能体")   # never recorded
+        self.assertEqual(compose.spoken_agent(config.load({"agents": {"enabled": True}}), "Trae"), "Trae")
 
 
 class GitHub(unittest.TestCase):

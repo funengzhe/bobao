@@ -791,8 +791,8 @@ def cmd_install(a):
     for d in ("bobao", "packs", "bin"):
         shutil.rmtree(os.path.join(paths.APP, d), ignore_errors=True)
         shutil.copytree(os.path.join(here, d), os.path.join(paths.APP, d), ignore=shutil.ignore_patterns("__pycache__"))
-    if not os.listdir(paths.SOUNDS):
-        sounds.make_all()
+    if any(not os.path.exists(os.path.join(paths.SOUNDS, slug + ".wav")) for slug, *_ in sounds.SOUNDS.values()):
+        sounds.make_all()   # first install, or a version that added sounds
     if system.WINDOWS:
         return install_windows(a, here)
     load_agent(AGENT, plist(AGENT, ["/usr/bin/python3", "-m", "bobao", "run"], paths.LOG))
@@ -815,8 +815,8 @@ def cmd_install(a):
                         "-r=designated => identifier \"io.bobao.notify\"", app], check=True, capture_output=True)
         load_agent(HELPER, plist(HELPER, [exe], os.path.join(paths.HOME, "notify.log")))
         print(f"系统通知助手已启动。请在 系统设置 → 隐私与安全性 → 完全磁盘访问权限 里添加并打开：\n  {app}")
-    if not a.quiet:   # the install greeting: a doorbell, then 小柚
-        play_files(os.path.join(paths.SOUNDS, "doorbell.wav"), os.path.join(here, "assets", "welcome.mp3"))
+    if not a.quiet:   # the install greeting: a soft chime, then 小柚
+        play_files(os.path.join(paths.SOUNDS, "chime.wav"), os.path.join(here, "assets", "welcome.mp3"))
     print("\n" + recommend_text(cfg, config.read_json(paths.CONFIG, {}) or {}))
 
 
@@ -850,7 +850,7 @@ def install_windows(a, here):
         print("这台电脑自带的声音里没有中文，念出来会不对。请打开 设置 → 时间和语言 → 语音 → 添加语音，"
               "选「中文（简体，中国）」，装好后不用重装 Bobao")
     if not a.quiet:
-        play_files(os.path.join(paths.SOUNDS, "doorbell.wav"), os.path.join(here, "assets", "welcome.mp3"))
+        play_files(os.path.join(paths.SOUNDS, "chime.wav"), os.path.join(here, "assets", "welcome.mp3"))
     print("\n" + recommend_text(config.load(), config.read_json(paths.CONFIG, {}) or {}))
 
 

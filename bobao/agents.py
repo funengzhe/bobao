@@ -8,10 +8,11 @@
 Agents differ: Claude Code has hooks, Codex a notify command, Cursor and others their own
 hook files. The agent that installs Bobao wires its own mechanism to `bobao agent done`
 (AGENTS.md says how); Claude Code and Codex have presets here:
-    bobao agent claude prompt|stop|notify    run by the Claude Code hook (its JSON on stdin)
+    bobao agent claude prompt|stop|notify|failure|ask    run by the Claude Code hooks (JSON on stdin)
     bobao agent codex '<json>'               run by Codex's notify
 
-Each becomes a message to the local webhook ("智能体完成" / "智能体等你确认"); the rules
+Each becomes a message to the local webhook ("智能体完成", "智能体等你确认", and from Claude
+Code also how long it took, a question for you, an API error, the quota back); the rules
 in packs/rules/bobao.json say what is spoken. A Claude Code turn shorter than
 agents.minSeconds stays silent, so quick answers don't talk. A hook never fails or
 prints: if Bobao isn't running, the agent carries on as if nothing happened.
@@ -55,11 +56,26 @@ def event(agent, title, cwd):
     return {"channel": agent, "title": title, "fields": {"项目": project(cwd)}}
 
 
+LONG, VERY_LONG = 10 * 60, 30 * 60   # a turn this long gets "忙了好一阵" / "熬了好久"
+NEEDS_YOU = ("elicitation_dialog", "elicitation_url_dialog", "agent_needs_input")
+QUOTA = ("rate_limit", "billing_error", "account_on_hold")
+LOGIN = ("authentication_failed", "oauth_org_not_allowed", "cloud_credential_error")
+
+
+def asks(text):
+    """Claude's last words end in a question: it stopped to ask you something."""
+    return bool(re.search(r"[?？]$", re.sub(r"[\s*_`)）]+$", "", text or "")))
+
+
 def claude(kind, data, cfg, now=None):
-    """The message for one Claude Code hook call, or None to stay silent."""
+    """The message for one Claude Code hook call, or None to stay silent.
+    prompt: a turn starts. stop: it ended (done, or a question for you). notify: approval,
+    a question in a dialog, the quota coming back. failure: it stopped on an API error.
+    ask: it opened a multiple-choice question (AskUserQuestion)."""
     now = now or time.time()
     turns = config.read_json(TURNS, {}) or {}
     sid = data.get("session_id") or ""
+    cwd = data.get("cwd")
     if kind == "prompt":
         turns[sid] = now
         paths.ensure()
@@ -67,14 +83,30 @@ def claude(kind, data, cfg, now=None):
         with open(TURNS, "w") as f:
             json.dump(turns, f)
         return None
+    started = turns.get(sid)
+    took = None if started is None else now - started
+    long_enough = took is not None and took >= cfg["agents"].get("minSeconds", 60)
     if kind == "stop":
-        started = turns.get(sid)
-        if started is None or now - started < cfg["agents"].get("minSeconds", 60):
+        if not long_enough or data.get("background_tasks"):   # paused for background work, not done
             return None
-        return event("Claude Code", "智能体完成", data.get("cwd"))
-    msg = data.get("message") or ""
-    if re.search(r"permission|批准|确认|approve", msg, re.I):   # not the idle "waiting for your input"
-        return event("Claude Code", "智能体等你确认", data.get("cwd"))
+        if asks(data.get("last_assistant_message")):
+            return event("Claude Code", "智能体提问", cwd)
+        title = "智能体完成·很久" if took >= VERY_LONG else "智能体完成·久" if took >= LONG else "智能体完成"
+        return event("Claude Code", title, cwd)
+    if kind == "ask":
+        return event("Claude Code", "智能体提问", cwd) if long_enough else None
+    if kind == "failure":
+        err = data.get("error") or ""
+        title = "智能体出错·额度" if err in QUOTA else "智能体出错·登录" if err in LOGIN else "智能体出错"
+        return event("Claude Code", title, cwd)
+    kind_of = data.get("notification_type") or ""
+    if kind_of == "permission_prompt" or (not kind_of and re.search(r"permission|批准|确认|approve",
+                                                                     data.get("message") or "", re.I)):
+        return event("Claude Code", "智能体等你确认", cwd)   # not the idle "waiting for your input"
+    if kind_of in NEEDS_YOU:
+        return event("Claude Code", "智能体提问", cwd)
+    if kind_of == "quota_auto_resume_fired":
+        return event("Claude Code", "智能体额度恢复", cwd)
     return None
 
 
@@ -120,21 +152,28 @@ def command():
     return installed if os.path.exists(installed) else here
 
 
+CLAUDE_HOOKS = [("UserPromptSubmit", "prompt", ""), ("Stop", "stop", ""), ("Notification", "notify", ""),
+                ("StopFailure", "failure", ""), ("PreToolUse", "ask", "AskUserQuestion")]
+
+
 def install_claude():
     settings = config.read_json(CLAUDE_SETTINGS, {}) or {}
     hooks = settings.setdefault("hooks", {})
     added = []
-    for event_name, kind in (("UserPromptSubmit", "prompt"), ("Stop", "stop"), ("Notification", "notify")):
+    for event_name, kind, matcher in CLAUDE_HOOKS:
         cmd = f"{command() if os.name == 'nt' else shlex.quote(command())} agent claude {kind}"
         entries = hooks.setdefault(event_name, [])
-        if any("agent claude" in h.get("command", "") for e in entries for h in e.get("hooks", [])):
+        if any(f"agent claude {kind}" in h.get("command", "") for e in entries for h in e.get("hooks", [])):
             continue
-        entries.append({"hooks": [{"type": "command", "command": cmd, "timeout": 5}]})
+        entry = {"hooks": [{"type": "command", "command": cmd, "timeout": 5}]}
+        if matcher:
+            entry = {"matcher": matcher, **entry}
+        entries.append(entry)
         added.append(event_name)
     if not added:
         return "Claude Code 已经接好了"
-    if os.path.exists(CLAUDE_SETTINGS):
-        shutil.copy(CLAUDE_SETTINGS, CLAUDE_SETTINGS + ".before-bobao")
+    if os.path.exists(CLAUDE_SETTINGS) and not os.path.exists(CLAUDE_SETTINGS + ".before-bobao"):
+        shutil.copy(CLAUDE_SETTINGS, CLAUDE_SETTINGS + ".before-bobao")   # keep the one from before Bobao
     os.makedirs(os.path.dirname(CLAUDE_SETTINGS), exist_ok=True)
     with open(CLAUDE_SETTINGS, "w", encoding="utf-8") as f:
         json.dump(settings, f, ensure_ascii=False, indent=2)
@@ -155,16 +194,20 @@ def install_codex():
     return f"已在 {CODEX_CONFIG} 第一行加上 notify。新开的 Codex 会话生效"
 
 
-def turn_on():
-    """What the announcements need: the webhook, and the rules that speak."""
+def turn_on(agent=""):
+    """What the announcements need: the webhook, and the rules that speak. agent joins
+    agents.used, so with recorded voices only the agents set up here are recorded."""
     user = config.read_json(paths.CONFIG, {}) or {}
     user.setdefault("sources", {}).setdefault("webhook", {})["enabled"] = True
-    user.setdefault("agents", {})["enabled"] = True
+    agents = user.setdefault("agents", {})
+    agents["enabled"] = True
+    if agent and agent not in agents.setdefault("used", []):
+        agents["used"].append(agent)
     config.save_user(user)
 
 
 def install(which):
-    turn_on()
+    turn_on("Claude Code" if which == "claude" else "Codex")
     return install_claude() if which == "claude" else install_codex()
 
 

@@ -173,7 +173,7 @@ bobao agent setup             # 其他智能体：给出要填进它「任务结
 
 其他智能体（Cursor、WorkBuddy……）跟它说「你干完活叫我一声」，它会按自己的设置方式接上 `bobao agent done`。
 
-一个回合超过 60 秒（`agents.minSeconds`），做完就念"智能体把活儿干完啦"；它要你批准命令时念"智能体在等你点头"。Bobao 没在运行时，钩子什么也不做，不影响智能体。
+一个回合超过 60 秒（`agents.minSeconds`），做完就念"Claude 把活儿干完啦"；它要你批准命令时念"Claude 在等你点头"。念的是智能体自己的名字：Claude Code 念 Claude，Codex、Cursor 念原名，其他智能体念"智能体"。想让别的名字也念出来，在设置里加 `"agents": {"names": {"WorkBuddy": "WorkBuddy"}}`（用 RooYun 声音的话要补生成）。Bobao 没在运行时，钩子什么也不做，不影响智能体。
 
 ### GitHub 项目
 
@@ -252,7 +252,7 @@ bobao export
 
 **说法里的空位**：`{称呼}` `{平台}` `{金额}` `{方式}` `{套餐}` `{名称}`。空位没有值时，它所在的那一小句会自动省掉。
 
-**音效**：`coin` `register` `levelup` `gift` `bubble` `doorbell` `siren` `wahwah` `beeps` `oops` `redalert`（本机合成，免费），也可以用 macOS 系统音效名（`Glass`、`Ping`…）或你自己的音频文件路径。
+**音效**：`coin` `register` `levelup` `gift` `bubble` `doorbell` `chime` `kalimba` `drop` `hum` `siren` `wahwah` `beeps` `oops` `redalert`（本机合成，免费），也可以用 macOS 系统音效名（`Glass`、`Ping`…）或你自己的音频文件路径。 不想要开头的音效、直接说话：`"playSounds": false`。
 
 **分享你的场景**：复制 `packs/scenes/` 里的一个文件，放到 `~/.bobao/packs/scenes/`，在配置里用文件名引用。欢迎提 PR（见 [CONTRIBUTING.md](CONTRIBUTING.md)）。
 

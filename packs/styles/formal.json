@@ -10,12 +10,12 @@
   "sounds": {
     "收款": "coin",
     "套餐": "coin",
-    "注册": "doorbell",
-    "日报": "doorbell",
+    "注册": "chime",
+    "日报": "chime",
     "告警": "beeps",
     "恢复": "levelup",
-    "提醒": "doorbell",
-    "通知": "doorbell"
+    "提醒": "chime",
+    "通知": "chime"
   },
   "pick": {},
   "firstOrder": "新客首单",

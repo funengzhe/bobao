@@ -3,7 +3,7 @@
     bobao sounds        writes them to ~/.bobao/sounds/<name>.wav
 
 Rules and styles refer to them by name: coin, register, levelup, gift, bubble, doorbell,
-siren, wahwah, beeps, oops, redalert. A macOS system sound name (Glass, Ping...) or a path
+chime, kalimba, drop, hum, siren, wahwah, beeps, oops, redalert. A macOS system sound name (Glass, Ping...) or a path
 to your own file works too.
 """
 
@@ -54,6 +54,8 @@ def mix(*tracks):
 
 BELL = ((1, 1.0), (2, 0.35), (3, 0.15), (4.2, 0.08))
 MARIMBA = ((1, 1.0), (4, 0.25), (10, 0.05))
+WARM = ((1, 1.0), (2, 0.12))
+KALIMBA = ((1, 1.0), (5.4, 0.04))
 SQUARE = tuple((k, 1 / k) for k in (1, 3, 5, 7))
 
 SOUNDS = {
@@ -71,6 +73,13 @@ SOUNDS = {
     "注册·气泡": ("bubble", lambda: mix((0, tone(420, 0.09, 25, ((1, 1.0),), glide_to=900)),
                                         (0.11, tone(600, 0.1, 22, ((1, 1.0),), glide_to=1200)))),
     "注册·门铃": ("doorbell", lambda: mix((0, tone(659, 0.5, 5, MARIMBA)), (0.28, tone(523, 0.8, 4, MARIMBA)))),
+    # Soft: for reminders you hear many times a day (a third quieter, no strike).
+    "提醒·风铃": ("chime", lambda: mix((0, tone(784, 1.2, 3.2, WARM, attack=0.02)),
+                                       (0.22, tone(1047, 1.4, 3.0, WARM, attack=0.02))), 0.35),
+    "提醒·拇指琴": ("kalimba", lambda: mix((0, tone(587, 0.9, 4.5, KALIMBA, attack=0.008)),
+                                          (0.18, tone(880, 1.1, 4, KALIMBA, attack=0.008))), 0.38),
+    "提醒·水滴": ("drop", lambda: tone(620, 0.35, 9, attack=0.01, glide_to=880), 0.32),
+    "提醒·轻哼": ("hum", lambda: tone(523, 1.3, 2.6, WARM, attack=0.06), 0.3),
     # Alert: unhappy but cute, not a fire alarm.
     "告警·警报": ("siren", lambda: mix(*[(i * 0.22, [v * 0.45 for v in tone(880 if i % 2 == 0 else 660, 0.2, 2, SQUARE, 0.01)])
                                           for i in range(6)])),
@@ -86,20 +95,20 @@ SOUNDS = {
 }
 
 
-def write(path, samples):
+def write(path, samples, level=0.8):
     peak = max(abs(v) for v in samples) or 1.0
     with wave.open(path, "wb") as w:
         w.setnchannels(1)
         w.setsampwidth(2)
         w.setframerate(RATE)
         tail = samples + silence(0.05)
-        w.writeframes(b"".join(struct.pack("<h", int(v / peak * 0.8 * 32767)) for v in tail))
+        w.writeframes(b"".join(struct.pack("<h", int(v / peak * level * 32767)) for v in tail))
 
 
 
 def make_all():
     random.seed(7)
     paths.ensure()
-    for name, (slug, make) in SOUNDS.items():
-        write(os.path.join(paths.SOUNDS, slug + ".wav"), make())
-    return [slug for slug, _ in SOUNDS.values()]
+    for slug, make, *level in SOUNDS.values():
+        write(os.path.join(paths.SOUNDS, slug + ".wav"), make(), *level)
+    return [slug for slug, *_ in SOUNDS.values()]

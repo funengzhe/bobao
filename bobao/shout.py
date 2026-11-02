@@ -73,7 +73,7 @@ def say_rooyun(cfg, text, speaker):
         mp3 = os.path.join(tempfile.mkdtemp(prefix="bobao-shout-"), "a.mp3")
         share.generate(client, model, params, str(uuid.uuid4()), mp3)
         add_spent(price)
-        speaker.put({"sound": "doorbell", "file": mp3, "text": text, "segments": []}, cfg)
+        speaker.put({"sound": "chime", "file": mp3, "text": text, "segments": []}, cfg)
         return True
     except BaseException as e:   # SystemExit included: a failed line is read by the Mac instead
         log(f"喊话用 RooYun 生成失败，改用电脑声音：{e}")
@@ -81,7 +81,7 @@ def say_rooyun(cfg, text, speaker):
 
 
 def mac_utterance(text):
-    return {"sound": "doorbell", "text": text, "segments": [({}, text)]}
+    return {"sound": "chime", "text": text, "segments": [({}, text)]}
 
 
 def serve(get_cfg, speaker):

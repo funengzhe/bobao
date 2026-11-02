@@ -21,6 +21,7 @@ DEFAULTS = {
     "macVoice": "Tingting",
     "rate": 200,
     "platforms": {},            # {"RooYun": {"say": "如云"}}: how a platform name is spoken
+    "playSounds": True,         # false: no sound effect before speaking, just the voice
     "aliases": {},              # long card values -> short spoken ones
     "values": {},               # {"方式": [...], "套餐": [...]}: what can fill a slot, for recording
     "rules": [],
@@ -44,6 +45,10 @@ DEFAULTS = {
     "rooyun": {"base": "https://www.rooyun.com", "model": "speech-2.8-hd"},
 }
 
+
+# An agent's name as it is said: "Claude Code" is read "Claude". With recorded voices only
+# these (and the user's agents.names) are recorded; any other agent is read as 智能体.
+AGENT_NAMES = {"Claude Code": "Claude", "Claude": "Claude", "Codex": "Codex", "Cursor": "Cursor"}
 
 ALWAYS_PACKS = ["bobao"]   # Bobao's own messages (agents, GitHub), in every setup
 
