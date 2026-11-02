@@ -107,7 +107,7 @@ def run():
         utt, why = decide(ev, cfg, dry=dry)
         label = f"[{ev.source}{':' + ev.channel if ev.channel else ''}] {ev.title}"
         if not utt:
-            if not dry and (why != "没有规则" or ev.source == "webhook"):
+            if not dry and (why != "没有规则" or ev.source in ("webhook", "feishu")):   # groups you chose: say why
                 log(f"不播 {label}：{why}")
             return {"spoken": False, "reason": why}
         if not dry:
