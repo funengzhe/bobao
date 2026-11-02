@@ -33,7 +33,7 @@ DEFAULTS = {
     "maxAgeMinutes": 30,
     "schedule": {},             # {"days": [1-7], "hours": "09:00-18:00", "quietHours": "23:00-08:00"} for all types
     "sources": {
-        "feishu": {"enabled": False, "chats": [], "botsOnly": True, "pollSeconds": 60},
+        "feishu": {"enabled": False, "chats": [], "botsOnly": True},   # + profile: the 飞书播报 bot's lark-cli profile
         "webhook": {"enabled": True, "port": 8766, "secret": ""},
         "notifications": {"enabled": False, "apps": []},
     },

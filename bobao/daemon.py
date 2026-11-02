@@ -11,7 +11,7 @@ import time
 from . import config, compose, events
 from .log import log
 from .sources import notifications
-from .sources.feishu import Feishu
+from .sources.feishu import Feishu, poll_seconds
 from .speaker import Speaker
 
 last_spoken = {}   # (rule index, platform) -> time, for cooldownMinutes
@@ -113,15 +113,20 @@ def run():
                 elif src["notifications"].get("enabled"):
                     handle(notifications.to_event(n))
             fs = src["feishu"]
-            if fs.get("enabled") and fs.get("chats"):
+            if fs.get("enabled") and (fs.get("chats") or fs.get("profile")):
+                groups = feishu.groups(cfg)
                 if time.time() >= next_feishu:
-                    ok = feishu.check(cfg, fs["chats"], handle)
-                    next_feishu = time.time() + fs.get("pollSeconds", 60)
+                    ok = feishu.check(cfg, groups, handle)
+                    next_feishu = time.time() + poll_seconds(fs)
                     failing_since, warned = health(cfg, speaker, ok, failing_since, warned)
-                elif nudged & set(fs["chats"]):
-                    time.sleep(1)   # let the message settle on Feishu's side
-                    feishu.check(cfg, sorted(nudged & set(fs["chats"])), handle)
-                    next_feishu = min(next_feishu, time.time() + 5)   # the popup can beat the API
+                else:
+                    pushed = feishu.pushed(cfg)
+                    if pushed:
+                        feishu.check(cfg, sorted(pushed), handle)
+                    elif nudged & set(groups):
+                        time.sleep(1)   # let the message settle on Feishu's side
+                        feishu.check(cfg, sorted(nudged & set(groups)), handle)
+                        next_feishu = min(next_feishu, time.time() + 5)   # the popup can beat the API
         except Exception as e:
             log(f"出错，稍后重试: {e}")
             next_feishu = time.time() + 30

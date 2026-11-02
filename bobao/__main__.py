@@ -1,6 +1,12 @@
 """Bobao 定制播报 — your notifications, read aloud the way you want.
 
   bobao init                      set up: form of address, style, voice, sources
+  bobao init --scene saas --style formal --name 老板 --engine mac --sources feishu,webhook
+                                  the same without questions (for scripts and agents)
+  bobao feishu login --app cli_xxx
+                                  connect your 飞书播报 bot; the App Secret is read from
+                                  stdin (pbpaste | bobao feishu login ...) or asked hidden
+  bobao feishu groups             the groups the bot was added to
   bobao run                       run in the foreground (the agent runs this)
   bobao install | uninstall       start at login / stop for good
   bobao status                    is it running, what was said lately
@@ -21,9 +27,12 @@
   bobao gallery                   listen to every scene, style, voice and emotion before choosing
   bobao review                    listen to everything, mark pieces to re-record
   bobao sounds                    (re)make the sound effects
+  bobao export [file.zip]         settings + recordings in one file, to set up another Mac
+  bobao import file.zip           take them over (no secrets inside: log in again there)
 """
 
 import argparse
+import getpass
 import json
 import os
 import random
@@ -31,6 +40,7 @@ import shutil
 import subprocess
 import sys
 import urllib.request
+import zipfile
 
 from . import clips, compose, config, daemon, paths, sounds
 from .events import Event
@@ -194,7 +204,41 @@ def choose(q, options, default=1):
     return [options[i - 1][1] for i in picks if 0 < i <= len(options)]
 
 
+def init_quiet(a):
+    """bobao init with flags: no questions, unset flags keep the current value or the scene's."""
+    user = config.read_json(paths.CONFIG, {}) or {}
+    scenes, styles, packs = config.list_packs("scenes"), config.list_packs("styles"), config.list_packs("rules")
+    for value, known, what in ((a.scene, scenes, "场景"), (a.style, styles, "风格")):
+        if value and value not in known:
+            raise SystemExit(f"没有这个{what}：{value}（可选：{'、'.join(known)}）")
+    if a.scene is not None:
+        user["scene"] = a.scene
+    scene = scenes.get(user.get("scene"), {})
+    user["style"] = a.style or user.get("style") or scene.get("style") or "formal"
+    if a.name:
+        user["称呼"] = a.name
+    user["engine"] = a.engine or user.get("engine") or "mac"
+    if a.rule_packs:
+        user["rulePacks"] = [x for x in a.rule_packs.split(",") if x]
+        for x in user["rulePacks"]:
+            if x not in packs:
+                raise SystemExit(f"没有这个规则包：{x}（可选：{'、'.join(packs)}）")
+    picked = a.sources.split(",") if a.sources else scene.get("suggestSources", ["webhook"])
+    src = user.setdefault("sources", {})
+    for name in ("feishu", "webhook", "notifications"):
+        src[name] = dict(src.get(name, {}), enabled=name in picked)
+    if a.chats:
+        src["feishu"]["chats"] = [x for x in a.chats.split(",") if x]
+    config.save_user(user)
+    sounds.make_all()
+    cfg = config.load()
+    print(f"已保存 {paths.CONFIG}：场景 {user.get('scene') or '无'}，风格 {cfg['styleName']}，称呼 {cfg['称呼']}，"
+          f"声音 {'如云' if cfg['engine'] == 'rooyun' else 'Mac 自带'}，来源 {'、'.join(n for n in picked)}")
+
+
 def cmd_init(a):
+    if any(v is not None for v in (a.scene, a.style, a.name, a.engine, a.sources, a.rule_packs, a.chats)) or a.yes:
+        return init_quiet(a)
     user = config.read_json(paths.CONFIG, {}) or {}
     print("Bobao 定制播报 · 设置（直接回车用括号里的默认值）\n")
     scenes = config.list_packs("scenes")
@@ -221,7 +265,12 @@ def cmd_init(a):
                              if s in scene.get("suggestSources", ["webhook"])))
     src["webhook"] = dict(src.get("webhook", {}), enabled="webhook" in picked)
     if "feishu" in picked:
-        from .sources.feishu import Feishu, lark
+        from .sources.feishu import lark
+        app = ask("  飞书播报机器人的 App ID（推荐，见 README「接飞书」；留空则用你自己的 lark-cli 登录）", "")
+        if app:
+            src["feishu"] = dict(src.get("feishu", {}), enabled=True, app=app)
+            print(f"  设置完后运行：pbpaste | bobao feishu login --app {app}（先复制 App Secret）")
+    if "feishu" in picked and not src.get("feishu", {}).get("app"):
         try:
             chats = [c["name"] for c in (lark({}, "im", "+chat-list", "--page-all").get("chats") or [])]
         except Exception as e:
@@ -244,6 +293,85 @@ def cmd_init(a):
         print("下一步：bobao rooyun login → bobao voice record → bobao review → bobao install")
     else:
         print("下一步：bobao test \"充值到账\" -f 金额=\\$19.9 --play  试听，满意后 bobao install")
+
+
+def cmd_feishu(a):
+    from .sources import feishu
+    user = config.read_json(paths.CONFIG, {}) or {}
+    src = dict((user.get("sources") or {}).get("feishu") or {})
+    if a.action == "login":
+        if not a.app:
+            raise SystemExit("用 --app 给出应用的 App ID（cli_ 开头，在开放平台「凭证与基础信息」里）")
+        secret = sys.stdin.read().strip() if not sys.stdin.isatty() else getpass.getpass("粘贴 App Secret（不会显示）：").strip()
+        if not secret:
+            raise SystemExit("没有读到 App Secret。复制后运行：pbpaste | bobao feishu login --app " + a.app)
+        cli = feishu.lark_cli(src)
+        if not shutil.which(cli) and not os.path.exists(cli):
+            raise SystemExit("没有找到 lark-cli。先安装：npm install -g @larksuite/cli")
+        r = subprocess.run([cli, "config", "init", "--name", a.profile, "--app-id", a.app, "--app-secret-stdin"],
+                           input=secret, capture_output=True, text=True, env=feishu.env())
+        if r.returncode:
+            raise SystemExit("lark-cli 没有接受这组 App ID / Secret：" + (r.stderr or r.stdout).strip()[:300])
+        src.update(enabled=True, profile=a.profile, app=a.app)
+        user.setdefault("sources", {})["feishu"] = src
+        config.save_user(user)
+        print(f"已连接飞书应用 {a.app}（lark-cli 配置「{a.profile}」），Secret 只存在 lark-cli 里，不在 Bobao 的设置中。")
+    if not src.get("profile"):
+        raise SystemExit("还没有连接飞书机器人：bobao feishu login --app cli_xxx")
+    try:
+        chats = feishu.lark(src, "im", "+chat-list", "--page-all").get("chats") or []
+    except Exception as e:
+        raise SystemExit(f"机器人读不到群：{e}\n检查开放平台里是否开通了「查看群信息」等权限，并已发布版本。")
+    if not chats:
+        print("机器人还不在任何群里：在飞书里打开要播报的群 → 设置 → 群机器人 → 添加机器人，搜索你的应用。")
+        return
+    listed = src.get("chats") or []
+    print("机器人所在的群（" + ("只播 config 里列出的" if listed else "全部会播") + "）：")
+    for c in chats:
+        mark = "" if not listed or c["name"] in listed else "（不播）"
+        print(f"  {c['name']}{'  · 外部群' if c.get('external') else ''}{mark}")
+
+
+EXPORT_SKIP = {"state.json", "bobao.log", "notify.log", "recording.json", "notifications.jsonl", "last.wav", "pending.txt"}
+
+
+def cmd_export(a):
+    """Settings, recordings, sounds and the user's own packs; no state, logs or secrets."""
+    out = os.path.abspath(a.file or f"bobao-{os.environ.get('USER', 'me')}.zip")
+    n = 0
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+        for root, dirs, files in os.walk(paths.HOME):
+            rel = os.path.relpath(root, paths.HOME)
+            if rel.split(os.sep)[0] in ("app",):
+                dirs[:] = []
+                continue
+            for f in files:
+                if (rel == "." and f in EXPORT_SKIP) or f.endswith((".tmp", ".DS_Store")):
+                    continue
+                z.write(os.path.join(root, f), os.path.normpath(os.path.join(rel, f)))
+                n += 1
+    secret = ((config.read_json(paths.CONFIG, {}) or {}).get("sources", {}).get("webhook", {}) or {}).get("secret")
+    print(f"已导出 {n} 个文件到 {out}（{os.path.getsize(out) // 1024} KB）")
+    print("里面没有飞书 App Secret 和如云登录；对方导入后要自己运行一次 bobao feishu login。"
+          + ("\n注意：webhook 的 secret 在设置里，会一起带过去。" if secret else ""))
+
+
+def cmd_import(a):
+    with zipfile.ZipFile(a.file) as z:
+        names = z.namelist()
+        bad = [x for x in names if x.startswith("/") or ".." in x.split("/")]
+        if bad or "config.json" not in names:
+            raise SystemExit("这不是 bobao export 导出的文件")
+        paths.ensure()
+        had = os.path.exists(paths.CONFIG)
+        if had:
+            shutil.copy(paths.CONFIG, paths.CONFIG + ".before-import")
+        z.extractall(paths.HOME)
+    cfg = config.load()
+    print(f"已导入 {len(names)} 个文件到 {paths.HOME}" + ("（原来的设置备份为 config.json.before-import）" if had else ""))
+    fs = cfg["sources"]["feishu"]
+    if fs.get("enabled") and fs.get("app"):
+        print(f"下一步：复制飞书应用 {fs['app']} 的 App Secret，运行 pbpaste | bobao feishu login --app {fs['app']}")
 
 
 def plist(label, args, log):
@@ -282,7 +410,10 @@ def cmd_install(a):
     load_agent(AGENT, plist(AGENT, ["/usr/bin/python3", "-m", "bobao", "run"], paths.LOG))
     print("后台已启动，开机自动运行。日志：" + paths.LOG)
     cfg = config.load()
-    if cfg["sources"]["notifications"].get("enabled") or cfg["sources"]["feishu"].get("enabled"):
+    fs = cfg["sources"]["feishu"]
+    # The helper reads popups: needed for system notifications, and as a nudge for Feishu read
+    # as the user; a Feishu bot gets pushes instead.
+    if cfg["sources"]["notifications"].get("enabled") or (fs.get("enabled") and not fs.get("profile")):
         app = os.path.join(paths.APP, "Bobao 通知.app")
         exe = os.path.join(app, "Contents", "MacOS", "bobao-notify")
         os.makedirs(os.path.dirname(exe), exist_ok=True)
@@ -312,8 +443,25 @@ def main(argv=None):
     p = argparse.ArgumentParser(prog="bobao", description="Bobao 定制播报", formatter_class=argparse.RawDescriptionHelpFormatter,
                                 epilog=__doc__)
     sub = p.add_subparsers(dest="cmd")
-    for name in ("init", "run", "install", "uninstall", "status", "packs", "voices", "sounds"):
+    for name in ("run", "install", "uninstall", "status", "packs", "voices", "sounds"):
         sub.add_parser(name)
+    i = sub.add_parser("init")
+    i.add_argument("--scene")
+    i.add_argument("--style")
+    i.add_argument("--name", help="怎么称呼你")
+    i.add_argument("--engine", choices=["mac", "rooyun"])
+    i.add_argument("--sources", help="feishu,webhook,notifications")
+    i.add_argument("--rule-packs")
+    i.add_argument("--chats", help="只播这些飞书群（逗号隔开）；用机器人时可不填，播它所在的全部群")
+    i.add_argument("--yes", action="store_true", help="不提问，全用场景默认值")
+    fe = sub.add_parser("feishu")
+    fe.add_argument("action", choices=["login", "groups"])
+    fe.add_argument("--app")
+    fe.add_argument("--profile", default="bobao")
+    ex = sub.add_parser("export")
+    ex.add_argument("file", nargs="?")
+    im = sub.add_parser("import")
+    im.add_argument("file")
     g = sub.add_parser("gallery")
     g.add_argument("--port", type=int, default=8768)
     g.add_argument("--no-open", action="store_true")
@@ -367,7 +515,8 @@ def main(argv=None):
         return review.serve(a.port, not a.no_open)
     {"init": cmd_init, "install": cmd_install, "uninstall": cmd_uninstall, "status": cmd_status, "packs": cmd_packs,
      "voices": cmd_voices, "sounds": cmd_sounds, "test": cmd_test, "replay": cmd_replay, "send": cmd_send,
-     "rooyun": cmd_rooyun, "voice": cmd_voice}[a.cmd](a)
+     "rooyun": cmd_rooyun, "voice": cmd_voice, "feishu": cmd_feishu, "export": cmd_export,
+     "import": cmd_import}[a.cmd](a)
 
 
 if __name__ == "__main__":

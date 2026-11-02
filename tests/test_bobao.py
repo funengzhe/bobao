@@ -149,5 +149,34 @@ class Schedule(unittest.TestCase):
         self.assertIn("时段", daemon.decide(ev("[Alpha] 新用户注册"), cfg)[1])
 
 
+class FeishuBot(unittest.TestCase):
+    def setUp(self):
+        self.f = feishu.Feishu()
+        self.f.push.profile = "bobao"   # as if its connection were already running
+        self.f.ids = {"通知群": "oc_1", "外部群": "oc_2", "闲聊群": "oc_3"}
+        self.f.ids_at = time.time()
+
+    def cfg(self, chats=()):
+        return {"sources": {"feishu": {"profile": "bobao", "chats": list(chats)}}}
+
+    def test_identity_and_interval(self):
+        self.assertEqual(feishu.identity({"profile": "bobao"}), (["--profile", "bobao"], "bot"))
+        self.assertEqual(feishu.identity({}), ([], "user"))
+        self.assertEqual(feishu.poll_seconds({"profile": "bobao"}), 300)
+        self.assertEqual(feishu.poll_seconds({}), 60)
+
+    def test_push_maps_to_groups(self):
+        self.f.push.queue.put("oc_2")
+        self.f.push.queue.put("oc_9")   # a chat the bot is not in
+        self.assertEqual(self.f.pushed(self.cfg()), {"外部群"})
+        self.assertEqual(self.f.pushed(self.cfg()), set())
+
+    def test_reconnect_checks_every_listed_group(self):
+        self.f.push.queue.put(feishu.EVERY)
+        self.assertEqual(self.f.pushed(self.cfg(["通知群", "外部群"])), {"通知群", "外部群"})
+        self.f.push.queue.put("oc_3")   # pushed, but not a group to announce
+        self.assertEqual(self.f.pushed(self.cfg(["通知群"])), set())
+
+
 if __name__ == "__main__":
     unittest.main()
