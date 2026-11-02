@@ -1,0 +1,47 @@
+{
+  "name": "Bobao 自己的消息",
+  "description": "智能体干完活、等你确认，以及 GitHub 项目有新的 star、fork、Issue。每个设置都会带上；没打开对应功能时不会录这些句子。",
+  "rules": [
+    {
+      "needs": "agents",
+      "when": {"source": "webhook", "title": "智能体完成"},
+      "type": "提醒",
+      "sound": "levelup",
+      "say": [
+        "{称呼}，智能体把活儿干完啦，快回来看看",
+        "{称呼}，任务做完了，过来验收一下吧"
+      ]
+    },
+    {
+      "needs": "agents",
+      "when": {"source": "webhook", "title": "智能体等你确认"},
+      "type": "提醒",
+      "sound": "doorbell",
+      "say": "{称呼}，智能体在等你点头，过去看一眼吧"
+    },
+    {
+      "needs": "sources.github",
+      "when": {"source": "github", "title": "新的 star"},
+      "type": "提醒",
+      "sound": "coin",
+      "say": [
+        "好消息，又有人给你的项目点星啦",
+        "叮，你的项目又多了一颗星"
+      ]
+    },
+    {
+      "needs": "sources.github",
+      "when": {"source": "github", "title": "新的 fork"},
+      "type": "提醒",
+      "sound": "doorbell",
+      "say": "有人 fork 了你的项目，又多了一位同路人"
+    },
+    {
+      "needs": "sources.github",
+      "when": {"source": "github", "title": "新的 Issue 或 PR"},
+      "type": "提醒",
+      "sound": "doorbell",
+      "say": "你的项目有新的 Issue 或 PR，有空去看看吧"
+    }
+  ]
+}

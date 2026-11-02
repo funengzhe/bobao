@@ -111,8 +111,8 @@ def run():
             speaker.put(utt, cfg)
         return {"spoken": not dry, "type": utt["type"], "text": utt["text"]}
 
-    web = None
-    next_feishu, failing_since, warned = 0, None, False
+    web = shout_page = None
+    next_feishu, next_github, failing_since, warned = 0, 0, None, False
     fired = set()
     while True:
         try:
@@ -125,6 +125,13 @@ def run():
             if src["webhook"].get("enabled") and not web:
                 from .sources import webhook
                 web = webhook.serve(int(src["webhook"].get("port", 8766)), lambda: state["cfg"], handle)
+            if src["shout"].get("enabled") and not shout_page:
+                from . import shout
+                shout_page = shout.serve(lambda: state["cfg"], speaker)
+            if src["github"].get("enabled") and time.time() >= next_github:
+                from .sources import github
+                next_github = time.time() + max(5, src["github"].get("minutes", 10)) * 60
+                github.check(cfg, handle)
             for r in due_reminders(cfg, time.localtime(), fired):   # timed reminders are never muted
                 utt = reminder_utterance(cfg, r)
                 log(f"定时提醒 {r['at']} → {utt['text']}")

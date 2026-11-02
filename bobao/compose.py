@@ -10,7 +10,7 @@ recorded separately and stitched at play time.
 import random
 import re
 
-from .config import voice_for
+from .config import needed, voice_for
 from .numbers import UNITS, money, amount_of
 
 WHOLE_LIMIT = 40   # a template with at most this many fillings is recorded sentence by sentence
@@ -122,7 +122,7 @@ def contexts(cfg, kind):
     names = list(cfg["platforms"])
     out = []
     for r in cfg["rules"]:
-        if r.get("type") == kind and not r.get("skip"):
+        if r.get("type") == kind and not r.get("skip") and needed(cfg, r):
             say = r.get("say")
             out.append(([r["platform"]] if r.get("platform") else names + [""], r.get("name") or "",
                         ([say] if isinstance(say, str) else say) if say else None))

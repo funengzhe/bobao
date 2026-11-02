@@ -15,6 +15,16 @@
                                   connect your 飞书播报 bot; the App Secret is read from
                                   stdin (pbpaste | bobao feishu login ...) or asked hidden
   bobao feishu groups             the groups the bot was added to
+  bobao agent install claude|codex
+                                  announce when Claude Code / Codex finish or wait for you
+  bobao github add owner/repo | remove owner/repo | list
+                                  announce new stars, forks and issues of your repos
+
+  bobao clip make "欢迎来我家玩" [--voice 安然] [--name 欢迎] [--yes]
+                                  a line in any voice, saved to share (mp3 + mp4 on the Desktop)
+  bobao clip list | play 名字 | remove 名字
+  bobao shout on [--voice 安然 --budget 2] | off | link
+                                  the 喊话 page: friends on your Wi-Fi scan, type, this Mac says it
 
   bobao voices [--all]            recommended voices (--all: every RooYun voice, yours too)
   bobao rooyun login              connect your RooYun account
@@ -248,6 +258,78 @@ def cmd_voice(a):
     print(f"录好 {done} 句" + (f"，{failed} 句没录成（重跑同一条命令补录）" if failed else ""))
     if pending and not failed:
         switch_voice(pending, picked)
+
+
+def cmd_agent(a):
+    from . import agents
+    if a.action == "install":
+        if a.which not in ("claude", "codex"):
+            raise SystemExit("用法：bobao agent install claude 或 codex")
+        print(agents.install(a.which))
+        print("记得 bobao install 让后台在运行；试一下：bobao send 智能体完成 --channel \"Claude Code\"")
+        return
+    agents.hook([a.action, a.which or ""] + list(a.rest))   # called by the hooks themselves
+
+
+def cmd_github(a):
+    user = config.read_json(paths.CONFIG, {}) or {}
+    gh = user.setdefault("sources", {}).setdefault("github", {})
+    repos = gh.setdefault("repos", [])
+    if a.action in ("add", "remove"):
+        repo = (a.repo or "").replace("https://github.com/", "").strip("/")
+        if repo.count("/") != 1:
+            raise SystemExit("用法：bobao github add 用户名/仓库名")
+        if a.action == "add" and repo not in repos:
+            repos.append(repo)
+        if a.action == "remove" and repo in repos:
+            repos.remove(repo)
+        gh["enabled"] = bool(repos)
+        config.save_user(user)
+    print("在看的仓库：" + ("、".join(repos) or "还没有") + "（每 10 分钟看一次，有新的 star、fork、Issue 就播报）")
+
+
+def cmd_clip(a):
+    from . import share
+    if a.action == "make":
+        if not a.text:
+            raise SystemExit('用法：bobao clip make "想说的话" --voice 安然')
+        share.make(a.text, a.voice, a.name, a.yes, catalog())
+    elif a.action == "list":
+        items = share.load()
+        for c in items:
+            print(f"  {c['name']:12} {c.get('voiceName', ''):6} {c['text']}" + ("" if c.get("file") else "（还没生成）"))
+        print("" if items else '还没有。做一句：bobao clip make "欢迎来我家玩" --voice 安然')
+    elif a.action in ("play", "remove"):
+        c = share.find(a.text or "")
+        if not c:
+            raise SystemExit(f"没有叫「{a.text}」的，看看 bobao clip list")
+        if a.action == "play":
+            play_files(c.get("file"))
+        else:
+            share.remove(c["name"])
+            print(f"删掉了「{c['name']}」（桌面上的副本留着）")
+
+
+def cmd_shout(a):
+    from . import shout
+    if a.action == "off":
+        shout.turn_off()
+        print("喊话页关了")
+        return
+    voice = a.voice and next((v["id"] for v in catalog() if a.voice in (v["name"], v["id"])), a.voice)
+    sh = shout.turn_on(voice, a.budget) if a.action == "on" else config.load()["sources"]["shout"]
+    if not sh.get("enabled"):
+        raise SystemExit("喊话页没开：bobao shout on")
+    urls = shout.links(sh.get("port", 8769), sh["token"])
+    print("喊话页（手机和这台电脑连同一个 Wi-Fi）：\n  " + "\n  ".join(urls))
+    if sh.get("voice") and sh.get("budget"):
+        named = next((v["name"] for v in catalog() if v["id"] == sh["voice"]), sh["voice"])
+        print(f"打的字用 {named} 念，每天最多花 {sh['budget']} 积分，超了改用电脑声音")
+    else:
+        print("打的字用电脑自带的声音念，免费；你做好的句子（bobao clip）是页面上的按钮")
+    print("后台要在运行（bobao install）；第一次打开时 macOS 可能问是否允许 python3 接受连接，点允许")
+    if not a.no_open:
+        subprocess.run(["/usr/bin/open", shout.qr_page(urls)])
 
 
 def cmd_sounds(a):
@@ -695,6 +777,24 @@ def main(argv=None):
     s.add_argument("--platform")
     s.add_argument("--channel")
     s.add_argument("--dry", action="store_true")
+    ag = sub.add_parser("agent")
+    ag.add_argument("action", help="install，或钩子自己用的 claude / codex")
+    ag.add_argument("which", nargs="?")
+    ag.add_argument("rest", nargs="*")
+    gh = sub.add_parser("github")
+    gh.add_argument("action", choices=["add", "remove", "list"])
+    gh.add_argument("repo", nargs="?")
+    cl = sub.add_parser("clip")
+    cl.add_argument("action", choices=["make", "list", "play", "remove"])
+    cl.add_argument("text", nargs="?", help="make：要说的话；play、remove：名字")
+    cl.add_argument("--voice", help="音色名字或 RooYun 音色 id")
+    cl.add_argument("--name", help="起个名字，默认取前几个字")
+    cl.add_argument("--yes", action="store_true")
+    sh = sub.add_parser("shout")
+    sh.add_argument("action", choices=["on", "off", "link"])
+    sh.add_argument("--voice", help="打的字用这个 RooYun 音色念（要配 --budget）")
+    sh.add_argument("--budget", type=float, help="每天最多花多少积分")
+    sh.add_argument("--no-open", action="store_true")
     ry = sub.add_parser("rooyun")
     ry.add_argument("action", choices=["login", "me"])
     v = sub.add_parser("voice")
@@ -724,7 +824,8 @@ def main(argv=None):
     {"init": cmd_init, "install": cmd_install, "uninstall": cmd_uninstall, "status": cmd_status, "packs": cmd_packs,
      "voices": cmd_voices, "sounds": cmd_sounds, "test": cmd_test, "replay": cmd_replay, "send": cmd_send,
      "rooyun": cmd_rooyun, "voice": cmd_voice, "feishu": cmd_feishu, "export": cmd_export,
-     "import": cmd_import, "remind": cmd_remind, "notifications": cmd_notifications}[a.cmd](a)
+     "import": cmd_import, "remind": cmd_remind, "notifications": cmd_notifications, "agent": cmd_agent,
+     "github": cmd_github, "clip": cmd_clip, "shout": cmd_shout}[a.cmd](a)
 
 
 if __name__ == "__main__":

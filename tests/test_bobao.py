@@ -145,7 +145,8 @@ class Scenes(unittest.TestCase):
     def test_scene_rules_and_reminders_are_recorded(self):
         """Every scene rule fires on its own example and says something already planned."""
         for name in config.list_packs("scenes"):
-            cfg = config.load({"scenes": [name], "engine": "rooyun", "schedule": {}})
+            cfg = config.load({"scenes": [name], "engine": "rooyun", "schedule": {},   # Bobao's own rules too
+                               "agents": {"enabled": True}, "sources": {"github": {"enabled": True}}})
             lib = library(cfg)
             spoken = [r for r in cfg["rules"] if not r.get("skip") and cfg["types"].get(r["type"], {}).get("enabled") is not False]
             for i, rule in enumerate(spoken):
@@ -255,3 +256,79 @@ class FeishuBot(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Agents(unittest.TestCase):
+    def test_long_turn_speaks_short_one_does_not(self):
+        from bobao import agents
+        cfg = config.load({})
+        agents.claude("prompt", {"session_id": "s1"}, cfg, now=1000)
+        self.assertIsNone(agents.claude("stop", {"session_id": "s1", "cwd": "/x/shop"}, cfg, now=1010))
+        agents.claude("prompt", {"session_id": "s1"}, cfg, now=2000)
+        body = agents.claude("stop", {"session_id": "s1", "cwd": "/x/shop"}, cfg, now=2100)
+        self.assertEqual(body["title"], "智能体完成")
+        self.assertEqual(body["fields"]["项目"], "shop")
+
+    def test_permission_speaks_idle_does_not(self):
+        from bobao import agents
+        cfg = config.load({})
+        self.assertIsNone(agents.claude("notify", {"message": "Claude is waiting for your input"}, cfg))
+        self.assertEqual(agents.claude("notify", {"message": "Claude needs your permission to use Bash"}, cfg)["title"],
+                         "智能体等你确认")
+        self.assertEqual(agents.codex({"type": "agent-turn-complete", "cwd": "/a/b"})["title"], "智能体完成")
+
+    def test_spoken_once_turned_on_recorded_only_then(self):
+        on = config.load({"agents": {"enabled": True}})
+        utt, why = daemon.decide(Event("webhook", "Claude Code", "智能体完成", bot=True), on, dry=True)
+        self.assertTrue(utt and "智能体" in utt["text"] or "任务" in utt["text"], why)
+        said = lambda cfg: [t for e in compose.plan(cfg).values() for t in e["phrases"]]
+        self.assertTrue(any("智能体" in t for t in said(on)))
+        self.assertFalse(any("智能体" in t or "点星" in t for t in said(config.load({}))))
+
+
+class GitHub(unittest.TestCase):
+    def test_first_look_is_silent_then_increases_speak(self):
+        from bobao.sources import github
+        seen = {}
+        self.assertEqual(github.changes("me/p", {"stargazers_count": 3, "forks_count": 1, "open_issues_count": 0}, seen), [])
+        evs = github.changes("me/p", {"stargazers_count": 5, "forks_count": 1, "open_issues_count": 0}, seen)
+        self.assertEqual([e.title for e in evs], ["新的 star"])
+        cfg = config.load({"sources": {"github": {"enabled": True}}})
+        utt, why = daemon.decide(evs[0], cfg, dry=True)
+        self.assertTrue(utt and "星" in utt["text"], why)
+
+
+class Shout(unittest.TestCase):
+    def test_page_needs_token_and_speaks(self):
+        import json as j
+        import queue
+        import socket
+        import urllib.error
+        import urllib.request
+        from bobao import shout
+        s = socket.socket()
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+        s.close()
+        cfg = config.load({"sources": {"shout": {"enabled": True, "token": "tok", "port": port}}})
+
+        class FakeSpeaker:
+            q = queue.Queue()
+
+            def put(self, utt, c):
+                self.q.put(utt)
+        sp = FakeSpeaker()
+        server = shout.serve(lambda: cfg, sp)
+        try:
+            with self.assertRaises(urllib.error.HTTPError):
+                urllib.request.urlopen(f"http://127.0.0.1:{port}/s/wrong")
+            self.assertIn("喊一句", urllib.request.urlopen(f"http://127.0.0.1:{port}/s/tok").read().decode())
+            req = urllib.request.Request(f"http://127.0.0.1:{port}/s/tok/say", j.dumps({"text": "开饭啦"}).encode(),
+                                         {"content-type": "application/json"})
+            self.assertTrue(j.load(urllib.request.urlopen(req))["ok"])
+            self.assertEqual(sp.q.get_nowait()["text"], "开饭啦")
+            with self.assertRaises(urllib.error.HTTPError) as e:   # one line per 3 seconds
+                urllib.request.urlopen(req)
+            self.assertEqual(e.exception.code, 429)
+        finally:
+            server.shutdown()

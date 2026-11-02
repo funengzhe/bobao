@@ -50,6 +50,9 @@ def play(utt, cfg):
     s = sound_path(utt.get("sound"))
     if s:
         subprocess.run(["/usr/bin/afplay", s])
+    if utt.get("file"):   # a ready-made recording (喊话, clips)
+        subprocess.run(["/usr/bin/afplay", utt["file"]])
+        return
     if render_wav(utt, cfg, paths.LAST_WAV):
         subprocess.run(["/usr/bin/afplay", paths.LAST_WAV])
         return

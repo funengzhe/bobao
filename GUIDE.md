@@ -144,6 +144,46 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 
 请求体里可以直接带 `type`（例如 `"type": "收款"`），这样不经过规则判断。加 `"dry": true` 只返回会念什么，不出声。设置了 `sources.webhook.secret` 的话，请求要用 `X-Bobao-Secret` 请求头带上它。
 
+### 智能体干完活
+
+```bash
+bobao agent install claude    # Claude Code：加上钩子（会先备份 ~/.claude/settings.json）
+bobao agent install codex     # Codex：在 ~/.codex/config.toml 加一行 notify
+```
+
+一个回合超过 60 秒（`agents.minSeconds`），做完就念"智能体把活儿干完啦"；它要你批准命令时念"智能体在等你点头"。Bobao 没在运行时，钩子什么也不做，不影响智能体。
+
+### GitHub 项目
+
+```bash
+bobao github add 用户名/仓库名
+```
+
+每 10 分钟看一次公开数据（不用登录），有新的 star、fork、Issue 或 PR 就念。第一次只记下现在的数字。
+
+## 好玩的
+
+### 做一句能分享的
+
+```bash
+bobao clip make "欢迎来我家玩，饮料在冰箱里自己拿" --voice 安然 --name 欢迎
+```
+
+先报价（一句一般几分钱积分），确认后用 RooYun（如云）生成，放到桌面：`Bobao-欢迎.mp3`；装了 ffmpeg 的话还有 `Bobao-欢迎.mp4`，微信、朋友圈里能直接播。`bobao clip list` 看做过的，`play`、`remove` 加名字。
+
+### 让朋友来喊话
+
+```bash
+bobao shout on
+```
+
+电脑上会打开一个二维码。朋友的手机连上同一个 Wi-Fi，扫码就能打字，这台电脑马上念出来；你做过的句子也在页面上，点一下就播。适合聚会、开店、直播间。
+
+- 打的字默认用电脑自带的声音，免费、立刻念。
+- 想用好听的声音：`bobao shout on --voice 安然 --budget 2`，每句现生成，几秒后念，每天最多花 2 积分，超了改用电脑声音。
+- 每 3 秒最多一句，每句最多 60 字；地址里有一段随机口令，不在你的 Wi-Fi 里打不开。
+- `bobao shout link` 再看一次地址，`bobao shout off` 关掉。
+
 ## 搬到另一台电脑
 
 ```bash
@@ -213,6 +253,7 @@ python3 -m unittest discover tests
 | `~/.bobao/clips/` | 生成好的声音 |
 | `~/.bobao/sounds/` | 音效 |
 | `~/.bobao/bobao.log` | 日志 |
+| `~/.bobao/share/` | 你做的分享句子 |
 | `~/.bobao/recording.json` | RooYun（如云）任务记录（保证不重复扣费） |
 | `~/.rooyun/credentials.json` | RooYun（如云）登录令牌（权限 0600） |
 

@@ -164,6 +164,10 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 | "这条不用念了" | `bobao replay`（飞书群）或 `bobao test`（弹窗）找到是哪条规则，给它加 `"skip": true`，或在它的 `when` 里加 `not` |
 | "也念微信的消息" | `bobao notifications apps` 看 App id，加进 `sources.notifications.apps` |
 | "再加上生活的提醒" | `bobao init --scenes 原有的,life` |
+| "Claude Code / Codex 干完活叫我一声" | `bobao agent install claude`（或 `codex`）。会改 `~/.claude/settings.json`（先备份）或 `~/.codex/config.toml`，先告诉他要改哪个文件。短于 60 秒的回合不念，改 `agents.minSeconds` |
+| "有人给我的项目点 star 就告诉我" | `bobao github add 用户名/仓库名`，每 10 分钟看一次，新的 star、fork、Issue 都会念 |
+
+这两项用的句子只有打开后才算进 `bobao voice plan`。用 RooYun 声音的话，打开后同样要 `bobao voice quote` 报价、他同意后 `bobao voice record --yes`。
 
 改完用 `bobao test ... --play` 念给他听。用的是 RooYun（如云）声音的话，新说法要生成一次：`bobao voice quote` 报价，他同意后 `bobao voice record --yes`。
 
@@ -173,6 +177,12 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 2. `bobao rooyun me` 看有没有登录。没有的话：`bobao rooyun login`，请他在打开的 RooYun（如云）页面登录（没有账号就在那里注册）并点「授权」。Bobao 自己连 RooYun，不需要另外安装 RooYun 的 skill 或工具。
 3. `bobao voice use 安然`：报出用这个声音要生成多少句、多少积分、大约多久，以及他的可用积分。告诉他，等他同意。可用积分不够的话，请他先到 <https://www.rooyun.com/?ref=9K3XD33J&ch=github-bobao> 充值。这时设置还没变；他不想换了就 `bobao voice use --cancel`。
 4. `bobao voice record --yes`：生成。全部生成完才换成新声音，并念一句自我介绍，问他听到没有。中途断了重跑同一条命令，不会重复扣费。
+
+## 好玩的：做一句分享、让朋友来喊话
+
+- **做一句能发给别人的**（"用安然的声音说'欢迎来我家玩'"）：先 `bobao clip make "欢迎来我家玩" --voice 安然`，它只报价（一句一般几分钱积分），**把价格告诉他，等他同意**，再加 `--yes` 生成。生成好放在桌面 `Bobao-名字.mp3`，装了 ffmpeg 还有一个 `.mp4`，发微信、朋友圈用视频版。它同时会变成喊话页上的一个按钮。`bobao clip list / play / remove 名字`。
+- **让来家里、店里的朋友喊话**："有人来玩，我想让他们往电脑上发消息念出来"：`bobao shout on`。它打开一个二维码页面，朋友用手机（连同一个 Wi-Fi）扫码，打字就由这台电脑念出来，还能点他做好的句子。打的字默认用电脑自带的声音，免费。想用好听的声音念，`bobao shout on --voice 安然 --budget 2`：每句现生成，会花他的积分，**先说清楚每句大约多少（`bobao clip make` 报一次价就知道），以及每天最多花 `--budget` 积分，他同意了才加这两个参数**。关掉：`bobao shout off`。
+- 喊话页只在家里的 Wi-Fi 里能打开，地址里有一段随机口令。macOS 第一次可能问是否允许 python3 接受连接，请他点允许。
 
 ## 飞书（用飞书群时）
 

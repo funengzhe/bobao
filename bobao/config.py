@@ -37,9 +37,26 @@ DEFAULTS = {
         "feishu": {"enabled": False, "chats": [], "botsOnly": True},   # + profile: the 飞书播报 bot's lark-cli profile
         "webhook": {"enabled": True, "port": 8766, "secret": ""},
         "notifications": {"enabled": False, "apps": []},
+        "github": {"enabled": False, "repos": [], "minutes": 10},      # new stars, forks, issues
+        "shout": {"enabled": False, "port": 8769, "token": ""},         # the 喊话 page for phones on your Wi-Fi
     },
+    "agents": {"enabled": False, "minSeconds": 60},  # Claude Code / Codex hooks (bobao agent install)
     "rooyun": {"base": "https://www.rooyun.com", "model": "speech-2.8-hd"},
 }
+
+
+ALWAYS_PACKS = ["bobao"]   # Bobao's own messages (agents, GitHub), in every setup
+
+
+def needed(cfg, rule):
+    """A rule with "needs": "agents" or "sources.github" only counts when that is turned on,
+    so its sentences are recorded only for people who use it."""
+    node = cfg
+    for part in (rule.get("needs") or "").split("."):
+        if not part:
+            return True
+        node = (node or {}).get(part)
+    return bool((node or {}).get("enabled"))
 
 
 def read_json(path, default=None):
@@ -143,7 +160,7 @@ def load(user=None):
 
     # Rule packs, in the order listed; the user's own rules go first so they win.
     rules, platforms, aliases, values, catch = list(user.get("rules", [])), {}, {}, {}, {}
-    for name in cfg["rulePacks"]:
+    for name in cfg["rulePacks"] + [p for p in ALWAYS_PACKS if p not in cfg["rulePacks"]]:
         pack = read_json(pack_path("rules", name), {})
         rules += pack.get("rules", [])
         platforms.update(pack.get("platforms", {}))
