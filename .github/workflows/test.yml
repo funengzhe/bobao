@@ -1,0 +1,35 @@
+name: test
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Windows smoke test
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $env:BOBAO_HOME = "$env:RUNNER_TEMP\bobao-home"
+          $env:APPDATA = "$env:RUNNER_TEMP\appdata"
+          New-Item -ItemType Directory -Force "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup" | Out-Null
+          python -c "from bobao import system; print(system.voices())"
+          python -c "from bobao import config, system; system.speak('你好，Bobao 在 Windows 上念话了', config.load({}), out='speech.wav')"
+          if ((Get-Item speech.wav).Length -lt 10000) { throw 'speech.wav is empty' }
+          python -m bobao init --scenes dev --sources webhook,remind --name 你 --yes
+          python -m bobao install --quiet
+          Start-Sleep -Seconds 5
+          python -m bobao status
+          python -m bobao send 智能体完成 --channel "Claude Code" --dry
+          python -m bobao uninstall
+          if (Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Bobao.lnk") { throw 'shortcut left behind' }

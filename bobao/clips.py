@@ -10,10 +10,9 @@ import hashlib
 import json
 import os
 import re
-import subprocess
 import wave
 
-from . import paths
+from . import paths, system
 from .numbers import NUMBER_CHARS, spoken_digits
 
 INDEX = os.path.join(paths.CLIPS, "index.json")
@@ -126,8 +125,7 @@ def add(index, vkey, text, src):
     paths.ensure()
     name = hashlib.sha1(f"{vkey}|{key(text)}".encode()).hexdigest()[:16] + ".wav"
     dest = os.path.join(paths.CLIPS, name)
-    subprocess.run(["/usr/bin/afconvert", "-f", "WAVE", "-d", "LEI16@24000", "-c", "1", src, dest],
-                   check=True, capture_output=True)
+    system.to_clip_wav(src, dest)
     trim(dest)
     index.setdefault(vkey, {})[key(text)] = name
     return dest

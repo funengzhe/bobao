@@ -58,7 +58,7 @@ import sys
 import urllib.request
 import zipfile
 
-from . import clips, compose, config, daemon, paths, sounds
+from . import clips, compose, config, daemon, paths, sounds, system
 from .events import Event
 
 
@@ -164,8 +164,7 @@ def cmd_voices(a):
 
 def play_files(*files):
     for f in files:
-        if f and os.path.exists(f):
-            subprocess.run(["/usr/bin/afplay", f])
+        system.play(f)
 
 
 def cmd_rooyun(a):
@@ -329,16 +328,22 @@ def cmd_shout(a):
         print("打的字用电脑自带的声音念，免费；你做好的句子（bobao clip）是页面上的按钮")
     print("后台要在运行（bobao install）；第一次打开时 macOS 可能问是否允许 python3 接受连接，点允许")
     if not a.no_open:
-        subprocess.run(["/usr/bin/open", shout.qr_page(urls)])
+        system.open_url(shout.qr_page(urls))
 
 
 def cmd_sounds(a):
     print("已生成音效：" + "、".join(sounds.make_all()) + f"（在 {paths.SOUNDS}）")
 
 
-def cmd_status(a):
+def running():
+    if system.WINDOWS:
+        return bool(system.running_pid())
     r = subprocess.run(["launchctl", "print", f"gui/{os.getuid()}/{AGENT}"], capture_output=True, text=True)
-    print("后台：" + ("运行中" if "state = running" in r.stdout else "没有运行（bobao install 安装）"))
+    return "state = running" in r.stdout
+
+
+def cmd_status(a):
+    print("后台：" + ("运行中" if running() else "没有运行（bobao install 安装）"))
     try:
         with open(paths.LOG, encoding="utf-8") as f:
             print("".join(f.readlines()[-15:]))
@@ -681,6 +686,8 @@ def cmd_install(a):
         shutil.copytree(os.path.join(here, d), os.path.join(paths.APP, d), ignore=shutil.ignore_patterns("__pycache__"))
     if not os.listdir(paths.SOUNDS):
         sounds.make_all()
+    if system.WINDOWS:
+        return install_windows(a, here)
     load_agent(AGENT, plist(AGENT, ["/usr/bin/python3", "-m", "bobao", "run"], paths.LOG))
     print("后台已启动，开机自动运行。日志：" + paths.LOG)
     cfg = config.load()
@@ -705,7 +712,41 @@ def cmd_install(a):
         play_files(os.path.join(paths.SOUNDS, "doorbell.wav"), os.path.join(here, "assets", "welcome.mp3"))
 
 
+# Windows: the background runs from a copy too, started by a shortcut in the Startup folder.
+RUN_PYW = """import os, sys
+here = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, here)
+os.environ.setdefault("BOBAO_HOME", {home!r})
+sys.stdout = sys.stderr = open(os.path.join(os.environ["BOBAO_HOME"], "bobao.log"), "a", encoding="utf-8", buffering=1)
+from bobao import daemon
+daemon.run()
+"""
+CLI_PY = """import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+os.environ.setdefault("BOBAO_HOME", {home!r})
+from bobao.__main__ import main
+main()
+"""
+
+
+def install_windows(a, here):
+    run = os.path.join(paths.APP, "bobao_run.pyw")
+    for path, text in ((run, RUN_PYW), (os.path.join(paths.APP, "bobao_cli.py"), CLI_PY)):
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text.format(home=paths.HOME))
+    lnk = system.install_startup(run, paths.APP)
+    print(f"后台已启动，登录 Windows 时自动运行（{lnk}）。日志：{paths.LOG}")
+    if config.load()["sources"]["notifications"].get("enabled"):
+        print("提示：Windows 上暂时还读不了其他 App 的弹窗，请用飞书机器人、Webhook 或定时提醒")
+    if not a.quiet:
+        play_files(os.path.join(paths.SOUNDS, "doorbell.wav"), os.path.join(here, "assets", "welcome.mp3"))
+
+
 def cmd_uninstall(a):
+    if system.WINDOWS:
+        system.remove_startup()
+        print(f"已停止并移除开机启动。设置和录音还在 {paths.HOME}，不要了可以整个删掉。")
+        return
     for label in (AGENT, HELPER):
         subprocess.run(["launchctl", "bootout", f"gui/{os.getuid()}/{label}"], capture_output=True)
         try:
@@ -816,7 +857,7 @@ def main(argv=None):
         server = ThreadingHTTPServer(("127.0.0.1", a.port), functools.partial(SimpleHTTPRequestHandler, directory=docs))
         print(f"试听页面：http://127.0.0.1:{a.port}")
         if not a.no_open:
-            subprocess.run(["/usr/bin/open", f"http://127.0.0.1:{a.port}"])
+            system.open_url(f"http://127.0.0.1:{a.port}")
         return server.serve_forever()
     if a.cmd == "review":
         from . import review

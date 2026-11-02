@@ -14,6 +14,7 @@ SPOOL = os.path.join(HOME, "notifications.jsonl") # written by the notification 
 RECORDING = os.path.join(HOME, "recording.json")  # RooYun requestIds, so a retry never pays twice
 APP = os.path.join(HOME, "app")                   # installed copy the agent runs from
 LAST_WAV = os.path.join(HOME, "last.wav")
+PID = os.path.join(HOME, "bobao.pid")             # the running background process (Windows)
 
 PACKS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "packs")
 

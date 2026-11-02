@@ -5,10 +5,11 @@ matched event is logged with its reason (夜间不播, 冷却中, 过期未播, 
 not announced can always be traced.
 """
 
+import os
 import random
 import time
 
-from . import config, compose, events
+from . import config, compose, events, paths
 from .log import log
 from .sources import notifications
 from .sources.feishu import Feishu, poll_seconds
@@ -96,6 +97,9 @@ def run():
     speaker = Speaker()
     feishu, spool = Feishu(), notifications.Spool()
     state = {"cfg": config.load()}
+    paths.ensure()
+    with open(paths.PID, "w") as f:
+        f.write(str(os.getpid()))
     log("Bobao 开始运行")
 
     def handle(ev, dry=False):

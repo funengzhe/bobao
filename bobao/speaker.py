@@ -1,12 +1,11 @@
 """Plays announcements one at a time: the sound effect, then the stitched recording, or
-the Mac's own voice when the engine is "mac" or a sentence has no recording yet."""
+the computer's own voice when the engine is "mac" or a sentence has no recording yet."""
 
 import os
 import queue
-import subprocess
 import threading
 
-from . import clips, paths
+from . import clips, paths, system
 from .log import log
 
 SYSTEM_SOUNDS = "/System/Library/Sounds"
@@ -49,17 +48,17 @@ def render_wav(utt, cfg, path):
 def play(utt, cfg):
     s = sound_path(utt.get("sound"))
     if s:
-        subprocess.run(["/usr/bin/afplay", s])
+        system.play(s)
     if utt.get("file"):   # a ready-made recording (喊话, clips)
-        subprocess.run(["/usr/bin/afplay", utt["file"]])
+        system.play(utt["file"])
         return
     if render_wav(utt, cfg, paths.LAST_WAV):
-        subprocess.run(["/usr/bin/afplay", paths.LAST_WAV])
+        system.play(paths.LAST_WAV)
         return
     text = "，".join(t for _, t in utt["segments"])
     if cfg["engine"] == "rooyun":
         note_pending(utt["text"])
-    subprocess.run(["/usr/bin/say", "-v", cfg["macVoice"], "-r", str(cfg["rate"]), text])
+    system.speak(text, cfg)
 
 
 class Speaker:

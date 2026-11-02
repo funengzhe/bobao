@@ -37,7 +37,7 @@ def lark_cli(cfg):
 
 def env():
     extra = [f"{HOME}/.local/node/current/bin", "/opt/homebrew/bin", "/usr/local/bin"]
-    return dict(os.environ, PATH=":".join(extra + [os.environ.get("PATH", "/usr/bin:/bin")]))
+    return dict(os.environ, PATH=os.pathsep.join(extra + [os.environ.get("PATH", "/usr/bin:/bin")]))
 
 
 def identity(src):

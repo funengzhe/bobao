@@ -18,7 +18,7 @@ import subprocess
 import time
 import uuid
 
-from . import config, paths
+from . import config, paths, system
 
 DIR = os.path.join(paths.HOME, "share")
 INDEX = os.path.join(DIR, "index.json")
@@ -85,7 +85,7 @@ def generate(client, model, params, request_id, dest):
 
 def to_video(mp3, mp4):
     """The Bobao card with the line as sound: chats that won't play an mp3 inline play this."""
-    ffmpeg = shutil.which("ffmpeg") or next((p for p in ("/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg") if os.path.exists(p)), None)
+    ffmpeg = system.ffmpeg()
     if not ffmpeg or not os.path.exists(CARD):
         return False
     r = subprocess.run([ffmpeg, "-y", "-loglevel", "error", "-loop", "1", "-i", CARD, "-i", mp3, "-shortest",
@@ -136,7 +136,7 @@ def make(text, voice_name, name, yes, catalog, out=print, ask=input):
     out(f"做好了：{desk}.mp3" + (f"\n      视频版：{desk}.mp4（发微信、朋友圈、抖音用这个）" if video else
                                    "\n（装了 ffmpeg 的话还会出一个视频版，方便在微信里直接播放）"))
     out("它也会出现在喊话页上，点一下就在这台电脑上播出来（bobao shout on）")
-    subprocess.run(["/usr/bin/afplay", mp3])
+    system.play(mp3)
     return old
 
 

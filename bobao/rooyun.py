@@ -11,14 +11,13 @@ twice for the same phrase.
 
 import json
 import os
-import subprocess
 import tempfile
 import time
 import urllib.error
 import urllib.request
 import uuid
 
-from . import clips, paths
+from . import clips, paths, system
 from .config import read_json
 
 CRED_DIR = os.path.expanduser("~/.rooyun")
@@ -143,7 +142,7 @@ def login(base, out=print):
     url = d["verificationUrl"]
     out(f"请在浏览器里登录 RooYun（如云）并点「授权」：{url}")
     if url.startswith(base):
-        subprocess.run(["/usr/bin/open", url])
+        system.open_url(url)
     deadline = time.time() + 600
     while time.time() < deadline:
         time.sleep(max(3, d.get("intervalSec", 3)))

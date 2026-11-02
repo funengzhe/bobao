@@ -14,7 +14,7 @@ import tempfile
 import wave
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from . import clips, compose, config, paths, speaker
+from . import clips, compose, config, paths, speaker, system
 from .config import voice_key
 from .events import TYPES, Event, Match
 from .log import log
@@ -99,7 +99,7 @@ def join(files, out):
         conv = []
         for i, f in enumerate(files):
             c = os.path.join(tmp, f"{i}.wav")
-            os.system(f"/usr/bin/afconvert -f WAVE -d LEI16@24000 -c 1 '{f}' '{c}' >/dev/null 2>&1")
+            system.to_clip_wav(f, c)
             conv.append(c)
         with wave.open(out, "wb") as w:
             for i, c in enumerate(conv):
@@ -189,5 +189,5 @@ def serve(port=8767, open_browser=True):
     recorded = sum(1 for i in items if i["recorded"])
     log(f"审听页面：http://127.0.0.1:{port}  （{len(items)} 句，已录 {recorded} 句）")
     if open_browser:
-        os.system(f"/usr/bin/open http://127.0.0.1:{port}")
+        system.open_url(f"http://127.0.0.1:{port}")
     server.serve_forever()

@@ -89,8 +89,16 @@ def hook(argv):
         pass
 
 
+def windows_command():
+    """[python, bobao_cli.py]: on Windows, hooks run Python on the installed copy directly."""
+    py = sys.executable.replace("\\", "/")
+    return [py, os.path.join(paths.APP, "bobao_cli.py").replace("\\", "/")]
+
+
 def command():
     """The bobao launcher hooks call: the installed copy if there is one (it never moves)."""
+    if os.name == "nt":
+        return " ".join(f'"{p}"' for p in windows_command())
     installed = os.path.join(paths.APP, "bin", "bobao")
     here = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "bin", "bobao")
     return installed if os.path.exists(installed) else here
@@ -101,7 +109,7 @@ def install_claude():
     hooks = settings.setdefault("hooks", {})
     added = []
     for event_name, kind in (("UserPromptSubmit", "prompt"), ("Stop", "stop"), ("Notification", "notify")):
-        cmd = f"{shlex.quote(command())} agent claude {kind}"
+        cmd = f"{command() if os.name == 'nt' else shlex.quote(command())} agent claude {kind}"
         entries = hooks.setdefault(event_name, [])
         if any("agent claude" in h.get("command", "") for e in entries for h in e.get("hooks", [])):
             continue
@@ -118,7 +126,8 @@ def install_claude():
 
 
 def install_codex():
-    line = f'notify = ["{command()}", "agent", "codex"]'
+    parts = windows_command() if os.name == "nt" else [command()]
+    line = "notify = [" + ", ".join(json.dumps(p) for p in parts + ["agent", "codex"]) + "]"
     text = open(CODEX_CONFIG, encoding="utf-8").read() if os.path.exists(CODEX_CONFIG) else ""
     if "agent\", \"codex\"" in text:
         return "Codex 已经接好了"
