@@ -85,16 +85,16 @@ git -C ~/bobao fetch origin && git -C ~/bobao reset --hard origin/main
 
 EXAMPLES = {
     "zh": ["帮我装上 Bobao，到账了就念金额，超过一千加一句「大单来啦」", "你干完活叫我一声，就说「Claude 交作业啦，过来看看」",
-           "Claude 有问题要问我、等我批准的时候也告诉我", "工作日六点提醒我下班，晚上十一点以后别出声",
-           "放几个好听的声音给我听听，我挑一个"],
+           "工作日六点提醒我下班，晚上十一点以后别出声"],
     "en": ["Install Bobao and read out every payment, with a cheer for orders over 1,000",
            "Call me when you finish a task: \"Claude's homework is done, come take a look\"",
-           "Tell me when Claude has a question or needs my approval", "Remind me to leave at six on workdays, and stay quiet after 11 pm",
-           "Play me a few voices so I can pick one"],
+           "Remind me to leave at six on workdays, and stay quiet after 11 pm"],
 }
 
 
 def examples_yaml(ex):
+    if any(len(ex[k]) > 3 for k in ("zh", "en")):
+        raise SystemExit("WorkBuddy 每种语言最多 3 个示例")
     return "".join(f"examples_{k}:\n" + "".join(f"  - {json.dumps(x, ensure_ascii=False)}\n" for x in ex[k]) for k in ("zh", "en"))
 
 
