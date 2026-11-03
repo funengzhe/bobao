@@ -100,6 +100,8 @@ h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.01em;margin:0 0 10px;font-w
 .why b{display:block;font-size:18px;margin:10px 0 6px}
 .why p{margin:0;color:var(--mute);font-size:15px}
 .why .e{font-size:26px}
+.why .ask{margin-top:14px;display:inline-flex;align-items:center;gap:6px;border:1px dashed color-mix(in srgb,var(--acc) 45%,var(--line));background:var(--accbg);color:var(--fg);border-radius:10px;padding:6px 10px;font-size:13.5px;text-align:left;cursor:pointer}
+.why .ask::after{content:"复制";font-size:12px;color:var(--acc);font-weight:600}
 
 /* scenes */
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
@@ -173,7 +175,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
 <body>
 <nav id="nav"><div class="wrap">
   <a class="brand" href="#"><img src="logo.svg" alt="">Bobao</a>
-  <div class="links"><a href="#scenes">示范</a><a href="#voices">声音</a><a href="#start">安装</a><a href="#faq">问答</a><a class="gh" href="https://github.com/funengzhe/bobao">GitHub</a></div>
+  <div class="links"><a href="#scenes">示范</a><a href="#play">玩法</a><a href="#voices">声音</a><a href="#start">安装</a><a href="#faq">问答</a><a class="gh" href="https://github.com/funengzhe/bobao">GitHub</a></div>
 </div></nav>
 
 <header class="hero"><div class="wrap">
@@ -215,7 +217,20 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
   <div class="lines" id="lines"></div>
 </div></section>
 
-<section id="voices" class="alt"><div class="wrap">
+<section id="play" class="alt"><div class="wrap">
+  <h2>还能这样玩</h2>
+  <p class="sub">都不用自己动手，点一下复制，发给你的智能体就行。</p>
+  <div class="why">
+    <div><span class="e">🤖</span><b>Claude 干完活叫你</b><p>跑长任务时去忙别的。做完了说"Claude 交作业啦"，有问题、等你批准、额度用完也各有一句。一个总控带一群子会话时，只在总控真正停下等你时才叫你。</p><button class="ask">你干完活叫我一声</button></div>
+    <div><span class="e">⭐</span><b>项目涨星有人报喜</b><p>你的 GitHub 项目有新的 star、fork、Issue，马上念给你听。</p><button class="ask">我的 GitHub 项目有新 star 时念给我听</button></div>
+    <div><span class="e">🎬</span><b>做一句能发出去的</b><p>任意一句话、任意一个声音，生成 mp3 和视频，发给朋友、发朋友圈。</p><button class="ask">用安然的声音做一句"欢迎来我家玩"</button></div>
+    <div><span class="e">📣</span><b>让朋友来喊话</b><p>聚会、开店的时候，朋友扫个码、打几个字，你的电脑就替他大声念出来。只在你的 Wi-Fi 里能打开。</p><button class="ask">开一下喊话</button></div>
+    <div><span class="e">⏰</span><b>定时提醒</b><p>下班、喝水、写日报、早点睡、明早的高铁，用你喜欢的声音按时提醒。</p><button class="ask">工作日六点提醒我下班</button></div>
+    <div><span class="e">👪</span><b>用家人的声音</b><p>在 RooYun（如云）克隆你自己或家人的声音，让妈妈的声音提醒你早点睡。</p><button class="ask">用我在 RooYun 做的那个声音</button></div>
+  </div>
+</div></section>
+
+<section id="voices"><div class="wrap">
   <h2>谁来念，你来挑</h2>
   <p class="sub">这里先放 22 个，每个都念了一句自我介绍。看中哪个，点「就要 TA」，把复制的话发给你的智能体。声音也能个性化定制：RooYun（如云）里有更多音色，还能用你自己的声音。</p>
   <div class="filters" id="filters"></div>
@@ -223,7 +238,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
   <p class="small">不挑也能用：默认用电脑自带的声音，免费。想换成这里的声音，用 RooYun（如云）生成一次你的全部说法，一般一两个积分，之后一直免费播。</p>
 </div></section>
 
-<section id="start"><div class="wrap">
+<section id="start" class="alt"><div class="wrap">
   <h2>让智能体帮你装</h2>
   <p class="sub">不用懂技术。Claude Code、Codex、Cursor 这类智能体都能照着说明装。目前支持 macOS。</p>
   <div class="steps">
@@ -235,7 +250,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
   <div class="first" id="first" style="margin-top:28px;margin-bottom:0"></div>
 </div></section>
 
-<section id="faq" class="alt"><div class="wrap faq">
+<section id="faq"><div class="wrap faq">
   <h2>常见问题</h2>
   <details><summary>要花钱吗？</summary><p>Bobao 免费。用电脑自带的声音完全不花钱。想用这里的好听声音，要用你自己的 RooYun（如云）账号生成一次你的全部说法，一般一两个积分；生成前智能体会先告诉你价格，你同意才生成。生成好存在你的电脑上，以后每次播报都不再花钱，断网也能念。</p></details>
   <details><summary>我的消息会被上传吗？</summary><p>不会。消息只在你自己的电脑上处理。只有生成声音的那一次，要念的句子（不是你的消息）会发给 RooYun（如云）。这个试听页用 GoatCounter 统计访问量，不用 cookie，也不记录你是谁。</p></details>
@@ -391,6 +406,8 @@ fetch("samples.json").then(r => r.json()).then(S => {
   $("first").innerHTML = `<button class="pbtn" aria-label="播放">${PLAY}</button><div class="text"><div class="k">装好时你会听到</div>${esc(S.welcome.text)}</div>`;
   $("first").querySelector(".pbtn").onclick = () => play($("first"), S.welcome.chime, () => play($("first"), S.welcome.file));
 });
+document.querySelectorAll(".why .ask").forEach(b => b.onclick = () =>
+  track("玩法-" + b.textContent) || copy(b.textContent, `已复制「${b.textContent}」，发给你的智能体就行`));
 $("copyPrompt").onclick = () => track("复制安装") || copy($("promptText").textContent, "已复制，发给你的智能体就行");
 </script>
 </body>
