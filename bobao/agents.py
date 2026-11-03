@@ -14,7 +14,9 @@ hook files. The agent that installs Bobao wires its own mechanism to `bobao agen
 Each becomes a message to the local webhook ("智能体完成", "智能体等你确认", and from Claude
 Code also how long it took, a question for you, an API error, the quota back); the rules
 in packs/rules/bobao.json say what is spoken. A Claude Code turn shorter than
-agents.minSeconds stays silent, so quick answers don't talk. A hook never fails or
+agents.minSeconds stays silent, so quick answers don't talk. So does one in a session another
+session started (its report goes to that one), and one whose own started sessions are still
+working: the app wakes it again when they finish, and that last stop is the one you hear. A hook never fails or
 prints: if Bobao isn't running, the agent carries on as if nothing happened.
 """
 
@@ -26,6 +28,7 @@ import shutil
 import sys
 import time
 import urllib.request
+from datetime import datetime
 
 from . import config, paths
 
@@ -56,11 +59,101 @@ def event(agent, title, cwd):
     return {"channel": agent, "title": title, "fields": {"项目": project(cwd)}}
 
 
+# A turn the app starts itself (a child session's report, CI, a background task finishing)
+# continues the work you asked for: its length counts from your last own message.
+AUTO = re.compile(r"\s*(Another Claude session sent a message|<cross-session|<side-sessions-event>|"
+                  r"<ci-monitor-event>|<task-notification>)")
+REMINDER = re.compile(r"\s*<system-reminder>.*?</system-reminder>", re.S)   # the app may put one first
+STRETCH = 3 * 3600   # unless that message is this old: then it is new work
 HOLD = 20   # seconds a "done" waits: another session (or the app) often picks up right away
 LONG, VERY_LONG = 10 * 60, 30 * 60   # a turn this long gets "忙了好一阵" / "熬了好久"
 NEEDS_YOU = ("elicitation_dialog", "elicitation_url_dialog", "agent_needs_input")
 QUOTA = ("rate_limit", "billing_error", "account_on_hold")
 LOGIN = ("authentication_failed", "oauth_org_not_allowed", "cloud_credential_error")
+
+
+LINKED = re.compile(r"Linked sessions now \(status, not an instruction\):(.*?)(?:\. To message|</system-reminder>)", re.S)
+SCAN = 64 << 20   # read at most this much of a transcript, from the end
+
+
+def stamp(e):
+    try:
+        return datetime.fromisoformat(e["timestamp"].replace("Z", "+00:00")).timestamp()
+    except Exception:
+        return None
+
+
+def prompts_of(path):
+    """From a Claude Code transcript, newest first: (who started the turn, when) for each turn,
+    whether a session this one started is still working, and who started its very first turn.
+    who: human, sdk (another session started this one), peer (another session's message),
+    task_notification, scheduled. None when the transcript can't be read."""
+    try:
+        size = os.path.getsize(path)
+        with open(path, "rb") as f:
+            first = None
+            for line in f.read(1 << 16).splitlines():
+                e = loads(line)
+                if e and is_prompt(e):
+                    first = e.get("turnOrigin")
+                    break
+            turns, working, linked, tail, pos = [], False, None, b"", size
+            while pos > 0 and size - pos < SCAN:
+                step = min(1 << 20, pos)
+                pos -= step
+                f.seek(pos)
+                lines = (f.read(step) + tail).split(b"\n")
+                tail = lines.pop(0) if pos > 0 else b""
+                for line in reversed(lines):
+                    if b'"turnOrigin"' not in line and b'"tool_use"' not in line:
+                        continue
+                    e = loads(line)
+                    if not e:
+                        continue
+                    if linked is None and e.get("type") == "assistant":
+                        for c in (e.get("message") or {}).get("content") or []:
+                            if isinstance(c, dict) and c.get("type") == "tool_use" and wakes(c.get("name", ""), c.get("input") or {}):
+                                working = True   # started or messaged after the last status note
+                    if not is_prompt(e):
+                        continue
+                    turns.append((e.get("turnOrigin"), stamp(e)))
+                    if linked is None:
+                        m = LINKED.search(text_of(e))
+                        if m:
+                            linked = m.group(1)
+                            working = working or bool(re.search(r"\((working|starting)", linked))
+                    asked = [w for w, _ in turns if w != "task_notification"]
+                    if "human" in asked or (first == "sdk" and asked):   # older notes are stale
+                        return {"first": first, "turns": turns, "working": working}
+            return {"first": first, "turns": turns, "working": working}
+    except Exception:
+        return None
+
+
+def wakes(name, args):
+    """This tool call sets another session working: starting one, or messaging it."""
+    if name.endswith("start_session"):
+        return args.get("initiation") == "user_asked" or bool(args.get("proposal_id"))
+    return name in ("SendMessage", "mcp__ccd_session_mgmt__send_message") and "local_" in str(args)
+
+
+def loads(line):
+    try:
+        e = json.loads(line)
+        return e if isinstance(e, dict) else None
+    except Exception:
+        return None
+
+
+def text_of(e):
+    c = (e.get("message") or {}).get("content")
+    return c if isinstance(c, str) else " ".join(x.get("text", "") for x in c or [] if isinstance(x, dict))
+
+
+def is_prompt(e):
+    c = (e.get("message") or {}).get("content")
+    return (e.get("type") == "user" and bool(e.get("turnOrigin"))
+            and not (isinstance(c, list) and any(isinstance(x, dict) and x.get("type") == "tool_result" for x in c)))
 
 
 def asks(text):
@@ -78,22 +171,37 @@ def claude(kind, data, cfg, now=None):
     sid = data.get("session_id") or ""
     cwd = data.get("cwd")
     if kind == "prompt":   # also turns the app starts itself, e.g. a child session's report
-        turns[sid] = now
+        prompt = said = data.get("prompt") or ""
+        while REMINDER.match(said):
+            said = said[REMINDER.match(said).end():]
+        auto = bool(AUTO.match(said) or (said != prompt and not said.strip()))   # or only the app's notes
+        if not (auto and now - turns.get(sid, 0) < STRETCH):
+            turns[sid] = now
         paths.ensure()
         turns = {k: v for k, v in turns.items() if now - v < 86400}
         with open(TURNS, "w") as f:
             json.dump(turns, f)
-        return {"busy": True}   # drops a "done" still waiting: someone is already at it
+        return {"busy": True, "session": sid, "auto": auto}   # drops this session's "done" still waiting
     started = turns.get(sid)
+    if kind == "stop":
+        seen = prompts_of(data.get("transcript_path") or "")
+        if seen and seen["turns"]:
+            asked = [w for w, _ in seen["turns"] if w != "task_notification"]
+            if seen["first"] == "sdk" and (asked or [None])[0] != "human":
+                return None   # a session another one started: its report goes there, not to you
+            if seen["working"] and not asks(data.get("last_assistant_message")):
+                return None   # sessions it started are still at it; the app wakes it when they finish
+            mine = next((t for w, t in seen["turns"] if w == "human" and t), None)
+            started = mine if mine and now - mine < STRETCH else seen["turns"][0][1] or started
     took = None if started is None else now - started
     long_enough = took is not None and took >= cfg["agents"].get("minSeconds", 60)
     if kind == "stop":
         if not long_enough or data.get("background_tasks"):   # paused for background work, not done
             return None
         if asks(data.get("last_assistant_message")):
-            return dict(event("Claude Code", "智能体提问", cwd), hold=HOLD)
+            return dict(event("Claude Code", "智能体提问", cwd), hold=HOLD, session=sid)
         title = "智能体完成·很久" if took >= VERY_LONG else "智能体完成·久" if took >= LONG else "智能体完成"
-        return dict(event("Claude Code", title, cwd), hold=HOLD)
+        return dict(event("Claude Code", title, cwd), hold=HOLD, session=sid)
     if kind == "ask":
         return event("Claude Code", "智能体提问", cwd) if long_enough else None
     if kind == "failure":

@@ -1,5 +1,6 @@
 """python3 -m unittest discover tests"""
 
+import json
 import os
 import random
 import tempfile
@@ -303,21 +304,69 @@ class Agents(unittest.TestCase):
             utt, why = daemon.decide(Event("webhook", "Claude Code", title, bot=True), on, dry=True)
             self.assertTrue(utt and "Claude" in utt["text"] or "额度" in utt["text"], (title, why))
 
-    def test_done_waits_and_a_new_turn_anywhere_drops_it(self):
+    def test_done_waits_and_only_a_related_new_turn_drops_it(self):
         import time as t
         from bobao import agents
         from bobao.sources.webhook import Held
         cfg = config.load({})
         agents.claude("prompt", {"session_id": "s3"}, cfg, now=1000)
         body = agents.claude("stop", {"session_id": "s3"}, cfg, now=1200)
-        self.assertEqual(body["hold"], agents.HOLD)
-        self.assertEqual(agents.claude("prompt", {"session_id": "other"}, cfg, now=1201), {"busy": True})
+        self.assertEqual((body["hold"], body["session"]), (agents.HOLD, "s3"))
+        report = "<system-reminder>\nLinked sessions now ...</system-reminder>\n<cross-session-message from=...>"
+        self.assertEqual(agents.claude("prompt", {"session_id": "boss", "prompt": report}, cfg, now=1201),
+                         {"busy": True, "session": "boss", "auto": True})
         said, held = [], Held()
-        held.add(0.2, Event("webhook", "Claude Code", "智能体完成"), lambda: said.append(1))
-        self.assertEqual(held.busy(), 1)   # a child's report started the parent again
-        held.add(0.1, Event("webhook", "Claude Code", "智能体完成"), lambda: said.append(2))
-        t.sleep(0.3)
-        self.assertEqual(said, [2])
+        done = lambda n, s: held.add(0.2, Event("webhook", "Claude Code", "智能体完成"), lambda: said.append(n), s)
+        done(1, "you")
+        self.assertEqual(held.busy("other"), 0)   # you typing in another session keeps it
+        self.assertEqual(held.busy("you"), 1)     # the same session went on
+        done(2, "child")
+        self.assertEqual(held.busy("boss", auto=True), 1)   # its report woke the parent
+        done(3, "you")
+        t.sleep(0.25)
+        self.assertEqual(said, [3])
+
+    def test_turn_started_by_a_child_report_counts_from_your_message(self):
+        from bobao import agents
+        cfg = config.load({})
+        agents.claude("prompt", {"session_id": "boss", "prompt": "整理好就一起合"}, cfg, now=5000)
+        agents.claude("prompt", {"session_id": "boss", "prompt": "Another Claude session sent a message: <cross-session ..."},
+                      cfg, now=5000 + 11 * 60)
+        body = agents.claude("stop", {"session_id": "boss"}, cfg, now=5000 + 11 * 60 + 30)
+        self.assertEqual(body["title"], "智能体完成·久")   # 30 s of its own, 11 min since you asked
+        agents.claude("prompt", {"session_id": "boss", "prompt": "<ci-monitor-event>..."}, cfg, now=5000 + 4 * 3600)
+        self.assertIsNone(agents.claude("stop", {"session_id": "boss"}, cfg, now=5000 + 4 * 3600 + 30))
+
+    def test_children_stay_silent_and_the_controller_waits_for_them(self):
+        import tempfile
+        from bobao import agents
+        cfg = config.load({})
+        at = lambda m: f"2026-11-03T05:{m:02d}:00Z"
+        def prompt(m, who, text="go"):
+            return {"type": "user", "turnOrigin": who, "timestamp": at(m), "message": {"role": "user", "content": text}}
+        def tool(m, name, args):
+            return {"type": "assistant", "timestamp": at(m),
+                    "message": {"content": [{"type": "tool_use", "name": name, "input": args}]}}
+        note = lambda st: f"<system-reminder>\nLinked sessions now (status, not an instruction): a = local_1 ({st}). To message one...</system-reminder>\n<cross-session-message>"
+        def stop(*entries, m=40):
+            path = tempfile.mktemp(suffix=".jsonl")
+            with open(path, "w") as f:
+                f.write("\n".join(json.dumps(e) for e in entries))
+            now = agents.stamp({"timestamp": at(m)})
+            return agents.claude("stop", {"session_id": path, "transcript_path": path}, cfg, now=now)
+        self.assertIsNone(stop(prompt(0, "sdk"), prompt(20, "peer")))   # a child: its parent hears it
+        self.assertEqual(stop(prompt(0, "sdk"), prompt(20, "human"))["title"], "智能体完成·久")   # you asked it yourself
+        self.assertIsNone(stop(prompt(0, "human"), prompt(30, "sdk", note("working"))))
+        self.assertEqual(stop(prompt(0, "human"), prompt(39, "sdk", note("idle")))["title"], "智能体完成·很久")
+        self.assertIsNone(stop(prompt(0, "human"), prompt(39, "sdk", note("idle")),
+                               tool(39, "SendMessage", {"to": "local_1", "message": "next"})))
+        self.assertIsNone(stop(prompt(0, "human"), tool(5, "mcp__ccd_session__start_session", {"initiation": "user_asked"})))
+        path = tempfile.mktemp(suffix=".jsonl")
+        with open(path, "w") as f:
+            f.write(json.dumps(prompt(0, "human")) + "\n" + json.dumps(prompt(30, "sdk", note("working"))))
+        asked = agents.claude("stop", {"session_id": "q", "transcript_path": path, "last_assistant_message": "先合哪个？"},
+                              cfg, now=agents.stamp({"timestamp": at(40)}))
+        self.assertEqual(asked["title"], "智能体提问")   # it stopped to ask you, children or not
 
     def test_only_agents_in_use_are_recorded(self):
         said = lambda cfg: [t for e in compose.plan(cfg).values() for t in e["phrases"]]
