@@ -10,7 +10,8 @@
 <meta property="og:image" content="https://funengzhe.github.io/bobao/og.png">
 <meta property="og:url" content="https://funengzhe.github.io/bobao/">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{
   --bg:#FBFAF7;--bg2:#F4F1EC;--card:#FFFFFF;--fg:#1F1D1A;--mute:#77716A;--line:#ECE7E0;
@@ -174,7 +175,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
 </head>
 <body>
 <nav id="nav"><div class="wrap">
-  <a class="brand" href="#"><img src="logo.svg" alt="">Bobao</a>
+  <a class="brand" href="#"><img src="logo.png" alt="">Bobao</a>
   <div class="links"><a href="#scenes">示范</a><a href="#play">玩法</a><a href="#voices">声音</a><a href="#start">安装</a><a href="#faq">问答</a><a class="gh" href="https://github.com/funengzhe/bobao">GitHub</a></div>
 </div></nav>
 
@@ -240,13 +241,14 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
 
 <section id="start" class="alt"><div class="wrap">
   <h2>让智能体帮你装</h2>
-  <p class="sub">不用懂技术。Claude Code、Codex、Cursor 这类智能体都能照着说明装。目前支持 macOS。</p>
+  <p class="sub">不用懂技术。Claude Code、Codex、Cursor、WorkBuddy 这类智能体都能照着说明装。支持 macOS，Windows 是测试版。</p>
   <div class="steps">
     <div class="step"><div class="num">1</div><b>发一句话</b><p>把下面这句话复制给你的智能体。</p></div>
     <div class="step"><div class="num">2</div><b>回答三个问题</b><p>想听哪些提醒、消息从哪来、怎么称呼你。</p></div>
     <div class="step"><div class="num">3</div><b>听到这一声，就装好了</b><p>想换声音、改说法、加提醒，之后也直接跟它说。</p></div>
   </div>
   <div class="prompt"><code id="promptText">帮我装上 Bobao：https://github.com/funengzhe/bobao</code><button id="copyPrompt">复制</button></div>
+  <p class="small" style="margin-top:14px">用 WorkBuddy 的话，也可以在它的技能市场搜「Bobao 定制播报」直接安装，不用访问 GitHub（上架审核中）。</p>
   <div class="first" id="first" style="margin-top:28px;margin-bottom:0"></div>
 </div></section>
 
