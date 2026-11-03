@@ -379,7 +379,7 @@ class Agents(unittest.TestCase):
         self.assertIn("bobao/scripts/bin~bobao", names)
         self.assertTrue(all(n.count("/") <= 2 for n in names), names)   # WorkBuddy: skill/folder/file only
         self.assertFalse(any(n.startswith(("bobao/scripts/tests~", "bobao/scripts/docs~")) for n in names))
-        for field in ("display_name:", "display_name_en:", "description_zh:", "description_en:", "author:", "version:"):
+        for field in ("display_name:", "display_name_en:", "description_zh:", "description_en:", "author:", "version:", "examples_zh:", "examples_en:"):
             self.assertIn("\n" + field, md.split("---")[1])
         self.assertNotIn("git clone", md)
 
