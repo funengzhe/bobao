@@ -368,6 +368,20 @@ class Agents(unittest.TestCase):
                               cfg, now=agents.stamp({"timestamp": at(40)}))
         self.assertEqual(asked["title"], "智能体提问")   # it stopped to ask you, children or not
 
+    def test_workbuddy_package_ships_the_code_and_no_github_steps(self):
+        import importlib.util
+        import zipfile
+        spec = importlib.util.spec_from_file_location("workbuddy", os.path.join(os.path.dirname(__file__), "..", "tools", "workbuddy.py"))
+        wb = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(wb)
+        with zipfile.ZipFile(wb.build(tempfile.mktemp(suffix=".zip"))) as z:
+            names, md = z.namelist(), z.read("bobao/SKILL.md").decode()
+        self.assertIn("bobao/scripts/bobao/bin/bobao", names)
+        self.assertFalse(any("/tests/" in n or "/docs/" in n for n in names))
+        for field in ("display_name:", "display_name_en:", "description_zh:", "description_en:", "author:", "version:"):
+            self.assertIn("\n" + field, md.split("---")[1])
+        self.assertNotIn("git clone", md)
+
     def test_only_agents_in_use_are_recorded(self):
         said = lambda cfg: [t for e in compose.plan(cfg).values() for t in e["phrases"]]
         mine = said(config.load({"agents": {"enabled": True, "used": ["Claude Code"]}}))

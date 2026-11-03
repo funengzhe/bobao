@@ -5,3 +5,4 @@ docs/.samples-tasks.json
 .bobao-samples/
 .claude/
 docs/audio/mac/
+dist/
