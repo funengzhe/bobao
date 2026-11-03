@@ -376,8 +376,9 @@ class Agents(unittest.TestCase):
         spec.loader.exec_module(wb)
         with zipfile.ZipFile(wb.build(tempfile.mktemp(suffix=".zip"))) as z:
             names, md = z.namelist(), z.read("bobao/SKILL.md").decode()
-        self.assertIn("bobao/scripts/bobao/bin/bobao", names)
-        self.assertFalse(any("/tests/" in n or "/docs/" in n for n in names))
+        self.assertIn("bobao/scripts/bin~bobao", names)
+        self.assertTrue(all(n.count("/") <= 2 for n in names), names)   # WorkBuddy: skill/folder/file only
+        self.assertFalse(any(n.startswith(("bobao/scripts/tests~", "bobao/scripts/docs~")) for n in names))
         for field in ("display_name:", "display_name_en:", "description_zh:", "description_en:", "author:", "version:"):
             self.assertIn("\n" + field, md.split("---")[1])
         self.assertNotIn("git clone", md)

@@ -1,10 +1,12 @@
 """Builds the WorkBuddy skill package from this repo: dist/bobao-workbuddy.zip.
 
-    python3 tools/workbuddy.py
+    python3 tools/workbuddy.py [--author 名字]   # author: who publishes it (default funengzhe)
 
 SKILL.md is AGENTS.md with WorkBuddy's frontmatter on top, and the code ships inside the
-package (scripts/bobao/), so installing needs no GitHub. Only the download steps differ:
-copy from the skill folder instead of git clone. If AGENTS.md changes there, the build
+package, so installing needs no GitHub. WorkBuddy allows only skill/folder/file, so every
+file sits directly in scripts/ with its path in the name (bobao~sources~webhook.py), and
+scripts/unpack.py puts them back into ~/bobao. Only the download steps differ from
+AGENTS.md: unpack from the skill folder instead of git clone. If AGENTS.md changes there, the build
 stops instead of shipping steps that point nowhere. Upload the zip on open.workbuddy.cn.
 """
 
@@ -19,7 +21,25 @@ sys.path.insert(0, ROOT)
 from bobao import __version__  # noqa: E402
 
 SHIP = ("AGENTS.md", "GUIDE.md", "LICENSE", "README.md", "assets/", "bin/", "bobao/", "helper/", "packs/")
-COPY = 'mkdir -p ~/bobao && cp -R "<本技能目录>/scripts/bobao/." ~/bobao/'
+COPY = 'python3 "<本技能目录>/scripts/unpack.py"'
+UNPACK = '''"""Puts Bobao's files back into ~/bobao (or the folder given): a~b~c.py -> a/b/c.py."""
+import os
+import shutil
+import stat
+import sys
+
+here = os.path.dirname(os.path.abspath(__file__))
+dest = os.path.abspath(os.path.expanduser(sys.argv[1] if len(sys.argv) > 1 else "~/bobao"))
+for name in os.listdir(here):
+    if name == os.path.basename(__file__) or name.startswith("."):
+        continue
+    target = os.path.join(dest, *name.split("~"))
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    shutil.copyfile(os.path.join(here, name), target)
+run = os.path.join(dest, "bin", "bobao")
+os.chmod(run, os.stat(run).st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+print("Bobao 已放到", dest)
+'''
 
 FRONT = f"""---
 name: bobao
@@ -29,10 +49,10 @@ description: 在 macOS（Windows 测试版）上装好并配置 Bobao：把用�
 description_zh: 把你在意的消息，用你喜欢的声音念出来。读电脑弹窗、飞书、Webhook 和定时提醒，22 个声音可选，消息只在你自己的电脑上处理。
 description_en: Reads the messages you care about aloud, in a voice you pick. Desktop popups, Feishu, webhooks and timed reminders; messages stay on your own computer.
 version: {__version__}
-author: funengzhe
+author: {{author}}
 ---
 
-> 本技能自带 Bobao 的全部代码，在本技能目录的 `scripts/bobao/` 里。下面写的「仓库」就是这个文件夹；不需要访问 GitHub。
+> 本技能自带 Bobao 的全部代码，在本技能目录的 `scripts/` 里（文件名里的 `~` 是目录分隔），「2. 下载」会把它们还原到 `~/bobao`；不需要访问 GitHub。
 > 更新：技能市场更新本技能后，重新做一遍「2. 下载」再运行 `~/bobao/bin/bobao install --quiet`，设置和录好的声音在 `~/.bobao`，不受影响。
 
 """
@@ -46,7 +66,7 @@ git clone https://github.com/funengzhe/bobao ~/bobao
 
 ```bash
 git -C ~/bobao fetch origin && git -C ~/bobao reset --hard origin/main
-```""", f"""从本技能目录复制到 `~/bobao`（已经有了也这样做，就是更新；设置和录音在 `~/.bobao`，不受影响）：
+```""", f"""从本技能目录还原到 `~/bobao`（已经有了也这样做，就是更新；设置和录音在 `~/.bobao`，不受影响）：
 
 ```bash
 {COPY}
@@ -54,18 +74,18 @@ git -C ~/bobao fetch origin && git -C ~/bobao reset --hard origin/main
 
 检查：`~/bobao/bin/bobao --help` 能运行。"""),
     ("""下载：`git clone https://github.com/funengzhe/bobao "%USERPROFILE%\\bobao"`。""",
-     f"""下载：在 Git Bash 里 `{COPY}`；PowerShell 里 `Copy-Item -Recurse -Force "<本技能目录>\\scripts\\bobao\\*" "$env:USERPROFILE\\bobao"`。"""),
+     f"""下载：`py -3 "<本技能目录>\\scripts\\unpack.py"`（还原到 `%USERPROFILE%\\bobao`）。"""),
     ("用户把这个仓库交给你，", "用户装了这个技能，"),
 ]
 
 
-def skill_md():
+def skill_md(author="funengzhe"):
     text = open(os.path.join(ROOT, "AGENTS.md"), encoding="utf-8").read()
     for old, new in SWAPS:
         if old not in text:
             raise SystemExit(f"AGENTS.md 变了，找不到要替换的这段，先改 tools/workbuddy.py：\n{old[:80]}")
         text = text.replace(old, new)
-    return FRONT + text
+    return FRONT.replace("{author}", author) + text
 
 
 def shipped():
@@ -73,19 +93,21 @@ def shipped():
     return [f for f in files if f in SHIP or f.startswith(tuple(s for s in SHIP if s.endswith("/")))]
 
 
-def build(out=None):
+def build(out=None, author="funengzhe"):
     out = out or os.path.join(ROOT, "dist", "bobao-workbuddy.zip")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
-        z.writestr("bobao/SKILL.md", skill_md())
+        z.writestr("bobao/SKILL.md", skill_md(author))
+        z.writestr("bobao/scripts/unpack.py", UNPACK)
         for f in shipped():
-            info = zipfile.ZipInfo.from_file(os.path.join(ROOT, f), f"bobao/scripts/bobao/{f}")
+            assert "~" not in f, f
             with open(os.path.join(ROOT, f), "rb") as src:
-                z.writestr(info, src.read(), zipfile.ZIP_DEFLATED)   # keeps bin/bobao executable
+                z.writestr("bobao/scripts/" + f.replace("/", "~"), src.read())
     return out
 
 
 if __name__ == "__main__":
-    path = build()
+    args = sys.argv[1:]
+    path = build(author=args[args.index("--author") + 1] if "--author" in args else "funengzhe")
     print(path, f"{os.path.getsize(path) / 1e6:.1f} MB")
     shutil.rmtree(os.path.join(ROOT, "tools", "__pycache__"), ignore_errors=True)
