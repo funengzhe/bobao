@@ -16,7 +16,7 @@ from . import paths
 DEFAULTS = {
     "称呼": "老板",
     "style": "formal",
-    "rulePacks": ["generic"],
+    "rulePacks": [],            # the scenes bring theirs (生意 -> generic); none is on by itself
     "engine": "mac",            # mac: the Mac's own voice | rooyun: recorded RooYun voices
     "macVoice": "Tingting",
     "rate": 200,
@@ -34,6 +34,7 @@ DEFAULTS = {
     "maxAgeMinutes": 30,
     "schedule": {},             # {"days": [1-7], "hours": "09:00-18:00", "quietHours": "23:00-08:00"} for all types
     "reminders": [],            # [{"at": "18:00", "days": [1-5], "say": "..."}]: spoken at that time
+    "suggestedReminders": [],   # the scenes' reminders, offered by init and remind list, not spoken
     "sources": {
         "feishu": {"enabled": False, "chats": [], "botsOnly": True},   # + profile: the 飞书播报 bot's lark-cli profile
         "webhook": {"enabled": True, "port": 8766, "secret": ""},
@@ -46,9 +47,17 @@ DEFAULTS = {
 }
 
 
-# An agent's name as it is said: "Claude Code" is read "Claude". With recorded voices only
-# these (and the user's agents.names) are recorded; any other agent is read as 智能体.
-AGENT_NAMES = {"Claude Code": "Claude", "Claude": "Claude", "Codex": "Codex", "Cursor": "Cursor"}
+# An agent's name as it is said: "Claude Code" is read "Claude". Any other name is said as it
+# is. With recorded voices only the agents used here (agents.used) are recorded: an agent
+# joins that list the first time it calls `bobao agent done --name ...`.
+AGENT_NAMES = {"Claude Code": "Claude", "Claude": "Claude", "Codex": "Codex", "Cursor": "Cursor",
+               "WorkBuddy": "WorkBuddy", "CodeBuddy": "CodeBuddy", "Trae": "Trae", "TRAE": "Trae",
+               "DeepSeek": "DeepSeek", "DeepSeek Harness": "DeepSeek", "Kimi": "Kimi", "Kimi CLI": "Kimi",
+               "Gemini": "Gemini", "Gemini CLI": "Gemini", "Qwen Code": "通义", "通义灵码": "通义",
+               "GitHub Copilot": "Copilot", "Copilot": "Copilot", "Windsurf": "Windsurf", "Cline": "Cline",
+               "Roo Code": "Roo", "Kiro": "Kiro", "OpenCode": "OpenCode", "Aider": "Aider", "Augment": "Augment",
+               "OpenClaw": "OpenClaw", "Hermes": "Hermes", "Hermes Agent": "Hermes", "豆包": "豆包",
+               "Qoder": "Qoder", "Comate": "文心快码", "文心快码": "文心快码", "Zed": "Zed", "Amp": "Amp"}
 
 ALWAYS_PACKS = ["bobao"]   # Bobao's own messages (agents, GitHub), in every setup
 
@@ -138,18 +147,20 @@ def scene_types(scene):
 
 def with_scene(user):
     """Scenes (packs/scenes/*.json) are ready-made setups for a kind of life or work: which
-    notifications, what is said, style, schedule, reminders. Several can be combined; the
-    first one's style and form of address win. The user's own keys go on top, and the
+    notifications, what is said, style, schedule. Their timed reminders are only suggested
+    (suggestedReminders): someone who never asked for one shouldn't hear "time to go home".
+    Several can be combined; the first one's style and form of address win. The user's own keys go on top, and the
     user's rules come before the scenes' so they win."""
     names = scene_names(user)
     if not names:
         return user
-    out, wanted = {}, set()
+    out, wanted, suggested = {}, set(), []
     for i, name in enumerate(names):
         scene = {k: v for k, v in read_json(pack_path("scenes", name), {}).items() if k not in SCENE_ONLY}
         if i:   # later scenes add notifications, not a different voice or style
             for k in ("style", "称呼", "voices", "schedule"):
                 scene.pop(k, None)
+        suggested += [r for r in scene.pop("reminders", []) if r not in suggested]   # offered, not on by themselves
         off = {t for t, v in (scene.get("types") or {}).items() if v.get("enabled") is False}
         wanted |= scene_types(scene) - off
         _merge(out, scene)
@@ -157,11 +168,9 @@ def with_scene(user):
         if (out.get("types") or {}).get(t, {}).get("enabled") is False:
             out["types"][t] = {k: v for k, v in out["types"][t].items() if k != "enabled"}
     rules = list(user.get("rules", [])) + out.pop("rules", [])
-    user_rest = {k: v for k, v in user.items() if k not in ("rules", "scene", "scenes")}
-    if "reminders" in user_rest:   # the user's list is the whole list once they have one
-        out.pop("reminders", None)
-    _merge(out, user_rest)
+    _merge(out, {k: v for k, v in user.items() if k not in ("rules", "scene", "scenes")})
     out["rules"] = rules
+    out["suggestedReminders"] = suggested
     return out
 
 

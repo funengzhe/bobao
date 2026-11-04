@@ -268,6 +268,16 @@ def cmd_voice(a):
         if a.action == "record" and pending:
             switch_voice(*pending)
         return
+    if a.action == "quote":   # what will be recorded comes before what it costs
+        from .numbers import vocabulary
+        words = set(vocabulary())
+        print("要录的句子：")
+        for vkey, texts in todo.items():
+            name = voice_label(p[vkey]["voice"], cfg) if vkey in p else vkey
+            said = [t for t in texts if t not in words]
+            print(f"== {name}（{len(said)} 句" + (f"，外加 {len(texts) - len(said)} 个数字词，用来念金额" if len(said) < len(texts) else "") + "）")
+            for t in said:
+                print("  · " + t)
     from . import rooyun
     client = rooyun.Client(cfg["rooyun"]["base"])
     meta = {v["voiceId"]: v for v in client.voices()}
@@ -283,6 +293,9 @@ def cmd_voice(a):
     if not a.yes and input("开始录吗？[y/N] ").strip().lower() not in ("y", "yes", "是"):
         print("没有录")
         return
+    if system.WINDOWS and not system.ffmpeg() and not system.fetch_ffmpeg():   # before paying, not halfway
+        sys.exit("ffmpeg 下载不下来。手动装一个（winget install Gyan.FFmpeg），或把已有的 ffmpeg.exe 放到 "
+                 + system.FFMPEG_HOME + "，再重跑同一条命令")
     done, failed = rooyun.record(client, jobs)
     print(f"录好 {done} 句" + (f"，{failed} 句没录成（重跑同一条命令补录）" if failed else ""))
     if pending and not failed:
@@ -293,13 +306,18 @@ def cmd_agent(a):
     from . import agents
     if a.action == "install":
         if a.which not in ("claude", "codex"):
-            print(agents.setup_text())   # any other agent wires its own hook to `bobao agent done`
+            print(agents.setup_text(a.name or ""))   # any other agent wires its own hook to `bobao agent done`
             return
         print(agents.install(a.which))
-        print("试一下：bobao agent done --name 测试")
+        print("试一下：bobao agent done --name " + ("Claude Code" if a.which == "claude" else "Codex"))
         return
     if a.action == "setup":
-        print(agents.setup_text())
+        print(agents.setup_text(a.name or ""))
+        return
+    if a.action == "watch":
+        if not a.name or not (a.dir or a.off):
+            raise SystemExit("用法：bobao agent watch --name 你的名字 --dir 会话记录所在的文件夹 [--idle 秒] [--done 结尾的正则]；停止：--off")
+        print(agents.watch(a.name, a.dir, a.idle, a.done, a.off))
         return
     agents.hook([a.action, a.which or ""] + list(a.rest), a.name or "")   # run by the hooks themselves
 
@@ -481,8 +499,6 @@ def apply_sources(user, picked, apps=None, chats=None, before=()):
         src["feishu"]["chats"] = chats
     if "remind" not in picked:
         user["reminders"] = []
-    elif user.get("reminders") == []:
-        user.pop("reminders")   # back to the scenes' reminders
 
 
 def enabled_sources(user):
@@ -490,7 +506,7 @@ def enabled_sources(user):
     if "sources" not in user:
         return []
     on = [n for n in ("notifications", "feishu", "webhook") if user["sources"].get(n, {}).get("enabled")]
-    return on + ([] if user.get("reminders") == [] else ["remind"])
+    return on + (["remind"] if user.get("reminders") else [])
 
 
 def summary(user, picked):
@@ -499,6 +515,11 @@ def summary(user, picked):
     voice = "RooYun · " + config.voice_for(cfg, "提醒")["voice"] if cfg["engine"] == "rooyun" else "电脑自带"
     print(f"已保存 {paths.CONFIG}：场景 {'、'.join(names) or '无'}，风格 {cfg['styleName']}，称呼 {cfg['称呼']}，"
           f"声音 {voice}，来源 {'、'.join(picked)}" + (f"，定时提醒 {len(cfg['reminders'])} 条" if cfg["reminders"] else ""))
+    offer = [r for r in cfg["suggestedReminders"] if r not in cfg["reminders"]]
+    if offer:
+        print("场景里有这些定时提醒，没有打开，他想要再加（bobao remind add 时间 \"说法\" --days ...）：")
+        for r in offer:
+            print(f"  {when_text(r)} {r['at']}  {r['say']}")
     if "notifications" in picked:
         names = {k: n for n, k in APPS}
         apps = cfg["sources"]["notifications"].get("apps", [])
@@ -521,11 +542,6 @@ def init_quiet(a):
     if wanted:
         user["scenes"] = [titles.get(n, n) for n in wanted]
         user.pop("scene", None)
-        if user.get("reminders"):   # the user's own list: add what the new scenes bring
-            new = config.with_scene({"scenes": user["scenes"]}).get("reminders", [])
-            user["reminders"] += [r for r in new if r not in user["reminders"]]
-        else:
-            user.pop("reminders", None)
     if a.style:
         user["style"] = a.style
     if a.name:
@@ -580,6 +596,13 @@ def cmd_init(a):
 DAYS = {"每天": None, "工作日": [1, 2, 3, 4, 5], "周末": [6, 7]}
 
 
+def when_text(r):
+    days = r.get("days")
+    if not days or sorted(days) == list(range(1, 8)):
+        return "每天"
+    return next((k for k, d in DAYS.items() if d == days), "周" + "、".join(map(str, days)))
+
+
 def parse_days(v):
     if not v or v in DAYS:
         return DAYS.get(v or "每天")
@@ -594,14 +617,18 @@ def parse_days(v):
 
 def cmd_remind(a):
     user = config.read_json(paths.CONFIG, {}) or {}
-    current = config.load()["reminders"]
+    loaded = config.load()
+    current = loaded["reminders"]
     if a.action == "list":
         if not current:
             print("还没有定时提醒。添加：bobao remind add 18:00 \"下班啦\" --days 工作日")
         for i, r in enumerate(current, 1):
-            days = r.get("days")
-            when = "每天" if not days or sorted(days) == list(range(1, 8)) else next((k for k, d in DAYS.items() if d == days), "周" + "、".join(map(str, days)))
-            print(f"  {i}. {when} {r['at']}  {r['say']}")
+            print(f"  {i}. {when_text(r)} {r['at']}  {r['say']}")
+        offer = [r for r in loaded["suggestedReminders"] if r not in current]
+        if offer:
+            print("场景建议的（没打开）：")
+            for r in offer:
+                print(f"     {when_text(r)} {r['at']}  {r['say']}")
         return
     if a.action == "test":
         n = int(a.at or 0)
@@ -679,11 +706,14 @@ def cmd_feishu(a):
         user.setdefault("sources", {})["feishu"] = src
         config.save_user(user)
         print(f"已连接飞书应用 {a.app}（lark-cli 配置「{a.profile}」），Secret 只存在 lark-cli 里，不在 Bobao 的设置中。")
-    if a.action == "me":   # read as yourself: lark-cli logged in as you, no bot
+    if a.action in ("connect", "me"):   # read as yourself: lark-cli logged in as you, no bot
         cli = feishu.lark_cli(src)
-        if not shutil.which(cli) and not os.path.exists(cli):
-            raise SystemExit("没有找到 lark-cli。先安装：npm install -g @larksuite/cli，"
-                             "再运行 lark-cli config init --new 和 lark-cli auth login --recommend")
+        if not feishu.found(cli):
+            raise SystemExit("没有找到 lark-cli。先安装（国内用镜像快）：npm install -g @larksuite/cli "
+                             "--registry=https://registry.npmmirror.com ，没有 npm 就先装 Node。装好再运行 bobao feishu connect")
+        src["larkCli"] = os.path.abspath(shutil.which(cli) or cli)   # the background may start with an older PATH
+        if a.action == "connect":
+            feishu.connect(src, say=lambda t: print(t, flush=True))
         if src.get("profile"):
             src["botProfile"] = src.pop("profile")   # kept, to switch back
         src["enabled"] = True
@@ -898,7 +928,7 @@ def main(argv=None):
     i.add_argument("--chats", help="只播这些飞书群（逗号隔开）；用机器人时可不填，播它所在的全部群")
     i.add_argument("--yes", action="store_true", help="不提问，全用场景默认值")
     fe = sub.add_parser("feishu")
-    fe.add_argument("action", choices=["login", "groups", "me"])
+    fe.add_argument("action", choices=["connect", "login", "groups", "me"])
     fe.add_argument("--chats", help="me：只播这些群（逗号隔开）")
     fe.add_argument("--people", action="store_true", help="me：人发的消息也念（默认只念机器人的通知）")
     fe.add_argument("--app")
@@ -933,10 +963,14 @@ def main(argv=None):
     s.add_argument("--channel")
     s.add_argument("--dry", action="store_true")
     ag = sub.add_parser("agent")
-    ag.add_argument("action", help="done / waiting（任何智能体的钩子用）、install claude|codex、setup")
+    ag.add_argument("action", help="done / waiting（任何智能体的钩子用）、install claude|codex、setup、watch")
     ag.add_argument("which", nargs="?")
     ag.add_argument("rest", nargs="*")
-    ag.add_argument("--name", help="done / waiting：是哪个智能体")
+    ag.add_argument("--name", help="是哪个智能体（你自己的名字）")
+    ag.add_argument("--dir", help="watch：会话记录所在的文件夹")
+    ag.add_argument("--idle", type=int, help="watch：文件停止增长多少秒算做完（默认 15）")
+    ag.add_argument("--done", help="watch：这一轮结束时文件末尾会出现的内容（正则），有它更准")
+    ag.add_argument("--off", action="store_true", help="watch：不再看")
     gh = sub.add_parser("github")
     gh.add_argument("action", choices=["add", "remove", "list"])
     gh.add_argument("repo", nargs="?")

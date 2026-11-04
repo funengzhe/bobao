@@ -119,6 +119,8 @@ def run():
             speaker.put(utt, cfg)
         return {"spoken": not dry, "type": utt["type"], "text": utt["text"]}
 
+    from .sources import sessions
+    watcher = sessions.Watch()
     web = shout_page = None
     next_feishu, next_github, failing_since, warned, told_login = 0, 0, None, False, 0
     fired = set()
@@ -140,6 +142,8 @@ def run():
                 from .sources import github
                 next_github = time.time() + max(5, src["github"].get("minutes", 10)) * 60
                 github.check(cfg, handle)
+            if (cfg.get("agents") or {}).get("watch"):
+                watcher.check(cfg, handle)
             for r in due_reminders(cfg, time.localtime(), fired):   # timed reminders are never muted
                 utt = reminder_utterance(cfg, r)
                 log(f"定时提醒 {r['at']} → {utt['text']}")

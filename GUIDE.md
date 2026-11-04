@@ -35,11 +35,11 @@ bobao install
 
 | 场景 | 默认会念 | 常见来源 |
 |---|---|---|
-| `work` 上班 | 有人 @你、会议快开始、审批结果；工作日 18:00 提醒下班 | 弹窗（飞书、企业微信、钉钉、日历）、定时 |
+| `work` 上班 | 有人 @你、会议快开始、审批结果；建议工作日 18:00 提醒下班 | 弹窗（飞书、企业微信、钉钉、日历）、定时 |
 | `business` 生意 | 到账、新订单、大单、退款、日报 | 飞书群、Webhook |
 | `dev` 开发 | 上线成功、构建失败、告警、恢复 | Webhook、飞书群 |
 | `live` 直播 | 打赏、新粉丝、新订阅 | Webhook、弹窗 |
-| `life` 生活 | 外卖、快递、家人消息；每晚 22:00 提醒休息 | 弹窗（微信、邮件、日历）、定时 |
+| `life` 生活 | 外卖、快递、家人消息；建议每晚 22:00 提醒休息 | 弹窗（微信、邮件、日历）、定时 |
 | `blank` 空白 | 什么都不预设 | 任意 |
 
 语气有三种：**正经**（`formal`，简洁）、**活泼**（`playful`，带点俏皮）、**贴心**（`warm`，关心你、夸你）。每个场景有自己的默认语气。
@@ -112,6 +112,8 @@ bobao remind add 18:00 "六点啦，今天辛苦了，准时下班" --days 工�
 bobao remind list
 ```
 
+场景里建议的定时提醒（上班的下班提醒、生活的睡觉提醒）不会自己打开，`bobao remind list` 会列出来，想要就照着 `remind add`。
+
 `--days` 可以写 `工作日`、`周末`、`每天`，或 `1-5`、`6,7`（1 是周一）。说法里可以用 `{称呼}`。先听一遍用 `bobao remind test 编号 --play`，删除用 `bobao remind remove 编号`。定时提醒不受静音时段限制。
 
 ### 飞书群（用你自己的身份）
@@ -119,18 +121,19 @@ bobao remind list
 不建机器人、不用把机器人拉进群，就用你自己的飞书账号读你选的群。Windows 上推荐这样用。
 
 ```bash
-npm install -g @larksuite/cli       # 先装 Node：winget install OpenJS.NodeJS.LTS（Mac：brew install node）
-lark-cli config init --new          # 浏览器里一键建一个只属于你的应用
-lark-cli auth login --scope "im:chat:read im:message:readonly im:message.group_msg:get_as_user"   # 只读权限，浏览器里点授权
+npm install -g @larksuite/cli --registry=https://registry.npmmirror.com   # 先装 Node：winget install OpenJS.NodeJS.LTS（Mac：brew install node）
+bobao feishu connect                # 浏览器里点两次「同意」：建一个只属于你的应用，再授权只读群消息
 bobao feishu me                     # 列出你所在的群
 bobao feishu me --chats 产品群,项目群 --people
 ```
+
+`connect` 会一直等你点完两个页面，已经做完的步骤会跳过。建应用的那个页面上列的权限比较多，那是飞书给这类应用的默认配置；Bobao 只申请其中 3 项只读权限。
 
 - 每 20 秒查一次（`pollSeconds`）；Windows 上一出现飞书弹窗就马上查，几秒内念出来。
 - `--people`：人发的消息也按规则念，例如有人 @你、@所有人、请你审批。不加只念机器人发的通知。
 - 含「测试」「模拟」的消息默认不念（`skipTitles`）。
 - 只申请读群、读消息的权限，不能替你发消息。
-- 授权 7 天没用到会过期（电脑一直关着之类），Bobao 会念一句「飞书的登录过期了」，重新运行上面那条 `lark-cli auth login` 就行。
+- 授权 7 天没用到会过期（电脑一直关着之类），Bobao 会念一句「飞书的登录过期了」，重新运行 `bobao feishu connect` 就行。
 - 一键建的应用叫「你的名字's Feishu Assistant」，名字是飞书起的。想改：打开 [飞书开发者后台](https://open.feishu.cn/app)，在应用信息里改名，再创建版本、发布。不影响 Bobao。
 
 ### 飞书群（机器人）
@@ -168,10 +171,11 @@ curl -X POST http://127.0.0.1:8766/notify -H 'content-type: application/json' \
 ```bash
 bobao agent install claude    # Claude Code：加上钩子（会先备份 ~/.claude/settings.json）
 bobao agent install codex     # Codex：在 ~/.codex/config.toml 加一行 notify
-bobao agent setup             # 其他智能体：给出要填进它「任务结束时运行命令」设置里的命令
+bobao agent setup --name Cursor   # 其他智能体：给出要填进它「任务结束时运行命令」设置里的命令
+bobao agent watch --name DeepSeek --dir 会话文件夹   # 没有这种设置：盯着它存会话的文件夹
 ```
 
-其他智能体（Cursor、WorkBuddy……）跟它说「你干完活叫我一声」，它会按自己的设置方式接上 `bobao agent done`。
+其他智能体（Cursor、WorkBuddy、Trae、DeepSeek……）跟它说「你干完活叫我一声」，它会按自己的情况接上：有钩子或通知设置就填 `bobao agent done`；没有的话，找到它存会话的文件夹交给 `bobao agent watch`，文件停止增长 15 秒（`--idle`）就念。会话文件在每轮结束时有固定标记的，加 `--done 正则`，长时间跑工具也不会提前念。
 
 Claude Code 能念的最全，按情况换说法：
 
@@ -193,7 +197,7 @@ Claude Code 能念的最全，按情况换说法：
 - 总控停下来问你问题，照样念。
 - "做完了"会先等 20 秒：这期间同一个会话又接着干活（比如收到子会话的汇报），这句就不念了。
 
-念的是智能体自己的名字：Claude Code 念 Claude，Codex、Cursor 念原名，其他智能体念"智能体"。想让别的名字也念出来，在设置里加 `"agents": {"names": {"WorkBuddy": "WorkBuddy"}}`（用 RooYun 声音的话要补生成）。不想要说话前的提示音，设 `"playSounds": false`，直接说话。Bobao 没在运行时，钩子什么也不做，不影响智能体。
+念的是智能体自己的名字（`--name` 给的）：Claude Code 念 Claude，Gemini CLI 念 Gemini，Qwen Code 念通义，其他的念原名。一个名字第一次出现时会记进 `agents.used`，用 RooYun 声音的话补录一次就能用这个声音念出来；补录之前念"智能体"。想换个叫法：`"agents": {"names": {"WorkBuddy": "小助手"}}`。不想要说话前的提示音，设 `"playSounds": false`，直接说话。Bobao 没在运行时，钩子什么也不做，不影响智能体。
 
 ### GitHub 项目
 
@@ -251,10 +255,13 @@ bobao export
     {"when": {"title": ["新订单"], "channel": ["店铺群"]}, "type": "收款", "platform": "我的店"},
     {"when": {"title": ["周报"]}, "type": "通知", "skip": true}
   ],
-  "reminders": [                          // 写了就替换场景自带的定时提醒
+  "reminders": [                          // 定时提醒；场景建议的不会自己加进来
     {"at": "18:00", "days": [1, 2, 3, 4, 5], "say": "六点啦，准时下班"}
   ],
   "bigOrder": {"*": 1000},               // 金额达到多少加一句"大单来啦"
+  "values": {"货币": ["元", "美元"],      // 金额会出现哪些币种（默认只录"元"）
+             "出单人": ["张三", "李四"]},  // 规则 capture 取出来的值，录这些
+  "agents": {"watch": [{"name": "DeepSeek", "dir": "~/会话文件夹", "idle": 15}]},   // bobao agent watch 写的
   "types": {                              // 按类型改
     "告警": {"always": true, "cooldownMinutes": 10},
     "日报": {"enabled": false}
@@ -271,6 +278,10 @@ bobao export
 **规则的 `when`** 里的词可以带 `{称呼}`（例如 `"@{称呼}"`）。可以用：`source`（`notifications` / `feishu` / `webhook`）、`app`（弹窗来自哪个 App，App id 的一部分）、`channel`（飞书群名）、`title`、`text`、`not`（含这些就不算）。每项写一个列表，含其中任意一个就算。
 
 **说法里的空位**：`{称呼}` `{平台}` `{金额}` `{方式}` `{套餐}` `{名称}`。空位没有值时，它所在的那一小句会自动省掉。
+
+**从标题里取值**：规则里写 `"capture": {"出单人": "恭喜(.+?)出单"}`，标题「恭喜张三出单！！！」就会把「张三」填进 `{出单人}`；几个人（「李四,王五」）念成「李四和王五」。用 RooYun 声音时只念 `values.出单人` 里列出的（这些才录过），没列的省掉。
+
+**只录用得上的**：`bobao voice plan` 只算已经打开的规则会说的话。用 Webhook 直接发 `type` 的类型没有规则对应，要录的话加 `"alsoRecord": ["告警"]`。
 
 **音效**：`coin` `register` `levelup` `gift` `bubble` `doorbell` `chime` `kalimba` `drop` `hum` `siren` `wahwah` `beeps` `oops` `redalert`（本机合成，免费），也可以用 macOS 系统音效名（`Glass`、`Ping`…）或你自己的音频文件路径。 不想要开头的音效、直接说话：`"playSounds": false`。
 

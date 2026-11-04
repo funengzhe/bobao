@@ -27,19 +27,35 @@ import time
 from .. import paths
 from ..config import read_json
 from ..events import Event, parse_card
-from ..system import NO_WINDOW
+from ..system import NO_WINDOW, WINDOWS
 from ..log import log
 
 HOME = os.path.expanduser("~")
 
 
+# Where npm and the installers put lark-cli. The background process starts at login and may
+# have an older PATH than the terminal it was set up in, so it looks in these places too.
+APPDATA = os.environ.get("APPDATA") or os.path.join(HOME, "AppData", "Roaming")
+LARK_PLACES = ([os.path.join(APPDATA, "npm", "lark-cli.cmd"), os.path.join(HOME, "lark-cli-home", "bin", "lark-cli.cmd")]
+               if WINDOWS else [f"{HOME}/.local/bin/lark-cli", "/opt/homebrew/bin/lark-cli", "/usr/local/bin/lark-cli"])
+NODE_PLACES = ([os.path.join(APPDATA, "npm"), os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "nodejs")]
+               if WINDOWS else [f"{HOME}/.local/node/current/bin", "/opt/homebrew/bin", "/usr/local/bin"])
+
+
 def lark_cli(cfg):
-    return (cfg.get("larkCli") or shutil.which("lark-cli") or f"{HOME}/.local/bin/lark-cli")
+    """The lark-cli to run: the one remembered at setup (sources.feishu.larkCli), else PATH,
+    else where npm puts it."""
+    if cfg.get("larkCli") and os.path.exists(cfg["larkCli"]):
+        return cfg["larkCli"]
+    return shutil.which("lark-cli") or next((p for p in LARK_PLACES if os.path.exists(p)), "lark-cli")
+
+
+def found(cli):
+    return bool(shutil.which(cli) or os.path.exists(cli))
 
 
 def env():
-    extra = [f"{HOME}/.local/node/current/bin", "/opt/homebrew/bin", "/usr/local/bin"]
-    return dict(os.environ, PATH=os.pathsep.join(extra + [os.environ.get("PATH", "/usr/bin:/bin")]))
+    return dict(os.environ, PATH=os.pathsep.join(NODE_PLACES + [os.environ.get("PATH", "/usr/bin:/bin")]))
 
 
 def identity(src):
@@ -247,3 +263,77 @@ class Feishu:
         with open(tmp, "w") as f:
             json.dump(self.state, f)
         os.replace(tmp, paths.STATE)
+
+
+# ---- connecting as yourself, in one go ----------------------------------------------
+
+SCOPES = ["im:chat:read", "im:message:readonly", "im:message.group_msg:get_as_user"]   # read-only
+
+
+def status(src):
+    r = subprocess.run([lark_cli(src), "auth", "status"], capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", env=env(), timeout=60, creationflags=NO_WINDOW)
+    try:
+        return json.loads(r.stdout)
+    except ValueError:
+        return {}
+
+
+def logged_in(st):
+    user = (st.get("identities") or {}).get("user") or {}
+    return user.get("status") in ("ready", "needs_refresh") and set(SCOPES) <= set((user.get("scope") or "").split())
+
+
+def wait_for_link(args, src, say, step):
+    """Runs a lark-cli command that prints a link and then waits for the user to finish in the
+    browser. Opens the link once and keeps waiting on it: starting again would void it."""
+    from ..system import open_url
+    proc = subprocess.Popen([lark_cli(src), *args], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                            encoding="utf-8", errors="replace", env=env(), creationflags=NO_WINDOW)
+    shown, tail = False, []
+    for line in proc.stdout:
+        tail = (tail + [line.strip()])[-5:]
+        m = re.search(r"https://\S+", line)
+        if m and not shown:
+            shown = True
+            say(f"{step}：在浏览器里打开了这个页面，请在里面点「同意」（链接只能用一次，10 分钟内有效）：\n  {m.group(0)}")
+            open_url(m.group(0))
+    return proc.wait() == 0, " ".join(tail)
+
+
+def connect(src, say=print):
+    """Feishu as yourself: makes the app if there is none, then asks for the three read-only
+    permissions; two pages to agree to, one after the other, nothing to type. What is
+    already done is skipped, so running it again is safe once a page has been agreed to."""
+    st = status(src)
+    if not st.get("appId"):
+        ok, why = wait_for_link(["config", "init", "--new", "--brand", "feishu", "--lang", "zh"], src, say,
+                                "第 1 步，建一个只属于你的飞书应用")
+        if not ok:
+            raise SystemExit("飞书应用没有建好：" + why[:300])
+        st = status(src)
+    if logged_in(st):
+        say("飞书已经授权过了，不用再点")
+        return st
+    r = subprocess.run([lark_cli(src), "auth", "login", "--scope", " ".join(SCOPES), "--no-wait", "--json"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", env=env(), timeout=60,
+                       creationflags=NO_WINDOW)
+    try:
+        flow = json.loads(r.stdout)
+    except ValueError:
+        raise SystemExit("飞书授权没有发起：" + (r.stderr or r.stdout).strip()[:300])
+    flow = flow.get("data", flow)
+    url = next((v for k, v in flow.items() if "verification" in k and str(v).startswith("http")), "")
+    code = flow.get("device_code", "")
+    if not url or not code:
+        raise SystemExit("飞书授权没有发起：" + (r.stderr or r.stdout).strip()[:300])
+    from ..system import open_url
+    say(f"第 2 步，允许 Bobao 读你的群消息（只读）：在浏览器里打开了这个页面，请点「授权」（链接只能用一次，10 分钟内有效）：\n  {url}")
+    open_url(url)
+    done = subprocess.run([lark_cli(src), "auth", "login", "--device-code", code], capture_output=True, text=True,
+                          encoding="utf-8", errors="replace", env=env(), timeout=900, creationflags=NO_WINDOW)
+    st = status(src)
+    if not logged_in(st):
+        raise SystemExit("还没有授权成功：" + (done.stderr or done.stdout).strip()[:300] +
+                         "\n用户还没点的话，等他点完再看 lark-cli auth status；过期了才重新运行 bobao feishu connect")
+    return st

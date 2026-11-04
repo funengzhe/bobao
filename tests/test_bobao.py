@@ -6,10 +6,11 @@ import random
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 os.environ["BOBAO_HOME"] = tempfile.mkdtemp(prefix="bobao-test-")
 
-from bobao import clips, compose, config, daemon  # noqa: E402
+from bobao import clips, compose, config, daemon, paths  # noqa: E402
 from bobao.events import Event, classify  # noqa: E402
 from bobao.numbers import cn_number, money, vocabulary  # noqa: E402
 from bobao.sources import feishu  # noqa: E402
@@ -17,7 +18,7 @@ from bobao.sources import feishu  # noqa: E402
 FIXTURES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures")
 USER = {"rulePacks": [os.path.join(FIXTURES, "alpha.json"), os.path.join(FIXTURES, "beta.json"), "generic"],
         "platforms": {"Alpha": {"say": "Alpha", "channels": ["a"]}, "Beta": {"say": "贝塔", "channels": ["b"]}},
-        "bigOrder": {"Alpha": 100, "Beta": 500}}
+        "bigOrder": {"Alpha": 100, "Beta": 500}, "values": {"货币": ["元", "美元", "USDT"]}}
 
 
 def cfg_for(style, **extra):
@@ -138,7 +139,7 @@ class Scenes(unittest.TestCase):
             cfg = config.load({"scenes": [name], "engine": "rooyun"})
             self.assertTrue(cfg["types"], name)
             lib = library(cfg)
-            for title, f in (("充值到账", {"金额": "$19.9", "方式": "支付宝"}), ("新用户注册", {}), ("服务器宕机", {}), ("已恢复", {})):
+            for title, f in (("充值到账", {"金额": "¥19.9", "方式": "支付宝"}), ("新用户注册", {}), ("服务器宕机", {}), ("已恢复", {})):
                 utt, why = daemon.decide(Event("webhook", "", title, fields=f), cfg, dry=True, rnd=random.Random(1))
                 if utt:
                     self.assertIsNotNone(clips.for_segments(utt["segments"], lib), (name, utt["text"]))
@@ -155,7 +156,10 @@ class Scenes(unittest.TestCase):
                 utt, why = daemon.decide(matching_event(rule), cfg, dry=True, rnd=random.Random(i))
                 self.assertIsNotNone(utt, (name, rule["when"], why))
                 self.assertIsNotNone(clips.for_segments(utt["segments"], lib), (name, utt["text"]))
-            for r in cfg["reminders"]:
+            self.assertEqual(cfg["reminders"], [], name)   # a scene's reminders are only offered
+            for r in cfg["suggestedReminders"]:
+                cfg = config.load({"scenes": [name], "engine": "rooyun", "reminders": [r]})
+                lib = library(cfg)
                 utt = daemon.reminder_utterance(cfg, r)
                 self.assertIsNotNone(clips.for_segments(utt["segments"], lib), (name, utt["text"]))
 
@@ -174,10 +178,37 @@ class Scenes(unittest.TestCase):
         self.assertEqual(both["rules"][0], mine)                  # the user's rules come first
         for r in work["rules"] + life["rules"]:
             self.assertIn(r, both["rules"])
-        self.assertEqual(len(both["reminders"]), len(work["reminders"]) + len(life["reminders"]))
+        self.assertEqual(both["reminders"], [])   # never on by themselves: offered instead
+        self.assertEqual(len(both["suggestedReminders"]), len(work["suggestedReminders"]) + len(life["suggestedReminders"]))
         own = [{"at": "09:00", "say": "早"}]
         self.assertEqual(config.load({"scenes": ["work", "life"], "reminders": own})["reminders"], own)
         self.assertEqual(config.load({"scenes": ["work"], "reminders": []})["reminders"], [])
+
+
+class OnlyWhatIsAskedFor(unittest.TestCase):
+    """Nothing is recorded or spoken that the user's setup can't need."""
+
+    def test_only_types_a_rule_announces_are_recorded(self):
+        said = lambda cfg: [t for e in compose.plan(cfg).values() for t in e["phrases"]]
+        agent_only = said(config.load({"agents": {"enabled": True, "used": ["DeepSeek"]}, "engine": "rooyun"}))
+        self.assertTrue(agent_only and all("DeepSeek" in t or "播报" in t for t in agent_only), agent_only)
+
+    def test_amounts_are_recorded_in_yuan_unless_other_currencies_are_listed(self):
+        rule = {"when": {"title": "出单"}, "type": "收款", "say": "{称呼}，成交{金额}"}
+        plan = lambda **v: [t for e in compose.plan(config.load({"rules": [rule], "values": v})).values() for t in e["phrases"]]
+        self.assertFalse(any("美元" in t or "USDT" in t for t in plan()))
+        self.assertTrue(any("美元" in t for t in plan(货币=["元", "美元"])))
+
+    def test_a_rule_can_take_a_name_out_of_the_title(self):
+        rule = {"when": {"title": "出单"}, "type": "收款", "capture": {"出单人": "恭喜(.+?)出单"},
+                "say": "{称呼}，{出单人}出单啦，成交{金额}"}
+        cfg = config.load({"rules": [rule], "称呼": "老板", "engine": "rooyun", "values": {"出单人": ["张三", "李四和王五"]}})
+        lib = library(cfg)
+        for title, said in (("恭喜张三出单！！！", "老板，张三出单啦"), ("恭喜李四,王五出单！！！", "老板，李四和王五出单啦"),
+                            ("恭喜新同事出单！！！", "老板，出单啦")):   # a name nobody recorded is left out
+            utt, why = daemon.decide(ev(title, 成单金额="37800"), cfg, dry=True, rnd=random.Random(1))
+            self.assertTrue(utt["text"].startswith(said), utt["text"])
+            self.assertIsNotNone(clips.for_segments(utt["segments"], lib), utt["text"])
 
 
 class Popups(unittest.TestCase):
@@ -394,15 +425,49 @@ class Agents(unittest.TestCase):
         utt, why = daemon.decide(Event("webhook", "Claude Code", "智能体完成", bot=True), on, dry=True)
         self.assertTrue(utt and "Claude" in utt["text"] and "智能体" not in utt["text"], why)
         said = lambda cfg: [t for e in compose.plan(cfg).values() for t in e["phrases"]]
-        self.assertTrue(any("智能体" in t for t in said(on)) and any("Claude" in t for t in said(on)))
+        self.assertTrue(any("智能体" in t for t in said(on)) and not any("Claude" in t for t in said(on)))
         self.assertFalse(any("智能体" in t or "Claude" in t or "点星" in t for t in said(config.load({}))))
 
     def test_agent_named_as_said_unknown_ones_as_agent(self):
-        rec = config.load({"agents": {"enabled": True, "names": {"WorkBuddy": "小助手"}}, "engine": "rooyun"})
+        rec = config.load({"agents": {"enabled": True, "names": {"WorkBuddy": "小助手"}, "used": ["Claude Code", "WorkBuddy", "Hermes Agent"]},
+                           "engine": "rooyun"})
         self.assertEqual(compose.spoken_agent(rec, "Claude Code"), "Claude")
         self.assertEqual(compose.spoken_agent(rec, "WorkBuddy"), "小助手")
+        self.assertEqual(compose.spoken_agent(rec, "Hermes Agent"), "Hermes")
         self.assertEqual(compose.spoken_agent(rec, "Trae"), "智能体")   # never recorded
         self.assertEqual(compose.spoken_agent(config.load({"agents": {"enabled": True}}), "Trae"), "Trae")
+        self.assertEqual(compose.recorded_agents(config.load({"agents": {"enabled": True}})), ["智能体"])
+
+    def test_an_agent_heard_first_time_is_recorded_from_then_on(self):
+        from bobao import agents
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(paths, "CONFIG", os.path.join(home, "config.json")):
+            agents.generic("done", "DeepSeek", cfg=config.load())
+            said = [t for e in compose.plan(config.load(dict(config.read_json(paths.CONFIG), engine="rooyun"))).values()
+                    for t in e["phrases"]]
+            self.assertTrue(any("DeepSeek" in t for t in said) and not any("智能体" in t for t in said))
+
+    def test_a_watched_session_folder_speaks_once_a_turn_ends(self):
+        from bobao.sources.sessions import Watch
+        with tempfile.TemporaryDirectory() as d:
+            f = os.path.join(d, "s.jsonl")
+            open(f, "w").write("x")
+            cfg = {"agents": {"minSeconds": 60, "watch": [{"name": "DeepSeek", "dir": d, "done": "turn_end"}]}}
+            got, w, t = [], Watch(), 1000
+            w.check(cfg, got.append, t)
+            for step in range(0, 200, 2):
+                t = 1002 + step
+                if step < 90:
+                    with open(f, "a") as h:
+                        h.write("turn_end\n" if step == 88 else "tool\n")   # quiet at 40s, but no end mark yet
+                    os.utime(f, (t, t))
+                if step == 40:
+                    for _ in range(10):   # 20 quiet seconds mid-turn: not the end
+                        t += 2
+                        w.check(cfg, got.append, t)
+                w.check(cfg, got.append, t)
+            self.assertEqual([(e.channel, e.title) for e in got], [("DeepSeek", "智能体完成")])
+            w.check(dict(cfg, agents=dict(cfg["agents"], minSeconds=600)), got.append, t + 100)
+            self.assertEqual(len(got), 1)
 
 
 class GitHub(unittest.TestCase):

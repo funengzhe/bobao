@@ -69,7 +69,6 @@
     }
   ],
   "suggestSources": [
-    "notifications",
-    "remind"
+    "notifications"
   ]
 }

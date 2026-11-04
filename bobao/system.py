@@ -2,7 +2,7 @@
 opening a link, turning audio into a clip, and starting at login.
 
 macOS uses afplay, say, afconvert and launchd. Windows uses PowerShell (Windows Media
-Player for mp3, System.Speech for the voice), ffmpeg for clips, and a shortcut in the
+Player for mp3, System.Speech for the voice), ffmpeg for clips (fetched on first use), and a shortcut in the
 Task Scheduler task that runs Bobao with pythonw at login (no console window). A task, not
 a child process: an agent's terminal may end everything it started when its session closes.
 """
@@ -11,6 +11,8 @@ import os
 import shutil
 import subprocess
 import sys
+
+from . import paths
 
 WINDOWS = os.name == "nt"
 NO_WINDOW = 0x08000000 if WINDOWS else 0   # CREATE_NO_WINDOW: no console flashing up
@@ -103,9 +105,45 @@ def open_url(url):
         subprocess.run(["/usr/bin/open", url])
 
 
+FFMPEG_HOME = os.path.join(paths.HOME, "bin")
+# Windows has no built-in converter for RooYun's mp3, so Bobao fetches one ffmpeg.exe (about 30 MB)
+# itself: from the npmmirror CDN, which is quick in China, else from GitHub. Same file, checked.
+FFMPEG_URLS = ["https://registry.npmmirror.com/-/binary/ffmpeg-static/b6.1.1/ffmpeg-win32-x64.gz",
+               "https://cdn.npmmirror.com/binaries/ffmpeg-static/b6.1.1/ffmpeg-win32-x64.gz",
+               "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-win32-x64.gz"]
+FFMPEG_SHA256 = "8883a3dffbd0a16cf4ef95206ea05283f78908dbfb118f73c83f4951dcc06d77"
+
+
 def ffmpeg():
-    return shutil.which("ffmpeg") or next((p for p in ("/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg")
+    own = os.path.join(FFMPEG_HOME, "ffmpeg.exe" if WINDOWS else "ffmpeg")
+    return shutil.which("ffmpeg") or next((p for p in ("/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg", own)
                                            if os.path.exists(p)), None)
+
+
+def fetch_ffmpeg(say=print):
+    """Downloads ffmpeg.exe into ~/.bobao/bin (Windows); returns its path or None."""
+    import gzip
+    import hashlib
+    import urllib.request
+    dest = os.path.join(FFMPEG_HOME, "ffmpeg.exe")
+    os.makedirs(FFMPEG_HOME, exist_ok=True)
+    say("Windows 上把录音转成可拼接的格式要用 ffmpeg，正在下载（约 30 MB，只下这一次）……")
+    for url in FFMPEG_URLS:
+        try:
+            with urllib.request.urlopen(url, timeout=60) as r:
+                data = r.read()
+        except Exception as e:
+            say(f"  {url.split('/')[2]} 下载失败（{e}），换一个地址")
+            continue
+        if hashlib.sha256(data).hexdigest() != FFMPEG_SHA256:
+            say(f"  {url.split('/')[2]} 下载的文件不完整，换一个地址")
+            continue
+        with open(dest + ".tmp", "wb") as f:
+            f.write(gzip.decompress(data))
+        os.replace(dest + ".tmp", dest)
+        say("  ffmpeg 已放到 " + dest)
+        return dest
+    return None
 
 
 def to_clip_wav(src, dest):
@@ -114,9 +152,10 @@ def to_clip_wav(src, dest):
         subprocess.run(["/usr/bin/afconvert", "-f", "WAVE", "-d", "LEI16@24000", "-c", "1", src, dest],
                        check=True, capture_output=True)
         return
-    exe = ffmpeg()
+    exe = ffmpeg() or fetch_ffmpeg()
     if not exe:
-        raise SystemExit("Windows 上生成好听的声音需要 ffmpeg：winget install Gyan.FFmpeg，装好后重新打开终端再运行")
+        raise SystemExit("ffmpeg 下载不下来。手动装一个（winget install Gyan.FFmpeg），或把已有的 ffmpeg.exe 放到 "
+                         + FFMPEG_HOME + "，再重跑同一条命令（已提交的不会重复扣费）")
     subprocess.run([exe, "-y", "-loglevel", "error", "-i", src, "-ar", "24000", "-ac", "1", "-sample_fmt", "s16", dest],
                    check=True, capture_output=True, creationflags=NO_WINDOW)
 

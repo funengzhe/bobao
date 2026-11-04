@@ -11,7 +11,7 @@ import random
 import re
 
 from .config import AGENT_NAMES, needed, voice_for
-from .numbers import UNITS, money, amount_of
+from .numbers import money, amount_of
 
 WHOLE_LIMIT = 40   # a template with at most this many fillings is recorded sentence by sentence
 SLOT = re.compile(r"\{([^{}]+)\}")
@@ -27,19 +27,20 @@ def agent_names(cfg):
 
 
 def recorded_agents(cfg):
-    """The agent names to record: those set up here (agents.used), else every known one and 智能体."""
+    """The agent names to record: those used here (agents.used), else just 智能体."""
     names, used = agent_names(cfg), (cfg.get("agents") or {}).get("used")
-    if used:
-        return sorted({names.get(u, u) for u in used})
-    return sorted(set(names.values())) + ["智能体"]
+    return sorted({names.get(u, u) for u in used}) if used else ["智能体"]
 
 
 def spoken_agent(cfg, name):
-    """'Claude Code' -> 'Claude'. A name nobody recorded is read as 智能体 with recorded voices."""
-    names = agent_names(cfg)
-    if name in names:
-        return names[name]
-    return name if name and cfg["engine"] != "rooyun" else "智能体"
+    """'Claude Code' -> 'Claude'. With recorded voices, a name that was never recorded
+    (not in agents.used) is read as 智能体 rather than by the computer's voice."""
+    if not name:
+        return "智能体"
+    said = agent_names(cfg).get(name, name)
+    if cfg["engine"] != "rooyun" or said in recorded_agents(cfg):
+        return said
+    return "智能体"
 
 
 def alias(cfg, value):
@@ -60,6 +61,19 @@ def card_values(ev, rule, cfg):
     if ev.fields.get("金额") is None and "金额" not in out and isinstance(ev.fields.get("amount"), (int, float, str)):
         out["金额"] = str(ev.fields["amount"])
     out["首单"] = any("首次" in str(v) or "首充" in str(v) or "首单" in str(v) for v in ev.fields.values())
+    return out
+
+
+def captured(rule, ev, cfg):
+    """A rule's "capture": {"出单人": "恭喜(.+?)出单"} takes a slot's value out of the title (or,
+    failing that, the whole message): "恭喜张三出单！！！" -> {出单人} = 张三. Several names
+    ("李四,王五") are joined with 和. With recorded voices only values listed in
+    values.<slot> are read, as with 方式 and 套餐."""
+    out = {}
+    for slot, pattern in (rule.get("capture") or {}).items():
+        m = re.search(pattern, ev.title) or re.search(pattern, ev.haystack())
+        v = re.sub(r"\s*[,，、/&]\s*", "和", (m.group(1) if m and m.groups() else "").strip())
+        out[slot] = known(cfg, slot, v)
     return out
 
 
@@ -111,6 +125,7 @@ def render(match, ev, cfg, rnd=random):
         "首单": cfg["firstOrder"] if card["首单"] else "", "大单": cfg["bigOrderSay"] if big else "",
         "智能体": spoken_agent(cfg, ev.channel if ev.source == "webhook" else ""),
     }
+    values.update(captured(match.rule, ev, cfg))
     values.update({k: rnd.choice(v) for k, v in cfg["pick"].items() if v})
     template = rnd.choice(say) if isinstance(say, list) else say
     segments = [(voice_for(cfg, match.type), tidy(fill(template, values)))]
@@ -136,6 +151,20 @@ def expand(text, domains):
     for v in domains.get(m.group(1)) or [""]:
         out += expand(text[:m.start()] + v + text[m.end():], domains)
     return out
+
+
+def reachable(cfg):
+    """The types something here can announce: a rule's type, 通知 (catch-all, or a payment
+    without an amount). Only these are recorded; a style's other types stay unrecorded."""
+    kinds = {r["type"] for r in cfg["rules"] if r.get("type") and not r.get("skip") and needed(cfg, r)}
+    if (cfg.get("catchAll") or {}).get("keywords") or kinds & {"收款", "套餐"}:
+        kinds.add("通知")
+    return kinds | set(cfg.get("alsoRecord") or [])
+
+
+def units(cfg):
+    """The currencies amounts come in here: values.货币, else just 元 (no 美元 or USDT recorded)."""
+    return list(cfg["values"].get("货币") or ["元"])
 
 
 def contexts(cfg, kind):
@@ -165,7 +194,10 @@ def plan(cfg):
         e["numbers"] = e["numbers"] or numbers
 
     picks = {k: list(v) for k, v in cfg["pick"].items()}
+    heard = reachable(cfg)
     for kind in cfg["types"]:
+        if kind not in heard:
+            continue
         t = type_settings(cfg, kind)
         if t.get("enabled") is False or not t.get("say"):
             continue
@@ -178,6 +210,8 @@ def plan(cfg):
                            金额=[AMOUNT], 方式=cfg["values"].get("方式", []) + [""], 套餐=cfg["values"].get("套餐", []) + [""],
                            首单=[cfg["firstOrder"], ""] if money_kind else [""], 大单=[cfg["bigOrderSay"], ""] if money_kind else [""],
                            智能体=recorded_agents(cfg))
+            for slot, listed in cfg["values"].items():   # captured slots: every value listed, or none
+                domains.setdefault(slot, list(listed) + [""])
             for template in own or templates:
                 whole = [tidy(x) for x in expand(template, domains)] if "{金额}" not in template else []
                 if whole and len(whole) <= WHOLE_LIMIT:   # few enough to record each sentence in one take
@@ -189,7 +223,7 @@ def plan(cfg):
                         if AMOUNT in text:
                             before, after = text.split(AMOUNT, 1)
                             want(voice, before)
-                            for unit in UNITS + [""]:
+                            for unit in units(cfg) + [""]:
                                 want(voice, unit + after)
                             want(voice, "", numbers=True)
                         else:

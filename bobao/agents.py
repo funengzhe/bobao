@@ -3,7 +3,8 @@
     bobao agent done [--name Cursor]      a task is finished (run by the agent's own hook)
     bobao agent waiting [--name Cursor]   it waits for your approval
     bobao agent install claude|codex      ready-made hooks for Claude Code and Codex
-    bobao agent setup                     the command to put in any other agent's hook
+    bobao agent setup [--name X]          the command to put in any other agent's hook
+    bobao agent watch --name X --dir D    no hook at all: watch the folder its sessions are saved in
 
 Agents differ: Claude Code has hooks, Codex a notify command, Cursor and others their own
 hook files. The agent that installs Bobao wires its own mechanism to `bobao agent done`
@@ -225,8 +226,11 @@ def codex(data):
     return None
 
 
-def generic(kind, name="", cwd=None):
-    """bobao agent done / waiting, from any agent's hook."""
+def generic(kind, name="", cwd=None, cfg=None):
+    """bobao agent done / waiting, from any agent's hook. An agent heard for the first time
+    joins agents.used, so its name gets recorded with the next `bobao voice record`."""
+    if name and name not in ((cfg or {}).get("agents") or {}).get("used", []):
+        turn_on(name)
     return event(name or "智能体", "智能体完成" if kind == "done" else "智能体等你确认", cwd or os.getcwd())
 
 
@@ -235,7 +239,7 @@ def hook(argv, name=""):
     try:
         cfg = config.load()
         if argv[0] in ("done", "waiting"):
-            body = generic(argv[0], name)
+            body = generic(argv[0], name, cfg=cfg)
         elif argv[0] == "claude":
             body = claude(argv[1], json.loads(sys.stdin.read() or "{}"), cfg)
         else:
@@ -320,11 +324,47 @@ def install(which):
     return install_claude() if which == "claude" else install_codex()
 
 
-def setup_text():
+def setup_text(name=""):
     """For any other agent: the command its hook should run."""
-    turn_on()
+    turn_on(name)
     cmd = command() if os.name == "nt" else shlex.quote(command())
-    return (f"智能体播报已打开。在你的智能体「任务结束时运行命令」的设置里（钩子、通知、hooks.json 之类）填：\n"
-            f"  任务做完：{cmd} agent done --name 智能体名字\n"
-            f"  等你确认：{cmd} agent waiting --name 智能体名字\n"
-            "命令要很快返回，Bobao 没在运行时它什么也不做。")
+    who = name or "你的名字"
+    return (f"智能体播报已打开{'（' + name + '）' if name else ''}。在你的「任务结束时运行命令」的设置里（钩子、通知、hooks.json 之类）填：\n"
+            f"  任务做完：{cmd} agent done --name {who}\n"
+            f"  等你确认：{cmd} agent waiting --name {who}\n"
+            "命令要很快返回，Bobao 没在运行时它什么也不做。\n"
+            f"没有这种设置的话，看看你的会话记录是不是存成文件：bobao agent watch --name {who} --dir 会话目录")
+
+
+def watch(name, folder, idle=None, done=None, off=False):
+    """Adds (or with off removes) a session folder to watch for an agent without hooks."""
+    from .sources.sessions import snapshot
+    user = config.read_json(paths.CONFIG, {}) or {}
+    watches = [w for w in (user.get("agents") or {}).get("watch", []) if w.get("name") != name]
+    if off:
+        user.setdefault("agents", {})["watch"] = watches
+        config.save_user(user)
+        return f"不再看 {name} 的会话文件"
+    folder = os.path.abspath(os.path.expanduser(folder or ""))
+    if not os.path.isdir(folder):
+        raise SystemExit(f"没有这个文件夹：{folder}")
+    if done:
+        re.compile(done)
+    files = snapshot(folder)
+    if not files:
+        raise SystemExit(f"{folder} 里没有文件。会话记录不在这里？")
+    newest = max(files, key=lambda p: files[p][1])
+    w = {"name": name, "dir": folder}
+    if idle:
+        w["idle"] = idle
+    if done:
+        w["done"] = done
+    turn_on(name)
+    user = config.read_json(paths.CONFIG, {}) or {}
+    user["agents"]["watch"] = watches + [w]
+    config.save_user(user)
+    ago = int(time.time() - files[newest][1])
+    return (f"开始看 {name} 的会话文件：{folder}（{len(files)} 个文件，最近写入的是 {os.path.relpath(newest, folder)}，{ago} 秒前）。\n"
+            f"文件停止增长 {idle or 15} 秒算这一轮做完" + (f"，而且结尾要符合 {done}" if done else "") +
+            "。这一轮你回复完以后，最近写入的应该就是这次的会话；不是的话目录选错了。\n"
+            "已经在用别的办法（钩子、每轮手动喊一声）的话去掉那个，免得念两遍。")

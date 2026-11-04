@@ -150,7 +150,6 @@
     }
   ],
   "suggestSources": [
-    "notifications",
-    "remind"
+    "notifications"
   ]
 }
